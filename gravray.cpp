@@ -10,7 +10,6 @@ http://naif.jpl.nasa.gov/pub/naif/
 #include <string.h>
 #include <stdlib.h>
 #include <SpiceUsr.h>
-#include <novas.h>
 #include <eph_manager.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>

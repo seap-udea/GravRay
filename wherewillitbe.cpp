@@ -8,56 +8,65 @@ using namespace std;
 
 #define NUMOBJS 10
 
-/*
-//THESE ARE THE LABELS FOR KERNEL de421 
-static char* OBJS[]={"SATURN",
-		     "JUPITER",
-		     "MERCURY",
-		     "MARS",
-		     "VENUS",
-		     "SUN",
-		     "MOON",
-		     "EARTH",
-		     "URANUS",
-		     "NEPTUNE"};
-*/
-
 //THESE ARE THE LABELS FOR KERNEL de430
-static char* OBJS[]={"6",/*SATURN*/
-		     "5",/*JUPITER*/
-		     "1",/*MERCURY*/
-		     "4",/*MARS*/
-		     "2",/*VENUS*/
-		     "10",/*SUN*/
-		     "301",/*MOON*/
-		     "399",/*EARTH*/
-		     "7",/*URANUS*/
-		     "8"/*NEPTUNE*/
+static char* OBJS[]={
+  "10",/*SUN*/
+  "1",/*MERCURY*/
+  "2",/*VENUS*/
+  "399",/*EARTH*/
+  "301",/*MOON*/
+  "4",/*MARS*/
+  "5",/*JUPITER*/
+  "6",/*SATURN*/
+  "7",/*URANUS*/
+  "8"/*NEPTUNE*/
 };
 
 //SEE WIKIPEDIA
-static double MASSES[]={5.6846E26/*SATURN*/,
-			1.8986E27/*JUPITER*/,
-			3.3022E23/*MERCURY*/,
-			6.4185E23/*MARS*/,
-			4.8685E24/*VENUS*/,
-			1.9891E30/*SUN*/,
-			7.349E22/*MOON*/,
-			5.9736E24/*EARTH*/,
-			8.6810E25/*URANUS*/,
-			1.0243E26/*NEPTUNE*/};
+static double MASSES[]={
+  1.9891E30/*SUN*/,
+  3.3022E23/*MERCURY*/,
+  4.8685E24/*VENUS*/,
+  5.9736E24/*EARTH*/,
+  7.349E22/*MOON*/,
+  6.4185E23/*MARS*/,
+  1.8986E27/*JUPITER*/,
+  5.6846E26/*SATURN*/,
+  8.6810E25/*URANUS*/,
+  1.0243E26/*NEPTUNE*/
+};
+
+/*
+  Source: documentation DE421
+  http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421_announcement.pdf
+ */
+static double GMASSES[]={
+  132712440040.944000/*SUN*/,
+  22032.090000/*MERCURY*/,
+  324858.592000/*VENUS*/,
+  398600.436233/*EARTH*/,
+  4902.800076/*MOON*/,
+  42828.375214/*MARS*/,
+  126712764.800000/*JUPITER*/,
+  37940585.200000/*SATURN*/,
+  5794548.600000/*URANUS*/,
+  6836535.000000/*NEPTUNE*/
+};
+
 
 //WHICH OBJECTS ARE ACTIVE
-static int ACTIVE[]={1/*SATURN*/,
-		     1/*JUPITER*/,
-		     1/*MERCURY*/,
-		     1/*MARS*/,
-		     1/*VENUS*/,
-		     1/*SUN*/,
-		     1/*MOON*/,
-		     0/*EARTH*/,
-		     0/*URANUS*/,
-		     0/*NEPTUNE*/};
+static int ACTIVE[]={
+  1/*SUN*/,
+  1/*MERCURY*/,
+  1/*VENUS*/,
+  1/*EARTH*/,
+  0/*MOON*/,
+  1/*MARS*/,
+  1/*JUPITER*/,
+  1/*SATURN*/,
+  1/*URANUS*/,
+  1/*NEPTUNE*/
+};
 
 enum COMPONENTS {CX,CY,CZ,CVX,CVY,CVZ};
 
