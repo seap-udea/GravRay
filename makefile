@@ -20,9 +20,9 @@ clean:
 
 commit:
 	@echo "Commiting..."
-	@git commit -am "Commit"
-	@git push origin master
+	@-git commit -am "Commit"
+	@-git push origin master
 
 pull:
-	@git reset --hard HEAD
-	@git pull
+	@-git reset --hard HEAD
+	@-git pull
