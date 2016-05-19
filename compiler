@@ -3,4 +3,4 @@ ARCH=32
 #ARCH=64
 CPP=g++
 CFLAGS=-I. -w -I$(UTIL)/include -I$(UTIL)/include/gsl
-LFLAGS=-lm $(UTIL)/lib/cspice$(ARCH).a $(UTIL)/lib/csupport$(ARCH).a $(UTIL)/lib/libgsl.a $(UTIL)/lib/libgslcblas.a $(UTIL)/lib/novas.a
+LFLAGS=-lm $(UTIL)/lib/$(ARCH)/cspice.a $(UTIL)/lib/$(ARCH)/csupport.a $(UTIL)/lib/$(ARCH)/libgsl.a $(UTIL)/lib/$(ARCH)/libgslcblas.a

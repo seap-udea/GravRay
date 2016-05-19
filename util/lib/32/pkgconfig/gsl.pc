@@ -1,0 +1,11 @@
+prefix=/Users/jzuluaga/Dropbox/Cursos/Posgrado/Astrodynamics/AstrodynTools/util
+exec_prefix=/Users/jzuluaga/Dropbox/Cursos/Posgrado/Astrodynamics/AstrodynTools/util
+libdir=/Users/jzuluaga/Dropbox/Cursos/Posgrado/Astrodynamics/AstrodynTools/util/lib
+includedir=/Users/jzuluaga/Dropbox/Cursos/Posgrado/Astrodynamics/AstrodynTools/util/include
+GSL_CBLAS_LIB=-lgslcblas
+
+Name: GSL
+Description: GNU Scientific Library
+Version: 1.16
+Libs: -L/Users/jzuluaga/Dropbox/Cursos/Posgrado/Astrodynamics/AstrodynTools/util/lib -lgsl ${GSL_CBLAS_LIB}  -lm 
+Cflags: -I/Users/jzuluaga/Dropbox/Cursos/Posgrado/Astrodynamics/AstrodynTools/util/include

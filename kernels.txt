@@ -12,6 +12,8 @@ KERNELS_TO_LOAD = ('$PATH/de430.bsp',
 
 \begintext
 
+Latest update: May 19th, 2016 (Jorge I. Zuluaga)
+
 Notes on the DE430 and DE431 Planet and Lunar Ephemerides C. Acton
                             8/15/2013
 
