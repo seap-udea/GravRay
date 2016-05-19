@@ -30,6 +30,8 @@ int main(int argc,char* argv[])
     Example:
 
        ./whereisinsky.exe MARS 6.2 -75.34 1450.0 "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisinsky.exe MARS_BARYCENTER 6.2 -75.34 1450.0 "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisinsky.exe 4 6.2 -75.34 1450.0 "07/19/2015 00:00:00.000 UTC-5"
   */
   SpiceChar date[100],obj[100];
   strcpy(obj,argv[1]);

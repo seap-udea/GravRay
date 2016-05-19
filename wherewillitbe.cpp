@@ -9,6 +9,7 @@ using namespace std;
 #define NUMOBJS 10
 
 /*
+//THESE ARE THE LABELS FOR KERNEL de421 
 static char* OBJS[]={"SATURN",
 		     "JUPITER",
 		     "MERCURY",
@@ -21,6 +22,7 @@ static char* OBJS[]={"SATURN",
 		     "NEPTUNE"};
 */
 
+//THESE ARE THE LABELS FOR KERNEL de430
 static char* OBJS[]={"6",/*SATURN*/
 		     "5",/*JUPITER*/
 		     "1",/*MERCURY*/
@@ -33,6 +35,7 @@ static char* OBJS[]={"6",/*SATURN*/
 		     "8"/*NEPTUNE*/
 };
 
+//SEE WIKIPEDIA
 static double MASSES[]={5.6846E26/*SATURN*/,
 			1.8986E27/*JUPITER*/,
 			3.3022E23/*MERCURY*/,
@@ -44,6 +47,7 @@ static double MASSES[]={5.6846E26/*SATURN*/,
 			8.6810E25/*URANUS*/,
 			1.0243E26/*NEPTUNE*/};
 
+//WHICH OBJECTS ARE ACTIVE
 static int ACTIVE[]={1/*SATURN*/,
 		     1/*JUPITER*/,
 		     1/*MERCURY*/,
@@ -166,7 +170,8 @@ int main(int argc,char* argv[])
   printf("t_step = %lf\n",t_step);
   printf("t_stop = %lf\n",t_stop);
   printf("tend = %lf\n",tend);
-  getc(stdin);
+  //getc(stdin);
+
   //INTEGRATION
   int i,status;
   FILE *f=fopen("ray.dat","w");
@@ -179,6 +184,7 @@ int main(int argc,char* argv[])
 	  "13:M","14:t0","15:mu");
   
   h_used=h;
+
   for(i=0;i<npoints;i++) {
     deltat=(t-tini/UT)*UT/YEAR;
     printf("Step %d: t-t_start = %e yrs (last h = %e days)\n",i,deltat,h_used*UT/DAY);
@@ -189,7 +195,7 @@ int main(int argc,char* argv[])
     E[0]*=1E3/AU;
     vscl_c(180/M_PI,E+2,E+2);
 
-    //STOING RESULTS
+    //STORING RESULTS
     fprintf(f,"%-+26.17e%s%s\n",deltat,vec2strn(X0,6,"%-+26.17e"),vec2strn(E,8,"%-+26.17e"));
 
     if((t_start+t_step)>tend) t_step=tend-t_start;

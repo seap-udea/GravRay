@@ -28,6 +28,9 @@ int main(int argc,char* argv[])
     Example:
 
        ./whereisit MARS "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisit MARS_BARYCENTER "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisit 4 "07/19/2015 00:00:00.000 UTC-5"
+
   */
   SpiceChar date[100],obj[100];
   strcpy(obj,argv[1]);
@@ -47,5 +50,5 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   SpiceDouble objectSSBJ2000[6];
   spkezr_c(obj,t,"J2000","NONE","SOLAR SYSTEM BARYCENTER",objectSSBJ2000,&ltmp);
-  printf("State vector of %s: %s\n",obj,vec2strn(objectSSBJ2000,6,"%.17e"));
+  printf("State vector of %s: %s\n",obj,vec2strn(objectSSBJ2000,6,"%.17e "));
 }
