@@ -3,6 +3,7 @@
 PATH_VALUES = ( 'util/kernels' )
 PATH_SYMBOLS = ( 'PATH' )
 KERNELS_TO_LOAD = ('$PATH/de430.bsp',
+		   '$PATH/codes_300ast_20100725.bsp',
 		   '$PATH/naif0011.tls',
 		   '$PATH/pck00010.tpc',
 		   '$PATH/frame.tk',
@@ -11,6 +12,8 @@ KERNELS_TO_LOAD = ('$PATH/de430.bsp',
 		   )
 
 \begintext
+
+Available at: http://naif.jpl.nasa.gov/pub/naif
 
 Latest update: May 19th, 2016 (Jorge I. Zuluaga)
 
@@ -52,3 +55,4 @@ export ephemeris.
   de430.bsp
   Approximate file size:   120 Mbytes
   Approximate time span:   1550 Jan 01 to 2650 Jan 22
+

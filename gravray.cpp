@@ -107,6 +107,7 @@ static double GMASSES[]={
 //////////////////////////////////////////
 //GLOBAL VARIABLES
 //////////////////////////////////////////
+enum COMPONENTS {CX,CY,CZ,CVX,CVY,CVZ};
 static int NUMBER_OF_STEPS[]={2,4,6,8,12,16,24,32,48,64,96,128};
 double REARTH;
 double RPEARTH;

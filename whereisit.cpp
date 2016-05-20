@@ -33,24 +33,23 @@ int main(int argc,char* argv[])
 
   */
   SpiceChar date[100],obj[100];
-  strcpy(obj,argv[1]);
-  strcpy(date,argv[2]);
-  
-  ////////////////////////////////////////////////////
-  //GET EPHEMERIS TIME
-  ////////////////////////////////////////////////////
   SpiceDouble t,tjd,ltmp,dt;
 
-  //TIME IS INPUT IN UTC
-  str2et_c(date,&t);
-
-  //COMPUTE DELTAT FOR THE DATE
-  deltet_c(t,"et",&dt);
-  fprintf(stderr,"DT = %.2lf\n",dt);
-  fprintf(stderr,"TT = %.9e\n",t);
-
+  strcpy(obj,argv[1]);
+  strcpy(date,argv[2]);
+  if(strcmp(date,"ET")==0){
+    t=atof(argv[3]);
+  }else{
+    ////////////////////////////////////////////////////
+    //GET EPHEMERIS TIME
+    ////////////////////////////////////////////////////
+    str2et_c(date,&t);
+    deltet_c(t,"et",&dt);
+    fprintf(stderr,"DT = %.2lf\n",dt);
+    fprintf(stderr,"TT = %.9e\n",t);
+    t-=dt;
+  }
   //CORRECT TIME FOR DELTAT.  NOW T IS TDB
-  t-=dt;
   fprintf(stderr,"TDB = ");
   fprintf(stdout,"%.9e ",t);
 
@@ -65,5 +64,5 @@ int main(int argc,char* argv[])
   spkezr_c(obj,t,ABSJ2000,"NONE",SSB,objectSSBJ2000,&ltmp);
   fprintf(stderr,"State vector of %s: ",obj);
   fprintf(stdout,"%s",vec2strn(objectSSBJ2000,6,"%.17e "));
-  fprintf(stderr,"\nLT = %.17e\n",ltmp);
+  fprintf(stderr,"\nLT = %.17e\n\n",ltmp);
 }

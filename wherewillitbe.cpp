@@ -4,28 +4,15 @@ using namespace std;
 #define TOLERANCE 1E-10
 #define EXTMET 1
 
-//WHICH OBJECTS ARE ACTIVE
-static int ACTIVE[]={
-  1/*SUN*/,
-  1/*MERCURY*/,
-  1/*VENUS*/,
-  1/*EARTH*/,
-  0/*MOON*/,
-  1/*MARS*/,
-  1/*JUPITER*/,
-  1/*SATURN*/,
-  1/*URANUS*/,
-  1/*NEPTUNE*/
-};
-
-enum COMPONENTS {CX,CY,CZ,CVX,CVY,CVZ};
+#include <objects.cpp>
 
 int EoM(double t,double y[],double dydt[],void *params) 
 { 
   //COMPUTE THE CONTRIBUTION OF EVERY OBJECT
   int i;
-  double r,object[6],R[3],Rmag,tmp;
+  double r,object[6],R[3],Rmag,tmp,GM,fac;
 
+  fac=UT*UT/(UL/1E3*UL/1E3*UL/1E3);
   dydt[CX]=y[CVX];
   dydt[CY]=y[CVY];
   dydt[CZ]=y[CVZ];
@@ -34,19 +21,14 @@ int EoM(double t,double y[],double dydt[],void *params)
   dydt[CVZ]=0.0;
 
   for(i=NUMOBJS;i-->0;){
-    //printf("Computing object %d: %s...",i,OBJS[i]);
-    if(!ACTIVE[i]){
-      //printf("\n");
-      continue;
-    }
-    //printf("active\n");
+    if(!ACTIVE[i]) continue;
     spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
     vscl_c(1E3/UL,object,object);
     sumVec(R,1.0,y,-1.0,object,3);
     Rmag=vnorm_c(R);
-    sumVec(dydt+3,1.0,dydt+3,-GGLOBAL*MASSES[i]/UM/(Rmag*Rmag*Rmag),R,3);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
   }
-  //exit(0);
   return 0;
 }
 
@@ -100,7 +82,7 @@ int main(int argc,char* argv[])
   GGLOBAL=1.0;
   UT=sqrt(UL*UL*UL/(GCONST*UM));
   UV=UL/UT;
-  fprintf(stderr,"Units: UL = %e, UT = %e, UM = %e, UV = %e\n",UL,UT,UM,UV);
+  fprintf(stderr,"Units: UL = %.17e, UT = %.17e, UM = %.17e, UV = %.17e\n",UL,UT,UM,UV);
 
   //INITIAL CONDITIONS
   double X0[6],X[6],Xu[6],E[8],a;
