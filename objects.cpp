@@ -7,7 +7,7 @@ static int ACTIVE[]={
   1,//MERCURY
   1,//VENUS
   1,//EARTH
-  1,//MOON
+  0,//MOON
   1,//MARS
   1,//JUPITER
   1,//SATURN

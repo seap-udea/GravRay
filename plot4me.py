@@ -24,6 +24,7 @@ Fields:
 
 def plotRay():
     data=np.loadtxt("ray.dat")
+    datai=np.loadtxt("rayi.dat")
 
     fig=plt.figure()
     ax=fig.gca()
@@ -34,6 +35,7 @@ def plotRay():
     fig3d=plt.figure()
     ax=plt3d(fig3d)
     ax.plot(data[:,1],data[:,2],data[:,3])
+    ax.plot(datai[:,1],datai[:,2],datai[:,3],'r-')
     fig3d.savefig("scratch/trajectory3d.png")
 
     ext=max(np.abs(data[:,1:4].min()),data[:,1:4].max())
