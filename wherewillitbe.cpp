@@ -20,8 +20,9 @@ int EoM(double t,double y[],double dydt[],void *params)
   dydt[CVY]=0.0;
   dydt[CVZ]=0.0;
 
-  for(i=NUMOBJS;i-->0;){
-    if(!ACTIVE[i]) continue;
+  i=-1;
+  i++;
+  if(ACTIVE[i]){
     spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
     vscl_c(1E3/UL,object,object);
     sumVec(R,1.0,y,-1.0,object,3);
@@ -29,6 +30,88 @@ int EoM(double t,double y[],double dydt[],void *params)
     GM=GMASSES[i]*fac;
     sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
   }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+  i++;
+  if(ACTIVE[i]){
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    vscl_c(1E3/UL,object,object);
+    sumVec(R,1.0,y,-1.0,object,3);
+    Rmag=vnorm_c(R);
+    GM=GMASSES[i]*fac;
+    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+  }
+
   return 0;
 }
 
