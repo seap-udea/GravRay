@@ -2,57 +2,7 @@
 using namespace std;
 
 #define TOLERANCE 1E-10
-//EXTRAPOLATION METHOD: 0-RATIONAL, 1-POLYNOMIAL
 #define EXTMET 1
-#define MAX(x,y) (x>y?x:y)
-
-#define NUMOBJS 10
-
-//THESE ARE THE LABELS FOR KERNEL de430
-static char* OBJS[]={
-  "10",/*SUN*/
-  "1",/*MERCURY*/
-  "2",/*VENUS*/
-  "399",/*EARTH*/
-  "301",/*MOON*/
-  "4",/*MARS*/
-  "5",/*JUPITER*/
-  "6",/*SATURN*/
-  "7",/*URANUS*/
-  "8"/*NEPTUNE*/
-};
-
-//SEE WIKIPEDIA
-static double MASSES[]={
-  1.9891E30/*SUN*/,
-  3.3022E23/*MERCURY*/,
-  4.8685E24/*VENUS*/,
-  5.9736E24/*EARTH*/,
-  7.349E22/*MOON*/,
-  6.4185E23/*MARS*/,
-  1.8986E27/*JUPITER*/,
-  5.6846E26/*SATURN*/,
-  8.6810E25/*URANUS*/,
-  1.0243E26/*NEPTUNE*/
-};
-
-/*
-  Source: documentation DE421
-  http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421_announcement.pdf
- */
-static double GMASSES[]={
-  132712440040.944000/*SUN*/,
-  22032.090000/*MERCURY*/,
-  324858.592000/*VENUS*/,
-  398600.436233/*EARTH*/,
-  4902.800076/*MOON*/,
-  42828.375214/*MARS*/,
-  126712764.800000/*JUPITER*/,
-  37940585.200000/*SATURN*/,
-  5794548.600000/*URANUS*/,
-  6836535.000000/*NEPTUNE*/
-};
-
 
 //WHICH OBJECTS ARE ACTIVE
 static int ACTIVE[]={
@@ -90,7 +40,7 @@ int EoM(double t,double y[],double dydt[],void *params)
       continue;
     }
     //printf("active\n");
-    spkezr_c(OBJS[i],t*UT,"J2000","NONE","SOLAR SYSTEM BARYCENTER",object,&tmp);
+    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
     vscl_c(1E3/UL,object,object);
     sumVec(R,1.0,y,-1.0,object,3);
     Rmag=vnorm_c(R);
@@ -137,7 +87,7 @@ int main(int argc,char* argv[])
   SpiceDouble vz=atof(argv[7]);
   SpiceDouble duration=atof(argv[8])*365.25*GSL_CONST_MKSA_DAY;
   SpiceInt npoints=atoi(argv[9]);
-  printf("Integrating during %.17e seconds\n",duration);
+  fprintf(stderr,"Integrating during %.17e seconds\n",duration);
 
   ////////////////////////////////////////////////////
   //PROCEED WITH THE INTEGRATION
@@ -150,18 +100,18 @@ int main(int argc,char* argv[])
   GGLOBAL=1.0;
   UT=sqrt(UL*UL*UL/(GCONST*UM));
   UV=UL/UT;
-  printf("Units: UL = %e, UT = %e, UM = %e, UV = %e\n",UL,UT,UM,UV);
+  fprintf(stderr,"Units: UL = %e, UT = %e, UM = %e, UV = %e\n",UL,UT,UM,UV);
 
   //INITIAL CONDITIONS
   double X0[6],X[6],Xu[6],E[8],a;
   vpack_c(x*1E3/UL,y*1E3/UL,z*1E3/UL,X0);
   vpack_c(vx*1E3/UV,vy*1E3/UV,vz*1E3/UV,X0+3);
   a=vnorm_c(X0);
-  printf("Initial conditions: %s\n",vec2strn(X0,6));
+  fprintf(stderr,"Initial conditions: %s\n",vec2strn(X0,6));
 
   //DYNAMICAL TIMESCALE
   double tdyn=2*M_PI*sqrt(a*a*a/(GGLOBAL*MSUN/UM));
-  printf("Dynamical time =  %e\n",tdyn);
+  fprintf(stderr,"Dynamical time =  %e\n",tdyn);
 
   //TIME LIMITS
   duration/=UT;
@@ -173,12 +123,12 @@ int main(int argc,char* argv[])
   double t_stop=tend;
   double t=t_start;
 
-  printf("tini = %lf\n",tini/UT);
-  printf("t_start = %lf\n",t_start);
-  printf("h = %e\n",h);
-  printf("t_step = %lf\n",t_step);
-  printf("t_stop = %lf\n",t_stop);
-  printf("tend = %lf\n",tend);
+  fprintf(stderr,"tini = %lf\n",tini/UT);
+  fprintf(stderr,"t_start = %lf\n",t_start);
+  fprintf(stderr,"h = %e\n",h);
+  fprintf(stderr,"t_step = %lf\n",t_step);
+  fprintf(stderr,"t_stop = %lf\n",t_stop);
+  fprintf(stderr,"tend = %lf\n",tend);
   //getc(stdin);
 
   //INTEGRATION
@@ -196,7 +146,7 @@ int main(int argc,char* argv[])
 
   for(i=0;i<npoints;i++) {
     deltat=(t-tini/UT)*UT/YEAR;
-    printf("Step %d: t-t_start = %e yrs (last h = %e days)\n",i,deltat,h_used*UT/DAY);
+    fprintf(stderr,"Step %d: t-t_start = %e yrs (last h = %e days)\n",i,deltat,h_used*UT/DAY);
 
     //CONVERTING TO CLASSICAL ELEMENTS
     vscl_c(UL/1E3,X0,Xu);vscl_c(UV/1E3,X0+3,Xu+3);
@@ -210,7 +160,7 @@ int main(int argc,char* argv[])
     if((t_start+t_step)>tend) t_step=tend-t_start;
     t_stop = t_start + t_step;
 
-    printf("\tt_start = %lf, t_step = %lf, t_stop = %lf\n",t_start,t_step,t_stop);
+    fprintf(stderr,"\tt_start = %lf, t_step = %lf, t_stop = %lf\n",t_start,t_step,t_stop);
     h_used = h;
     do {
       while(1){
@@ -225,12 +175,12 @@ int main(int argc,char* argv[])
     }while(t<t_stop-1.e-10);
     if(t>t_stop){
       h_adjust=t_stop-t;
-      printf("\tAdjusting fom t=%lf to t_stop=%lf using h = %e\n",t,t_stop,h_adjust);
+      fprintf(stderr,"\tAdjusting fom t=%lf to t_stop=%lf using h = %e\n",t,t_stop,h_adjust);
       status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_adjust,&h_next,1.0,TOLERANCE,EXTMET,params);
       copyVec(X0,X,6);
       t=t_stop;
     }
-    printf("\tt = %lf, t_stop = %lf\n",t,t_stop);
+    fprintf(stderr,"\tt = %lf, t_stop = %lf\n",t,t_stop);
     t_start = t;
     if(t_start>tend) break;
     //getc(stdin);

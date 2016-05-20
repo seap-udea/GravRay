@@ -28,13 +28,18 @@ def plotRay():
     fig=plt.figure()
     ax=fig.gca()
     ax.plot(data[:,0],data[:,7])
-    fig.savefig("plots/elements.png")
+    fig.savefig("scratch/elements.png")
     plt.close("all")
 
     fig3d=plt.figure()
     ax=plt3d(fig3d)
     ax.plot(data[:,1],data[:,2],data[:,3])
-    fig3d.savefig("plots/trajectory3d.png")
+    fig3d.savefig("scratch/trajectory3d.png")
+
+    ext=max(np.abs(data[:,1:4].min()),data[:,1:4].max())
+    ax.set_xlim(-ext,ext)
+    ax.set_ylim(-ext,ext)
+    ax.set_zlim(-ext,ext)
     plt.show()
 
 plotRay()

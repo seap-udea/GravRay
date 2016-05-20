@@ -39,16 +39,31 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   //GET EPHEMERIS TIME
   ////////////////////////////////////////////////////
-  SpiceDouble t,tjd,ltmp;
+  SpiceDouble t,tjd,ltmp,dt;
+
+  //TIME IS INPUT IN UTC
   str2et_c(date,&t);
-  printf("TT = %e\n",t);
+
+  //COMPUTE DELTAT FOR THE DATE
+  deltet_c(t,"et",&dt);
+  fprintf(stderr,"DT = %.2lf\n",dt);
+  fprintf(stderr,"TT = %.9e\n",t);
+
+  //CORRECT TIME FOR DELTAT.  NOW T IS TDB
+  t-=dt;
+  fprintf(stderr,"TDB = ");
+  fprintf(stdout,"%.9e ",t);
+
+  //JULIAN DATE TO VERIFY
   tjd=t2jd(t);
-  printf("Julian Date = %.6lf\n",tjd);
+  fprintf(stderr,"\nJulian Date = %.6lf\n",tjd);
 
   ////////////////////////////////////////////////////
   //GET POSITION AT t
   ////////////////////////////////////////////////////
   SpiceDouble objectSSBJ2000[6];
-  spkezr_c(obj,t,"J2000","NONE","SOLAR SYSTEM BARYCENTER",objectSSBJ2000,&ltmp);
-  printf("State vector of %s: %s\n",obj,vec2strn(objectSSBJ2000,6,"%.17e "));
+  spkezr_c(obj,t,ABSJ2000,"NONE",SSB,objectSSBJ2000,&ltmp);
+  fprintf(stderr,"State vector of %s: ",obj);
+  fprintf(stdout,"%s",vec2strn(objectSSBJ2000,6,"%.17e "));
+  fprintf(stderr,"\nLT = %.17e\n",ltmp);
 }

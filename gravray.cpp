@@ -30,12 +30,19 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define R2D(x) (x*180/M_PI)
 #define POWI(x,n) gsl_pow_int(x,n)
 #define SGN(x) (x<0?-1:+1)
+#define MAX(x,y) (x>y?x:y)
 
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
 #define EARTH_ID "EARTH"
 #define ATTEMPTS 12 /*SEE NUMBER_OF_STEPS*/
+#define SSB "SOLAR SYSTEM BARYCENTER"
+
+//FOR ABSOLUTE EPHEMERIS
+#define ABSJ2000 "ECLIPJ2000"
+//FOR LOCAL EPHEMERIS
+#define J2000 "J2000"
 
 //////////////////////////////////////////
 //CONSTANTS
@@ -46,6 +53,56 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define YEAR (365.25*GSL_CONST_MKSA_DAY)
 #define DAY GSL_CONST_MKSA_DAY
 #define AU GSL_CONST_MKSA_ASTRONOMICAL_UNIT
+
+//////////////////////////////////////////
+//OBJECTS
+//////////////////////////////////////////
+#define NUMOBJS 10
+
+//THESE ARE THE LABELS FOR KERNEL de430
+static char* OBJS[]={
+  "10",/*SUN*/
+  "1",/*MERCURY*/
+  "2",/*VENUS*/
+  "399",/*EARTH*/
+  "301",/*MOON*/
+  "4",/*MARS*/
+  "5",/*JUPITER*/
+  "6",/*SATURN*/
+  "7",/*URANUS*/
+  "8"/*NEPTUNE*/
+};
+
+//SEE WIKIPEDIA
+static double MASSES[]={
+  1.9891E30/*SUN*/,
+  3.3022E23/*MERCURY*/,
+  4.8685E24/*VENUS*/,
+  5.9736E24/*EARTH*/,
+  7.349E22/*MOON*/,
+  6.4185E23/*MARS*/,
+  1.8986E27/*JUPITER*/,
+  5.6846E26/*SATURN*/,
+  8.6810E25/*URANUS*/,
+  1.0243E26/*NEPTUNE*/
+};
+
+/*
+  Source: documentation DE421
+  http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421_announcement.pdf
+ */
+static double GMASSES[]={
+  132712440040.944000/*SUN*/,
+  22032.090000/*MERCURY*/,
+  324858.592000/*VENUS*/,
+  398600.436233/*EARTH*/,
+  4902.800076/*MOON*/,
+  42828.375214/*MARS*/,
+  126712764.800000/*JUPITER*/,
+  37940585.200000/*SATURN*/,
+  5794548.600000/*URANUS*/,
+  6836535.000000/*NEPTUNE*/
+};
 
 //////////////////////////////////////////
 //GLOBAL VARIABLES
@@ -171,12 +228,12 @@ int bodyEphemerisApparent(ConstSpiceChar *body,
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   i=0;
   lt=0.0;ltold=1.0;
-  spkezr_c(EARTH_ID,t,"J2000","NONE","SOLAR SYSTEM BARYCENTER",
+  spkezr_c(EARTH_ID,t,"J2000","NONE",SSB,
 	   earthSSBJ2000,&ltmp);
   vadd_c(earthSSBJ2000,observerJ2000,observerSSBJ2000);
   while((fabs(lt-ltold)/lt)>=lttol && i<ncn){
     ltold=lt;
-    spkezr_c(body,t-lt,"J2000","NONE","SOLAR SYSTEM BARYCENTER",bodySSBJ2000,&ltmp);
+    spkezr_c(body,t-lt,"J2000","NONE",SSB,bodySSBJ2000,&ltmp);
     vsub_c(bodySSBJ2000,observerSSBJ2000,bodyTOPOJ2000);
     d=vnorm_c(bodyTOPOJ2000);
     lt=d/cspeed;

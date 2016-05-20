@@ -45,6 +45,14 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   SpiceDouble t,tjd,ltmp;
   str2et_c(date,&t);
+
+  //DEBUG
+  /*
+  SpiceDouble dt;
+  deltet_c(t,"et",&dt);
+  t-=dt;
+  //*/
+
   tjd=t2jd(t);
   printf("Julian Date = %.6lf\n",tjd);
 

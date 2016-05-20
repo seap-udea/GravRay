@@ -1,6 +1,12 @@
 include compiler
 
-clean:
+all:whattimeisit.exe whereami.exe whereisit.exe whereisinsky.exe wherewillitbe.exe
+
+cleanexe:
+	@echo "Cleaning executable..."
+	@rm -rf *.pyc *.out *.exe
+
+clean:cleanexe
 	@echo "Cleaning..."
 	@find . -name "*~" -exec rm -rf {} \;
 	@find . -name "#" -exec rm -rf {} \;
