@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from gravray import *
-print argv
 qcalc=1
 qcomp=1
 
@@ -42,9 +41,9 @@ tini=state[0]
 if qcalc:
     #NUMERICAL INTEGRATION
     print "Integrating orbit..."
-    out=System("rm wherewillitbe2.exe ; make wherewillitbe2.exe")
+    out=System("rm wherewillitbe.exe ; make wherewillitbe.exe")
     print out
-    cmd="./wherewillitbe2.exe %s %f %d 2> /dev/null"%(inistate,T,nsteps)
+    cmd="./wherewillitbe.exe %s %f %d 2> /dev/null"%(inistate,T,nsteps)
     print "Running:",cmd
     out=System(cmd)
 

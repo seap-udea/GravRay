@@ -75,7 +75,7 @@ int main(int argc,char* argv[])
 
   double h=direction*tdyn/1000.0,h_used,h_next,h_adjust,deltat;
   double t_start=tini/UT;
-  double t_step=duration/npoints;
+  double t_step=duration/(npoints-1);
   double tend=t_start+duration;
   double t_stop=tend;
   double t=t_start;
