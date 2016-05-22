@@ -1,5 +1,21 @@
 //WHICH OBJECTS ARE ACTIVE
 
+/*
+//ALL PLANETS 
+static int ACTIVE[]={
+  1,//SUN
+  1,//MERCURY
+  1,//VENUS
+  1,//EARTH
+  1,//MOON
+  1,//MARS
+  1,//JUPITER
+  1,//SATURN
+  1,//URANUS
+  1,//NEPTUNE
+};
+//*/
+
 //*
 //ALL PLANETS NO MOON
 static int ACTIVE[]={

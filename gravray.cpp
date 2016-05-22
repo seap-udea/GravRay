@@ -547,7 +547,7 @@ double energy2B(double X[])
   return E;
 }
 
-#include <objects.cpp>
+#include <objects.hpp>
 
 int EoM(double t,double y[],double dydt[],void *params) 
 { 

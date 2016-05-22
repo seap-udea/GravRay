@@ -1,6 +1,8 @@
 include compiler
 
-all:whattimeisit.exe whereami.exe whereisit.exe whereisinsky.exe wherewillitbe.exe
+PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenario.exe
+
+all:$(PROGRAMS)
 
 cleanexe:
 	@echo "Cleaning executable..."
@@ -32,3 +34,15 @@ commit:
 pull:
 	@-git reset --hard HEAD
 	@-git pull
+
+edit:
+	emacs -nw *.cpp tests/*.sh tests/*.py makefile *.py README.md
+
+unpack:
+	@echo "Unpacking large kernels..."
+	@cat util/kernels/de430bsp/* > util/kernels/de430.bsp
+	@echo "Done."
+
+#Programs that depend on objects.hpp
+scenario.exe wherewillitbe.exe:objects.hpp
+

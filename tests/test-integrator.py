@@ -11,34 +11,35 @@ except:
 
 #INITIAL DATE
 inidate="07/19/2015 00:00:00.000 UTC"
-T=-1.0 #Years
+T=+1.0 #Years
 nsteps=10 #Number of steps
 dt=(T/nsteps)*YEAR #Output step size
 
-#INITIAL POSITION
-print "Computing initial position..."
-
-#"""
-#To use the moon inactivate the MOON in the objects.cpp file
-out=System("rm whereisit.exe ; make whereisit.exe")
-print out
-cmd="./whereisit.exe MOON '%s' 2> /dev/null"%inidate
-#"""
-
-"""
-#To run an asteroid uncomment the moon
-out=System("rm whereisthisasteroid.exe ; make whereisthisasteroid.exe")
-print out
-cmd="./whereisthisasteroid.exe EROS '%s' 2> /dev/null"%inidate
-#"""
-
-print "Running:",cmd
-inistate=System(cmd);
-
-state=out2state(inistate)
-tini=state[0]
 
 if qcalc:
+    #INITIAL POSITION
+    print "Computing initial position..."
+
+    #"""
+    #To use the moon inactivate the MOON in the objects.cpp file
+    out=System("rm whereisit.exe ; make whereisit.exe")
+    print out
+    cmd="./whereisit.exe MOON '%s' 2> /dev/null"%inidate
+    #"""
+
+    """
+    #To run an asteroid uncomment the moon
+    out=System("rm whereisthisasteroid.exe ; make whereisthisasteroid.exe")
+    print out
+    cmd="./whereisthisasteroid.exe EROS '%s' 2> /dev/null"%inidate
+    #"""
+
+    print "Running:",cmd
+    inistate=System(cmd);
+
+    state=out2state(inistate)
+    tini=state[0]
+
     #NUMERICAL INTEGRATION
     print "Integrating orbit..."
     out=System("rm wherewillitbe.exe ; make wherewillitbe.exe")
@@ -54,11 +55,10 @@ if qcomp:
     dstate=[]
     for i in xrange(data.shape[0]):
         print "i = ",i
-        tref=data[i,0]*YEAR
-        state_integ=data[i,1:7]*STATECONV
+        t=data[i,0]
+        state_integ=data[i,1:7]
 
         #INSTANTANEOUS TIME
-        t=tini+tref
         print "\t","Computing position at ET = %.17e"%t
 
         #COMPUTE SPICE EPHEMERIS
