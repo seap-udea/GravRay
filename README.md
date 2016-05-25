@@ -114,9 +114,13 @@ example tests you may run:
 
 - Get the ephemeris time of a given date:
 
+```
     ./whattimeisit.exe <date> <output_system>
+```
 
+```
     ./whattimeisit.exe "07/19/2015 00:00:00.000 UTC-5" ET
+```
 
 - Calculate the position of an observer on the Earth:
 2C
