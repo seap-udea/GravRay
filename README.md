@@ -24,12 +24,16 @@ Get the package
 
 To get the package use:
 
+```
    git clone http://github.com/seap-udea/GravRay.git
+```
 
 If you are a contributer and your key is already registered in Git Hub
 use:
 
+```
    git clone git@github.com:seap-udea/GravRay.git
+```
   
 The package uses ~300 Mb of disk space (represented mainly by SPICE
 Kernels used to calculate accurately the position of Solar System
@@ -40,21 +44,25 @@ Basic configuration
 
 Once cloned you need to perform the following basic actions (just once):
 
-1) Set your system architecture.  Edit "compiler.in" file and
+1. Set your system architecture.  Edit "compiler.in" file and
    uncomment your architecture (32 or 64 bits).  GravRay used
    precompiled versions of two of its main dependencies, namely CSPICE
    and GSL.
 
-2) "Unpack" large kernels.  Large CSPICE kernels (those having more
+2. "Unpack" large kernels.  Large CSPICE kernels (those having more
    than 100 Mb) need to be splitted for distribution with git.  Before
    using the package "unsplit" them using:
 
+```
        make unpack
+```
 
-3) Compile the codes.  For this you will need "g++" installed in the
+3. Compile the codes.  For this you will need "g++" installed in the
    machine.
    
+```
        make
+```
 
 If everything compiles as expected you're ready to use the package.
 
