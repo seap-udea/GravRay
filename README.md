@@ -310,3 +310,16 @@ You can test the accuracy of the programs with different methods.
    *dray-vel-direction.png* showing the relative error of position and
    velocities calculated in one direction then in the other.
 
+Launching an asteroid
+---------------------
+
+Let's check that the package work with a particular impact that has
+already happen on the Earth.  We will work with the Chelyabinsk impactor.
+
+1. Determine the ecliptic coordinates of the impactor site.
+
+```
+    ./whereami.exe 54.456093 63.492323 8.234765e+04 17.664618 104.975030 2.045864e+01 "02/15/2013 3:20:34 UTC"
+```
+
+2. Get the initial coordinates of the impactor
