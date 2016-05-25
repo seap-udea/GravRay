@@ -15,9 +15,9 @@ Earth.  However it can be adapted to other general purposes.
 
 If you use or modify this package please cite:
 
-   Zuluaga, J.I. and Sucerquia, M., Towards a theoretical
-   determination of the geogpraphical probability distibution of
-   meteoroid impacts, Space Science Journal, in press (2016).
+>   Zuluaga, J.I. and Sucerquia, M., Towards a theoretical
+>   determination of the geogpraphical probability distibution of
+>   meteoroid impacts, Space Science Journal, in press (2016).
 
 Get the package
 ---------------
