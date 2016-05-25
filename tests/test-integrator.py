@@ -1,70 +1,94 @@
 #!/usr/bin/env python
 from gravray import *
+
+#DO YOU WANT TO INTEGRATE?
 qcalc=1
+
+#DO YOU WANT TO COMPARE INTEGRATION WITH SPICE
 qcomp=1
 
+#WHICH OBJECT
+objtype=argv[1]
+objname=argv[2]
+
+if objtype=="Planet":
+    posprogram="whereisit"
+else:
+    posprogram="whereisthisasteroid"
+
+#############################################################
+#GET INPUT
+#############################################################
 try:
-    qcalc=int(argv[1])
-    qcomp=int(argv[2])
+    qcalc=int(argv[3])
+    qcomp=int(argv[4])
 except:
     pass
 
+#############################################################
 #INITIAL DATE
+#############################################################
 inidate="07/19/2015 00:00:00.000 UTC"
+
+#############################################################
+#INTEGRATION PARAMETERS
+#############################################################
 T=+1.0 #Years
 nsteps=10 #Number of steps
 dt=(T/nsteps)*YEAR #Output step size
 
 
 if qcalc:
+    #############################################################
     #INITIAL POSITION
+    #############################################################
     print "Computing initial position..."
 
-    #"""
     #To use the moon inactivate the MOON in the objects.cpp file
-    out=System("rm whereisit.exe ; make whereisit.exe")
-    print out
-    cmd="./whereisit.exe MOON '%s' 2> /dev/null"%inidate
-    #"""
-
-    """
-    #To run an asteroid uncomment the moon
-    out=System("rm whereisthisasteroid.exe ; make whereisthisasteroid.exe")
-    print out
-    cmd="./whereisthisasteroid.exe EROS '%s' 2> /dev/null"%inidate
-    #"""
-
+    out=System("make %s.exe"%(posprogram))
+    print "Output:\n",out
+    cmd="./%s.exe %s '%s' > /dev/null"%(posprogram,objname,inidate)
     print "Running:",cmd
-    inistate=System(cmd);
+    out=System(cmd);
+    #print "Output:\n",out
+    dst=out2dict(out)
 
-    state=out2state(inistate)
-    tini=state[0]
+    state=dst["STATE(6)"]
+    tini=dst["TDB"]
 
+    #############################################################
     #NUMERICAL INTEGRATION
+    #############################################################
     print "Integrating orbit..."
-    out=System("rm wherewillitbe.exe ; make wherewillitbe.exe")
-    print out
-    cmd="./wherewillitbe.exe %s %f %d 2> /dev/null"%(inistate,T,nsteps)
+    out=System("make wherewillitbe.exe")
+    print "Output:\n",out
+    cmd="./wherewillitbe.exe %.9e %s %.17e %d 2> /dev/null"%(tini,vec2str(state),T,nsteps)
     print "Running:",cmd
     out=System(cmd)
+    print "Output:\n",out
 
 if qcomp:
-    #INTERMEDIATE POSITIONS
+    #############################################################
+    #SPICE POSITIONS
+    #############################################################
     print "Checking integration..."
     data=np.loadtxt("ray.dat")
     dstate=[]
     for i in xrange(data.shape[0]):
+
         print "i = ",i
         t=data[i,0]
         state_integ=data[i,1:7]
 
+        #========================================
         #INSTANTANEOUS TIME
+        #========================================
         print "\t","Computing position at ET = %.17e"%t
 
         #COMPUTE SPICE EPHEMERIS
-        out=System("./whereisit.exe MOON ET %.9f 2> /dev/null"%t);
-        # out=System("./whereisthisasteroid.exe EROS ET %.9f 2> /dev/null"%t);
-        state_spice=out2state(out,ini=1)
+        out=System("./%s.exe %s ET %.9f > /dev/null"%(posprogram,objname,t));
+        dst=out2dict(out)
+        state_spice=dst["STATE(6)"]
         print "\t","SPICE:",vec2str(state_spice)
 
         #INTEGRATED VALUES

@@ -19,17 +19,20 @@ int main(int argc,char* argv[])
 
     Arguments are: 
 
-      date, object
+      object, (ET), date
 
     Date format:
 
        MM/DD/CCYY HH:MM:SS.dcm UTC-L
 
+       If ET is used the date should be provided as ephemeris time.
+
     Example:
 
-       ./whereisit MARS "07/19/2015 00:00:00.000 UTC-5"
-       ./whereisit MARS_BARYCENTER "07/19/2015 00:00:00.000 UTC-5"
-       ./whereisit 4 "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisit.exe MARS "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisit.exe MARS_BARYCENTER "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisit.exe 4 "07/19/2015 00:00:00.000 UTC-5"
+       ./whereisit.exe MARS_BARYCENTER ET 4.905360682e+08
 
   */
   SpiceChar date[100],obj[100];
@@ -38,31 +41,41 @@ int main(int argc,char* argv[])
   strcpy(obj,argv[1]);
   strcpy(date,argv[2]);
   if(strcmp(date,"ET")==0){
-    t=atof(argv[3]);
-  }else{
     ////////////////////////////////////////////////////
     //GET EPHEMERIS TIME
     ////////////////////////////////////////////////////
+    t=atof(argv[3]);
+  }else{
+    ////////////////////////////////////////////////////
+    //GET DATE
+    ////////////////////////////////////////////////////
     str2et_c(date,&t);
     deltet_c(t,"et",&dt);
-    fprintf(stderr,"DT = %.2lf\n",dt);
-    fprintf(stderr,"TT = %.9e\n",t);
+    fprintf(stdout,"DT = %.2lf\n",dt);
+    fprintf(stdout,"TT = %.9e\n",t);
     t-=dt;
   }
   //CORRECT TIME FOR DELTAT.  NOW T IS TDB
-  fprintf(stderr,"TDB = ");
-  fprintf(stdout,"%.9e ",t);
+  fprintf(stdout,"TDB = %.9e\n",t);
 
   //JULIAN DATE TO VERIFY
   tjd=t2jd(t);
-  fprintf(stderr,"\nJulian Date = %.6lf\n",tjd);
+  fprintf(stdout,"Julian Date = %.6lf\n",tjd);
 
   ////////////////////////////////////////////////////
   //GET POSITION AT t
   ////////////////////////////////////////////////////
   SpiceDouble objectSSBJ2000[6];
-  spkezr_c(obj,t,ABSJ2000,"NONE",SSB,objectSSBJ2000,&ltmp);
-  fprintf(stderr,"State vector of %s: ",obj);
-  fprintf(stdout,"%s",vec2strn(objectSSBJ2000,6,"%.17e "));
-  fprintf(stderr,"\nLT = %.17e\n\n",ltmp);
+  spkezr_c(obj,t,ECJ2000,"NONE",SSB,objectSSBJ2000,&ltmp);
+  fprintf(stdout,"State vector of %s: %s\n",obj,vec2strn(objectSSBJ2000,6,"%.10e "));
+  fprintf(stdout,"LT = %.17e\n",ltmp);
+  
+  ////////////////////////////////////////////////////
+  //PLAIN OUTPUT
+  ////////////////////////////////////////////////////
+  fprintf(stdout,"--PLAIN--\n");
+  fprintf(stderr,"TDB,JD,DT,STATE(6),LT\n");
+  fprintf(stderr,"%.9e\n%.6lf\n%.2lf\n",t,tjd,dt);
+  fprintf(stderr,"%s\n",vec2strn(objectSSBJ2000,6,"%+.17e "));
+  fprintf(stderr,"%.6e\n",ltmp);
 }

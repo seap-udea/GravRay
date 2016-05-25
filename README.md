@@ -7,11 +7,11 @@ Presentation
 ------------
 
 *GravRay* is a package that implements the "Gravitational Raytracing"
-method, originally devised by Jorge I. Zuluaga of the Solar, Earth and
-Planetary Physics Group of the University of Antioquia.  The method as
-originally intended for studying the spatal distribution of meteoroid
-and asteroid "impacts" on the surface of the Earth.  However the
-method can be adapted to other general purposes.
+method. The method was originally devised by Jorge I. Zuluaga of the
+Solar, Earth and Planetary Physics Group of the University of
+Antioquia.  The method was intended for studying the spatal
+distribution of meteoroid and asteroid "impacts" on the surface of the
+Earth.  However it can be adapted to other general purposes.
 
 If you use or modify this package please cite:
 
@@ -106,13 +106,20 @@ example tests you may run:
 
 - Get the ephemeris time of a given date:
 
+    ./whattimeisit.exe <date> <output_system>
+
     ./whattimeisit.exe "07/19/2015 00:00:00.000 UTC-5" ET
 
 - Calculate the position of an observer on the Earth:
+2C
+
+    ./whereami.exe <lat(deg)> <lon(deg)> <alt(m)> <elev(deg)> <azim(deg)> <vel(km/s)> <date>
 
     ./whereami.exe 6.2 -75.34 1450.0 45.0 0.0 1.0 "07/19/2015 00:00:00.000 UTC-5"
 
 - Calculate the position of a major solar system object:
+
+    ./whereisit.exe <object> [<date> | ET <time>]
 
     ./whereisit.exe MARS_BARYCENTER "07/19/2015 00:00:00.000 UTC-5"
 
@@ -121,6 +128,8 @@ example tests you may run:
     ./whereisit.exe MARS_BARYCENTER ET 4.905360682e+08
 
 - Calculate the position of an Asteroid:
+
+    ./whereisit.exe <asteroid> [<date> | ET <time>]
 
     ./whereisthisasteroid.exe EROS "07/19/2015 00:00:00.000 UTC-5"
 
@@ -131,10 +140,14 @@ example tests you may run:
 - Calculate position in the sky of a major solar system object as seen
   from a given place on the Earth:
 
+    ./whereisinsky.exe <object> <lat(deg)> <lon(deg)> <alt(m)> <date>
+
     ./whereisinsky.exe MARS_BARYCENTER 6.2 -75.34 1450.0 "07/19/2015 00:00:00.000 UTC-5"
 
 - Propagate the orbit of a body in a given gravitational scenario
   defined by the *objects.hpp* file:
+
+    ./wherewillitbe.exe <time(ET seconds> <x> <y> <z> <vx> <vy> <vz> <time(years)> <timesteps>
 
     ./wherewillitbe.exe 4.905360000e+08 -7.47594519221052825e+07 1.52138798910335392e+08 4.49404456025594100e+06 -2.69676500003677440e+01 -1.39288966833683254e+01 -5.76432883102505045e+00 +20.0 300
 
@@ -145,6 +158,8 @@ example tests you may run:
 
 - Calculate the position and velocity of *objects.hpp* at the specific
   times defined in *ray.dat*:
+
+    ./scenario.exe <file>
 
     ./scenario.exe ray.dat
 
@@ -168,20 +183,76 @@ Thus you may run a program in two ways:
 
    ./whattimeisit.exe "07/19/2015 00:00:00.000 UTC-5" TDB 2> /dev/null
 
-   TT = 4.905360682e+08
-   Julian Date = 2457222.500789
-   Custom system (TDB) = 4.90536068183625817e+08
+   Input date: 07/19/2015 00:00:00.000 UTC
+   ET = 4.905360682e+08
+   Julian Date at ET = 2457222.500789
+   TDB = 4.905360000e+08
+   Julian Date at TDB = 2457222.500000
+   Custom system (TAI) = 4.90536036000000000e+08
 
 2) If instead you want only the plain information:
 
    ./whattimeisit.exe "07/19/2015 00:00:00.000 UTC-5" TDB > /dev/null
 
-   ET,JD,TDB
+   ET,JD,DT,TDB,JDB,TAI
    4.905360682e+08
    2457222.500789
-   4.90536068183625817e+08
+   68.18
+   4.905360000e+08
+   2457222.500000
+   4.90536036000000000e+08
 
 You should notice that the plain information declares which
 information will be displayed below, in this case the time information
 returned by the program.
+
+Testing the accuracy
+--------------------
+
+You can test the accuracy of the programs with different methods.
+
+1) Comparing the results with NASA Horizons system.  For that purpose
+   you may just run the "tests/test-positions.sh" script.
+   
+       bash tests/test-positions.sh
+
+   This will create an output file "scratch/test-positions.log" with
+   the position of the major planets at a given date.  Go to NASA
+   Horizon system and compare your results with this system.
+
+2) Integrating the orbit of an already existing object and then
+   comparing the results with its expected position according to
+   SPICE.  You can run this test with:
+
+       bash tests/test-integrator.sh Planet MOON
+
+   or:
+
+       bash tests/test-integrator.sh Asteroid EROS
+
+   This script will integrate the orbit of the given object using as
+   force field the list of objects in *objects.hpp*.  It is important
+   that before running this script in the case of major planets, you
+   disable in *objects.hpp* the respective planet. Not modification
+   is needede when is the case of an Asteroid.
+
+   The test will produce the following files: dray.dat (difference
+   between the integrated and the SPICE trajectory),
+   dray-pos(vel).png, dray-dist-pos(vel).png (different among the
+   integrated position and velocities and the SPICE ones), and
+   dray3d.png, which is the trajectory of the ray in 3D.
+
+3) Integrating forward then backward and orbit and calculate the
+   difference. This is a classical test of an integrator.  You may run
+   this test similarly as the previous tests:
+
+       bash tests/test-direction.sh Planet MOON
+
+   or:
+   
+       bash tests/test-direction.sh Asteroid EROS
+
+   The script will generate two plots: *dray-pos-direction.png* and
+   *dray-vel-direction.png* showing the relative error of position and
+   velocities calculated in one direction then in the other.
 

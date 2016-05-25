@@ -45,17 +45,17 @@ int main(int argc,char* argv[])
     ////////////////////////////////////////////////////
     str2et_c(date,&t);
     deltet_c(t,"et",&dt);
-    fprintf(stderr,"DT = %.2lf\n",dt);
-    fprintf(stderr,"TT = %.9e\n",t);
+    fprintf(stdout,"DT = %.2lf\n",dt);
+    fprintf(stdout,"TT = %.9e\n",t);
     t-=dt;
   }
   //CORRECT TIME FOR DELTAT.  NOW T IS TDB
-  fprintf(stderr,"TDB = ");
+  fprintf(stdout,"TDB = ");
   fprintf(stdout,"%.9e ",t);
 
   //JULIAN DATE TO VERIFY
   tjd=t2jd(t);
-  fprintf(stderr,"\nJulian Date = %.6lf\n",tjd);
+  fprintf(stdout,"\nJulian Date = %.6lf\n",tjd);
 
   ////////////////////////////////////////////////////
   //GET POSITION AT t
@@ -71,10 +71,21 @@ int main(int argc,char* argv[])
   mxv_c(M_405_ABS,objectSSBJ2000,objectSSBEJ2000);
   mxv_c(M_405_ABS,objectSSBJ2000+3,objectSSBEJ2000+3);
 
-  fprintf(stderr,"State vector of %s: ",obj);
-  fprintf(stdout,"%s",vec2strn(objectSSBEJ2000,6,"%.17e "));
-  fprintf(stderr,"\nLT = %.17e\n",ltmp);
+  fprintf(stdout,"State vector of %s: ",obj);
+  fprintf(stdout,"%s\n",vec2strn(objectSSBEJ2000,6,"%.17e "));
+  fprintf(stdout,"LT = %.17e\n",ltmp);
+
+  ////////////////////////////////////////////////////
+  //PLAIN OUTPUT
+  ////////////////////////////////////////////////////
+  fprintf(stdout,"--PLAIN--\n");
+  fprintf(stderr,"TDB,JD,DT,STATE(6),LT\n");
+  fprintf(stderr,"%.9e\n%.6lf\n%.2lf\n",t,tjd,dt);
+  fprintf(stderr,"%s\n",vec2strn(objectSSBJ2000,6,"%+.17e "));
+  fprintf(stderr,"%.6e\n",ltmp);
+  return 0;
 }
+
 
 /*
 

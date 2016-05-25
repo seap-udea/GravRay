@@ -55,12 +55,9 @@ int main(int argc,char* argv[])
   //GET OBSERVER POSITION IN TIME
   ////////////////////////////////////////////////////
   SpiceDouble earthSSBJ2000[6];
-  SpiceDouble M_J2000_Epoch[3][3]={{1,0,0},{0,1,0},{0,0,1}};
   SpiceDouble M_ITRF93_J2000[3][3];
-  SpiceDouble observerITRF93[6],observerJ2000[6],observerSSBJ2000[6],observerSSBEpoch[6];
-
-  pxform_c("J2000","EARTHTRUEEPOCH",t,M_J2000_Epoch);
-  pxform_c("ITRF93","J2000",t,M_ITRF93_J2000);
+  SpiceDouble observerITRF93[6],observerJ2000[6],observerSSBJ2000[6];
+  pxform_c("ITRF93",ECJ2000,t,M_ITRF93_J2000);
 
   //OBSERVER POSITION W.R.T. EARTH CENTER IN ITRF93
   georec_c(D2R(lon),D2R(lat),alt/1000.0,REARTH,FEARTH,observerITRF93);
@@ -99,12 +96,11 @@ int main(int argc,char* argv[])
   //OBSERVER POSITION AND VELOCITY W.R.T. EARTH CENTER IN J2000 RF
   mxv_c(M_ITRF93_J2000,observerITRF93,observerJ2000);
   fprintf(stdout,"Position observer w.r.t. J2000: %s\n",vec2str(observerJ2000,"%.17e"));
-
   mxv_c(M_ITRF93_J2000,observerITRF93+3,observerJ2000+3);
   fprintf(stdout,"\tVelocity observer w.r.t. J2000: %s\n",vec2str(observerJ2000+3,"%.17e"));
 
   //EARTH POSITION W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
-  spkezr_c(EARTH_ID,t,"J2000","NONE","SOLAR SYSTEM BARYCENTER",earthSSBJ2000,&ltmp);
+  spkezr_c(EARTH_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",earthSSBJ2000,&ltmp);
   fprintf(stdout,"Position earth w.r.t. SSB J2000: %s\n",vec2str(earthSSBJ2000,"%.17e"));
   fprintf(stdout,"\tVelocity earth w.r.t. SSB J2000: %s\n",vec2str(earthSSBJ2000+3,"%.17e"));
 
@@ -114,17 +110,13 @@ int main(int argc,char* argv[])
   vadd_c(earthSSBJ2000+3,observerJ2000+3,observerSSBJ2000+3);
   fprintf(stdout,"\tVelocity observer w.r.t. SSB J2000: %s\n",vec2str(observerSSBJ2000+3,"%.17e"));
 
-  //OBSERVER POSITION W.R.T. SOLAR SYSTEM BARYCENTER IN EPOCH RF
-  mxv_c(M_J2000_Epoch,observerSSBJ2000,observerSSBEpoch);
-  fprintf(stdout,"Position observer w.r.t. SSB Epoch: %s\n",vec2str(observerSSBEpoch,"%.17e"));
-  mxv_c(M_J2000_Epoch,observerSSBJ2000+3,observerSSBEpoch+3);
-  fprintf(stdout,"\tVelocity observer w.r.t. SSB Epoch: %s\n",vec2str(observerSSBEpoch+3,"%.17e"));
-
   ////////////////////////////////////////////////////
   //PLAIN INFORMATION
   ////////////////////////////////////////////////////
-  fprintf(stderr,"TDB,JD,DT,ITRF93(6),\n");
+  fprintf(stdout,"--PLAIN--\n");
+  fprintf(stderr,"TDB,JD,DT,ITRF93(6),ECJ2000(6)\n");
   fprintf(stderr,"%.9e\n%.6lf\n%.2lf\n",t,tjd,dt);
-  fprintf(stderr,"%s\n",vec2strn(observerITRF93,6,"%.17e "));
+  fprintf(stderr,"%s\n",vec2strn(observerITRF93,6,"%+.17e "));
+  fprintf(stderr,"%s\n",vec2strn(observerSSBJ2000,6,"%+.17e "));
   return 0;
 }

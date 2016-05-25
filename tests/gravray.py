@@ -64,4 +64,17 @@ def getScenario(sfile):
 
     return obj
 
+def out2dict(output):
+    parts=output.split("\n")
+    comps=parts[0].split(",")
+    i=0
+    output=dict()
+    for part in parts[1:]:
+        if '(' in comps[i]:
+            values=part.split(" ")
+            output[comps[i]]=np.array([float(value) for value in values[:-1]])
+        else:
+            output[comps[i]]=float(part)
+        i+=1
+    return output
     

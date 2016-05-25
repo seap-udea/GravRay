@@ -16,7 +16,7 @@ echo "Testing position of $objects..."
     for object in $objects
     do
 	echo "POSITION OF $object"
-	./whereisit.exe "$object" "$date"
+	./whereisit.exe "$object" "$date" 2> /dev/null
 	echo
     done
 } > scratch/$filename.log

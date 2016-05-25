@@ -42,9 +42,9 @@ int main(int argc,char* argv[])
   SpiceDouble vz=atof(argv[7]);
   SpiceDouble duration=atof(argv[8])*365.25*GSL_CONST_MKSA_DAY;
   SpiceInt npoints=atoi(argv[9]);
-  fprintf(stderr,"Integrating during %.17e seconds\n",duration);
+  fprintf(stdout,"Integrating during %.17e seconds\n",duration);
   double direction=duration/abs(duration);
-  fprintf(stderr,"Direction:%+.0f\n",direction);
+  fprintf(stdout,"Direction:%+.0f\n",direction);
 
   ////////////////////////////////////////////////////
   //PROCEED WITH THE INTEGRATION
@@ -57,18 +57,18 @@ int main(int argc,char* argv[])
   GGLOBAL=1.0;
   UT=sqrt(UL*UL*UL/(GCONST*UM));
   UV=UL/UT;
-  fprintf(stderr,"Units: UL = %.17e, UT = %.17e, UM = %.17e, UV = %.17e\n",UL,UT,UM,UV);
+  fprintf(stdout,"Units: UL = %.17e, UT = %.17e, UM = %.17e, UV = %.17e\n",UL,UT,UM,UV);
 
   //INITIAL CONDITIONS
   double X0[6],X[6],Xu[6],E[8],a;
   vpack_c(x*1E3/UL,y*1E3/UL,z*1E3/UL,X0);
   vpack_c(vx*1E3/UV,vy*1E3/UV,vz*1E3/UV,X0+3);
   a=vnorm_c(X0);
-  fprintf(stderr,"Initial conditions: %s\n",vec2strn(X0,6));
+  fprintf(stdout,"Initial conditions: %s\n",vec2strn(X0,6));
 
   //DYNAMICAL TIMESCALE
   double tdyn=2*M_PI*sqrt(a*a*a/(GGLOBAL*MSUN/UM));
-  fprintf(stderr,"Dynamical time =  %e\n",tdyn);
+  fprintf(stdout,"Dynamical time =  %e\n",tdyn);
 
   //TIME LIMITS
   duration/=UT;
@@ -80,12 +80,12 @@ int main(int argc,char* argv[])
   double t_stop=tend;
   double t=t_start;
 
-  fprintf(stderr,"tini = %lf\n",tini/UT);
-  fprintf(stderr,"t_start = %lf\n",t_start);
-  fprintf(stderr,"h = %e\n",h);
-  fprintf(stderr,"t_step = %lf\n",t_step);
-  fprintf(stderr,"t_stop = %lf\n",t_stop);
-  fprintf(stderr,"tend = %lf\n",tend);
+  fprintf(stdout,"tini = %lf\n",tini/UT);
+  fprintf(stdout,"t_start = %lf\n",t_start);
+  fprintf(stdout,"h = %e\n",h);
+  fprintf(stdout,"t_step = %lf\n",t_step);
+  fprintf(stdout,"t_stop = %lf\n",t_stop);
+  fprintf(stdout,"tend = %lf\n",tend);
   if(VERBOSE) getc(stdin);
 
   //INTEGRATION
@@ -104,7 +104,7 @@ int main(int argc,char* argv[])
   for(i=0;i<npoints;i++) {
 
     deltat=(t-tini/UT)*UT/YEAR;
-    fprintf(stderr,"Step %d: t-t_start = %e yrs (last h = %e days)\n",i,deltat,h_used*UT/DAY);
+    fprintf(stdout,"Step %d: t-t_start = %e yrs (last h = %e days)\n",i,deltat,h_used*UT/DAY);
     if(VERBOSE) getc(stdin);
 
     //CONVERTING TO CLASSICAL ELEMENTS IN KM AND KM/S
@@ -118,7 +118,7 @@ int main(int argc,char* argv[])
     if(direction*((t_start+t_step)-tend)>0) t_step=(tend-t_start);
     t_stop = t_start + t_step;
 
-    fprintf(stderr,"\tt_start = %lf, t_step = %lf, t_stop = %lf\n",t_start,t_step,t_stop);
+    fprintf(stdout,"\tt_start = %lf, t_step = %lf, t_stop = %lf\n",t_start,t_step,t_stop);
     if(VERBOSE) getc(stdin);
 
     h_used = h;
@@ -126,7 +126,7 @@ int main(int argc,char* argv[])
       while(1){
 	status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_used,&h_next,1.0,TOLERANCE,EXTMET,params);
 	if(VERBOSE){
-	  fprintf(stderr,"\th_used = %lf, h_next = %lf...",h_used,h_next);
+	  fprintf(stdout,"\th_used = %lf, h_next = %lf...",h_used,h_next);
 	  getc(stdin);
 	}
 	if(status) h_used/=4.0;
@@ -140,18 +140,22 @@ int main(int argc,char* argv[])
 
     if(direction*(t-t_stop)>0){
       h_adjust=(t_stop-t);
-      fprintf(stderr,"\tAdjusting fom t=%lf to t_stop=%lf using h = %e\n",t,t_stop,h_adjust);
+      fprintf(stdout,"\tAdjusting fom t=%lf to t_stop=%lf using h = %e\n",t,t_stop,h_adjust);
       status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_adjust,&h_next,1.0,TOLERANCE,EXTMET,params);
       copyVec(X0,X,6);
       t=t_stop;
     }
 
-    fprintf(stderr,"\tt = %lf, t_stop = %lf\n",t,t_stop);
+    fprintf(stdout,"\tt = %lf, t_stop = %lf\n",t,t_stop);
     t_start = t;
     if(direction*(t_start-tend)>0) break;
     if(VERBOSE) getc(stdin);
   }
   fclose(f);
 
+  ////////////////////////////////////////////////////
+  //PLAIN OUTPUT
+  ////////////////////////////////////////////////////
+  fprintf(stdout,"--PLAIN--\n");
   return 0;
 }

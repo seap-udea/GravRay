@@ -40,7 +40,7 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define SSB "SOLAR SYSTEM BARYCENTER"
 
 //FOR ABSOLUTE EPHEMERIS
-#define ABSJ2000 "ECLIPJ2000"
+#define ECJ2000 "ECLIPJ2000"
 //FOR LOCAL EPHEMERIS
 #define J2000 "J2000"
 
@@ -565,7 +565,7 @@ int EoM(double t,double y[],double dydt[],void *params)
 
   for(i=NUMOBJS;i-->0;){
     if(!ACTIVE[i]) continue;
-    spkezr_c(OBJS[i],t*UT,ABSJ2000,"NONE",SSB,object,&tmp);
+    spkezr_c(OBJS[i],t*UT,ECJ2000,"NONE",SSB,object,&tmp);
     vscl_c(1E3/UL,object,object);
     sumVec(R,1.0,y,-1.0,object,3);
     Rmag=vnorm_c(R);
