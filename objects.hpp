@@ -1,6 +1,6 @@
 //WHICH OBJECTS ARE ACTIVE
 
-/*
+//*
 //ALL PLANETS 
 static int ACTIVE[]={
   1,//SUN
@@ -16,7 +16,7 @@ static int ACTIVE[]={
 };
 //*/
 
-//*
+/*
 //ALL PLANETS NO MOON
 static int ACTIVE[]={
   1,//SUN

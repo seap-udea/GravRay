@@ -72,7 +72,7 @@ int main(int argc,char* argv[])
     fprintf(fs,"%-+20.9e",et);
     for(i=0;i<NUMOBJS;i++){
       if(!ACTIVE[i]) continue;
-      spkezr_c(OBJS[i],et,ABSJ2000,"NONE",SSB,object,&tmp);
+      spkezr_c(OBJS[i],et,ECJ2000,"NONE",SSB,object,&tmp);
       fprintf(fs,"%-7d%s",i,vec2strn(object,6,"%-+26.17e"));
     }
     fprintf(fs,"\n\n");

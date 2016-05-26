@@ -91,13 +91,14 @@ int main(int argc,char* argv[])
   //INTEGRATION
   int i,status;
   FILE *f=fopen("ray.dat","w");
-  fprintf(f,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
+  fprintf(f,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
 	  "#1:t",
 	  "2:x","3:y","4:z",
 	  "5:vx","6:vy","7:vz",
-	  "8:q","9:e","10:i",
-	  "11:W","12:w",
-	  "13:M","14:t0","15:mu");
+	  "8:r","9:v",
+	  "10:q","11:e","12:i",
+	  "13:W","14:w",
+	  "15:M","16:t0","17:mu");
   
   h_used=h;
 
@@ -110,10 +111,10 @@ int main(int argc,char* argv[])
     //CONVERTING TO CLASSICAL ELEMENTS IN KM AND KM/S
     vscl_c(UL/1E3,X0,Xu);vscl_c(UV/1E3,X0+3,Xu+3);
     oscelt_c(Xu,t*UT,GKMS*MSUN,E);
-    vscl_c(180/M_PI,E+2,E+2);
+    vsclg_c(180/M_PI,E+2,4,E+2);
 
     //STORING RESULTS
-    fprintf(f,"%-+26.17e%s%s\n",tini+deltat*YEAR,vec2strn(Xu,6,"%-+26.17e"),vec2strn(E,8,"%-+26.17e"));
+    fprintf(f,"%-+26.17e%s%-+26.17e%-+26.17e%s\n",tini+deltat*YEAR,vec2strn(Xu,6,"%-+26.17e"),vnorm_c(Xu),vnorm_c(Xu+3),vec2strn(E,8,"%-+26.17e"));
 
     if(direction*((t_start+t_step)-tend)>0) t_step=(tend-t_start);
     t_stop = t_start + t_step;

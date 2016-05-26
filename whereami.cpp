@@ -81,11 +81,15 @@ int main(int argc,char* argv[])
   mxv_c(hi,vrot,vrotitrf93);
   fprintf(stdout,"\tVelocity of rotation w.r.t. ITRF93: %s\n",vec2str(vrotitrf93,"%.17e"));
   
-  //VELOCITY OF OBSERVER IN SPACE
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO LOCAL REFERENCE
   SpiceDouble vloc[3],vmotitrf93[3];
   SpiceDouble cA=cos(D2R(Az)),sA=sin(D2R(Az)),ch=cos(D2R(h)),sh=sin(D2R(h));
   vpack_c(v*ch*cA,-v*ch*sA,v*sh,vloc);
-  fprintf(stdout,"\tVelocity observer w.r.t. LOCAL: %s\n",vec2str(vloc,"%.17e"));
+  fprintf(stdout,"\tVelocity observer w.r.t. LOCAL (outwards): %s\n",vec2str(vloc,"%.17e"));
+  vscl_c(-1,vloc,vloc);
+  fprintf(stdout,"\tVelocity observer w.r.t. LOCAL (inwards): %s\n",vec2str(vloc,"%.17e"));
+
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO ITRF93
   mxv_c(hi,vloc,vmotitrf93);
   fprintf(stdout,"\tVelocity of motion w.r.t. ITRF93: %s\n",vec2str(vmotitrf93,"%.17e"));
 

@@ -180,7 +180,7 @@ example tests you may run:
   defined by the *objects.hpp* file:
 
 ```
-    ./wherewillitbe.exe <time(ET seconds> <x> <y> <z> <vx> <vy> <vz> <time(years)> <timesteps>
+    ./wherewillitbe.exe <time(ET seconds)> <x> <y> <z> <vx> <vy> <vz> <time(years)> <timesteps>
 ```
 
 ```
@@ -316,10 +316,15 @@ Launching an asteroid
 Let's check that the package work with a particular impact that has
 already happen on the Earth.  We will work with the Chelyabinsk impactor.
 
-1. Determine the ecliptic coordinates of the impactor site.
+1. Determine the ecliptic coordinates of the impactor site:
 
 ```
-    ./whereami.exe 54.456093 63.492323 8.234765e+04 17.664618 104.975030 2.045864e+01 "02/15/2013 3:20:34 UTC"
+./whereami.exe 54.456093 63.492323 8.234765e+04 17.664618 104.975030 2.045864e+01 "02/15/2013 3:20:34 UTC"
 ```
 
-2. Get the initial coordinates of the impactor
+2. Get the initial time and coordinates of the impactor and propagate
+   into the past:
+
+```
+./wherewillitbe.exe 4.141704340e+08 -1.23267387774847016e+08 +8.13479129058280289e+07 -3.46552733682456437e+03 -3.35917408466760889e+01 -1.54328967796338485e+01 -6.38414481564572078e+00 -2.0 100
+```
