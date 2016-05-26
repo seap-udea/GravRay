@@ -1,6 +1,6 @@
 include compiler
 
-PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenario.exe
+PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenario.exe launchmany.exe
 
 all:$(PROGRAMS)
 

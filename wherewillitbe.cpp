@@ -60,7 +60,7 @@ int main(int argc,char* argv[])
   vpack_c(x*1E3/UL,y*1E3/UL,z*1E3/UL,X0);
   vpack_c(vx*1E3/UV,vy*1E3/UV,vz*1E3/UV,X0+3);
   a=vnorm_c(X0);
-  fprintf(stdout,"Initial conditions: %s\n",vec2strn(X0,6));
+  fprintf(stdout,"Initial conditions: %s\n",vec2strn(X0,6,"%e "));
 
   //DYNAMICAL TIMESCALE
   double tdyn=2*M_PI*sqrt(a*a*a/(GGLOBAL*MSUN/UM));

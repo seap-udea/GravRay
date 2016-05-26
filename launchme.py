@@ -22,6 +22,7 @@ out=System("./whereami.exe %.17e %.17e %.17e %.17e %.17e %.17e '%s' > /tmp/out.l
             elev,azim,vimp,
             date))
 props=out2dict(out)
+print TAB,"TDB = %.9e"%props["TDB"]
 timeIt()
 
 #############################################################

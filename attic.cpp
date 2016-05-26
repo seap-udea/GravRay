@@ -278,3 +278,48 @@ int main(int argc,char* argv[])
 
   return 0;
 }
+
+
+
+  //INTEGRATION
+  int i,status;
+  h_used=h;
+
+  for(i=0;i<npoints;i++) {
+
+    delt=(t-tini/UT)*UT/YEAR;
+
+    if(direction*((t_start+t_step)-tend)>0) t_step=(tend-t_start);
+    t_stop = t_start + t_step;
+
+    h_used = h;
+    do {
+      while(1){
+	status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_used,&h_next,1.0,TOLERANCE,EXTMET,params);
+	if(status) h_used/=4.0;
+	else break;
+      }
+      t+=h_used;
+      copyVec(X0,X,6);
+      if(direction*(t+h_next-t_stop)>0) h_used=t+h_next-t_stop;
+      else h_used=h_next;
+    }while(direction*(t-(t_stop-direction*1.e-10))<0);
+
+    if(direction*(t-t_stop)>0){
+      h_adjust=(t_stop-t);
+      status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_adjust,&h_next,1.0,TOLERANCE,EXTMET,params);
+      copyVec(X0,X,6);
+      t=t_stop;
+    }
+    t_start = t;
+    if(direction*(t_start-tend)>0) break;
+
+    //CONVERTING TO CLASSICAL ELEMENTS IN KM AND KM/S
+    vscl_c(UL/1E3,X,Xu);vscl_c(UV/1E3,X+3,Xu+3);
+    oscelt_c(Xu,t*UT,GKMS*MSUN,E);
+    vsclg_c(180/M_PI,E+2,4,E+2);
+
+    //STORING RESULTS
+    fprintf(stdout,"%-+26.17e%s%-+26.17e%-+26.17e%s\n",tini+delt*YEAR,vec2strn(Xu,6,"%-+26.17e"),vnorm_c(Xu),vnorm_c(Xu+3),vec2strn(E,8,"%-+26.17e"));
+  }
+

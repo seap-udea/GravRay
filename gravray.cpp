@@ -111,6 +111,34 @@ static double GMASSES[]={
   6836535.000000/*NEPTUNE*/
 };
 
+struct ObserverStruct{
+
+  SpiceDouble t;
+  SpiceDouble lat,lon,alt;
+
+  //Conversion matrix from ITRF93 to ECLIPJ2000 at time t
+  SpiceDouble MEJ[3][3];
+
+  //hm convert from itrf93 to local and hi is the inverse
+  SpiceDouble hm[3][3];
+  SpiceDouble hi[3][3];
+
+  //Position with respect to ITRF93 (Earth) J2000
+  SpiceDouble posearth[6];
+
+  //Position with respect to ITRF93 (Earth) ECLIPJ2000
+  SpiceDouble posj2000[6];
+
+  //Position with respect to SSB in ECLIPJ2000
+  SpiceDouble posabs[6];
+
+  //Rotaion velocity of a still observer with respect to ITRF93
+  SpiceDouble v[3];
+
+  //Earth position at observer epoch
+  SpiceDouble earth[6];
+};
+
 //////////////////////////////////////////
 //GLOBAL VARIABLES
 //////////////////////////////////////////
@@ -582,3 +610,153 @@ int EoM(double t,double y[],double dydt[],void *params)
   return 0;
 }
 
+int initObserver(SpiceDouble t,struct ObserverStruct* observer)
+{
+  SpiceDouble rho,vcirc,vrot[3];
+  SpiceDouble lt;
+
+  observer->t=t;
+  
+  //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
+  pxform_c("ITRF93",ECJ2000,t,observer->MEJ);
+
+  //LOCATE OBSERVER 
+  georec_c(D2R(observer->lon),D2R(observer->lat),observer->alt/1000.0,
+	   REARTH,FEARTH,observer->posearth);
+  
+  //TOPOCENTRIC CONVERSION MATRICES
+  horgeo(observer->lat,observer->lon,observer->hm,observer->hi);
+
+  //VELOCITY OF OBSERVER DUE TO EARTH ROTATION
+  rho=sqrt(observer->posearth[0]*observer->posearth[0]+
+	   observer->posearth[1]*observer->posearth[1]);
+  vcirc=2*M_PI*rho/GSL_CONST_MKSA_DAY;
+  vpack_c(0.0,-vcirc,0.0,vrot);
+  mxv_c(observer->hi,vrot,observer->v);
+
+  //POSITION OF THE EARTH
+  spkezr_c(EARTH_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",
+	   observer->earth,&lt);
+
+  //POSITION WITH RESPECT TO SSB IN ECLIPJ2000
+  mxv_c(observer->MEJ,observer->posearth,observer->posj2000);
+  vadd_c(observer->earth,observer->posj2000,observer->posabs);
+
+}
+
+int observerVelocity(struct ObserverStruct *observer,
+		     SpiceDouble elev,SpiceDouble Az,SpiceDouble v)
+{
+  ////////////////////////////////////////////////////////////// 
+  //DETERMINE THE OBSERVER VELOCITY WITH RESPECT TO SSB
+  ////////////////////////////////////////////////////////////// 
+
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO LOCAL REFERENCE
+  SpiceDouble cA=cos(D2R(Az)),sA=sin(D2R(Az)),ch=cos(D2R(elev)),sh=sin(D2R(elev));
+  SpiceDouble vloc[3];
+  vpack_c(v*ch*cA,-v*ch*sA,v*sh,vloc);
+
+  //IMPACT VELOCITY IS THE INVERSE
+  vscl_c(-1,vloc,vloc);
+
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO ITRF93
+  SpiceDouble vmot[3];
+  mxv_c(observer->hi,vloc,vmot);
+
+  //TOTAL VELOCITY WITH RESPECT ITRF93
+  vadd_c(observer->v,vmot,observer->posearth+3);
+
+  //VELOCITY W.R.T. EARTH CENTER IN J2000 RF
+  mxv_c(observer->MEJ,observer->posearth+3,observer->posj2000+3);
+
+  //VELOCITY W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
+  vadd_c(observer->earth+3,observer->posj2000+3,observer->posabs+3);
+
+  return 0;
+}
+
+int rayPropagation(struct ObserverStruct *observer,
+		   SpiceDouble deltat,
+		   SpiceDouble elements[6])
+{
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  //INITIAL CONDITIONS FOR PROPAGATION
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  SpiceDouble x=observer->posabs[0];
+  SpiceDouble y=observer->posabs[1];
+  SpiceDouble z=observer->posabs[2];
+  SpiceDouble vx=observer->posabs[3];
+  SpiceDouble vy=observer->posabs[4];
+  SpiceDouble vz=observer->posabs[5];
+
+  deltat*=365.25*GSL_CONST_MKSA_DAY;
+  SpiceDouble tini=observer->t;
+  double direction=deltat/abs(deltat);
+  double params[]={6};
+
+  //UNITS
+  UL=GSL_CONST_MKSA_ASTRONOMICAL_UNIT;
+  UM=MSUN;
+  GGLOBAL=1.0;
+  UT=sqrt(UL*UL*UL/(GCONST*UM));
+  UV=UL/UT;
+
+  //INITIAL CONDITIONS
+  double X0[6],X[6],Xu[6],E[8],a;
+  vpack_c(x*1E3/UL,y*1E3/UL,z*1E3/UL,X0);
+  vpack_c(vx*1E3/UV,vy*1E3/UV,vz*1E3/UV,X0+3);
+
+  //DYNAMICAL TIMESCALE
+  a=vnorm_c(X0);
+  double tdyn=2*M_PI*sqrt(a*a*a/(GGLOBAL*MSUN/UM));
+
+  //TIME LIMITS
+  deltat/=UT;
+
+  //GUESS TIME-STEP AS 1/1000 OF THE CHARACTERISTIC DYNAMICAL TIME
+  double h=direction*tdyn/1000.0,h_used,h_next,h_adjust,delt;
+
+  double t_start=tini/UT;
+  double t_step=deltat;
+  double tend=t_start+deltat;
+  double t_stop=tend;
+
+  double t=t_start;
+
+  //INTEGRATION
+  int status;
+
+  t_stop = t_start + t_step;
+
+  h_used = h;
+  do {
+    //ADJUST H UNTIL OBTAINING A PROPER TIMESTEP
+    while(1){
+      status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_used,&h_next,1.0,TOLERANCE,EXTMET,params);
+      if(status) h_used/=4.0;
+      else break;
+    }
+    t+=h_used;
+    copyVec(X0,X,6);
+    if(direction*(t+h_next-t_stop)>0) h_used=t+h_next-t_stop;
+    else h_used=h_next;
+  }while(direction*(t-(t_stop-direction*1.e-10))<0);
+
+  //PREVIOUS PROCEDURE WILL LEAVE YOU STILL APART FROM FINAL TIME, SO ADJUST
+  if(direction*(t-t_stop)>0){
+    h_adjust=(t_stop-t);
+    status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_adjust,&h_next,1.0,TOLERANCE,EXTMET,params);
+    copyVec(X0,X,6);
+    t=t_stop;
+  }
+
+  //CONVERTING TO CLASSICAL ELEMENTS IN KM AND KM/S
+  vscl_c(UL/1E3,X0,Xu);vscl_c(UV/1E3,X0+3,Xu+3);
+  oscelt_c(Xu,t*UT,GKMS*MSUN,E);
+  vsclg_c(180/M_PI,E+2,4,E+2);
+
+  //STORE THE ELEMENTS
+  copyVec(elements,E,6);
+
+  return 0;
+}
