@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D as plt3d
 from sys import argv
 import numpy as np
+from time import time
 
 #############################################################
 #MACROS
@@ -36,6 +37,8 @@ OBJECTS={"0":"Sun",
          "7":"Saturn",
          "8":"Uranus",
          "9":"Neptune"}
+
+TAB="\t"
 
 #############################################################
 #ROUTINES
@@ -78,3 +81,11 @@ def out2dict(output):
         i+=1
     return output
     
+ETIME=time()
+TIME=time()
+def timeIt():
+    global TIME,ETIME
+    ETIME=time()-ETIME
+    total=time()-TIME
+    print "[Elapsed: last %.2f msec, total %.3f]"%(1e3*ETIME,total)
+    ETIME=time()

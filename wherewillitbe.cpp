@@ -1,10 +1,6 @@
 #include <gravray.cpp>
 using namespace std;
 
-#define TOLERANCE 1E-10
-#define EXTMET 1
-#define VERBOSE 0
-
 int main(int argc,char* argv[])
 {
   ////////////////////////////////////////////////////

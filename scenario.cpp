@@ -63,7 +63,7 @@ int main(int argc,char* argv[])
     //GET TIME
     ////////////////////////////////////////////////////
     fscanf(fr,"%lf",&et);
-    for(i=2;i<=15;i++) fscanf(fr,"%lf",&tmp);
+    for(i=2;i<=17;i++) fscanf(fr,"%lf",&tmp);
     printf("T = %.9e\n",et);
     
     ////////////////////////////////////////////////////
