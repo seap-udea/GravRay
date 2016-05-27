@@ -4,8 +4,9 @@
 #REGULAR
 from commands import getoutput as System
 from sys import argv,exit
-import numpy as np
 from time import time
+import numpy as np
+from scipy.interpolate import interp1d
 
 #GRAPHICAL
 from matplotlib import pyplot as plt
@@ -50,6 +51,9 @@ OBJECTS={"0":"Sun",
          "9":"Neptune"}
 
 TAB="\t"
+
+DEG=np.pi/180
+RAD=1/DEG
 
 ###################################################
 #DATABASE CONNECTION
@@ -156,4 +160,8 @@ def listdict2matrix(listdict,keys=[]):
         i+=1
     return matrix
     
-    
+def generateVelocities(velcumfile,nsample):
+    velcum=np.loadtxt(velcumfile)
+    ifvelcum=interp1d(velcum[:,1],velcum[:,0])
+    v=ifvelcum(np.random.random(nsample))
+    return v
