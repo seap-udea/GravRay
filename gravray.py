@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 #GRAPHICAL
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D as plt3d,art3d
+from mpl_toolkits.basemap import Basemap as Map,shiftgrid as Grid
 
 import visual as v
 
@@ -21,6 +22,9 @@ import MySQLdb as mdb
 #MACROS
 #############################################################
 norm=np.linalg.norm
+PI=np.pi
+DEG=PI/180
+RAD=1/DEG
 
 #############################################################
 #CONSTANTS
@@ -123,9 +127,6 @@ class dict2obj(object):
 
 def mysqlSelect(selection="*",table="Bodies",condition="limit 100"):
 
-    #FIELDS
-    
-
     #QUERY
     sql="select %s from %s %s"%(selection,table,condition)
     DB.execute(sql)
@@ -165,3 +166,38 @@ def generateVelocities(velcumfile,nsample):
     ifvelcum=interp1d(velcum[:,1],velcum[:,0])
     v=ifvelcum(np.random.random(nsample))
     return v
+
+def lat2str(lat):
+    return "%g"%lat
+
+def lon2str(lon):
+    if lon>270:lon-=360
+    return "%g"%lon
+
+def drawMap(proj='robin',
+            proj_opts=dict(resolution='c',lon_0=0),
+            pars=np.arange(-60.,115,15.),
+            pars_opts=dict(labels=[1,1,0,0],labelstyle="+/-",fontsize=8),
+            mers=np.arange(-360.,360.,30.),
+            mers_opts=dict(labels=[0,0,1,1],labelstyle="+/-",fontsize=8),
+            coasts=False,
+            fill=False,
+            coasts_opts=dict(linewidth=0.5),
+            fill_opts=dict(color='g',alpha=0.3,lake_color='aqua')
+            ):
+
+    m=Map(projection=proj,**proj_opts)
+    m.drawmapboundary()
+    parallels=m.drawparallels(pars,**pars_opts)
+    try:
+        meridians=m.drawmeridians(mers,**mers_opts)
+    except:pass
+    if coasts:
+        m.drawcoastlines(**coasts_opts)
+    if fill:
+        m.fillcontinents(**fill_opts)
+    return m
+
+def plotMap(map,alpha,delta,**args):
+    x,y=map(alpha,delta)
+    plt.plot(x,y,**args)
