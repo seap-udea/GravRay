@@ -22,9 +22,16 @@ import MySQLdb as mdb
 #MACROS
 #############################################################
 norm=np.linalg.norm
+rand=np.random.rand
 PI=np.pi
 DEG=PI/180
 RAD=1/DEG
+TAB="\t"
+
+# Harvesine Formulae
+HAV=lambda theta:np.sin(theta/2)**2
+HAV2=lambda costheta:(1-costheta)/2
+DIST=lambda p1,p2:norm(p1-p2)
 
 #############################################################
 #CONSTANTS
@@ -54,10 +61,6 @@ OBJECTS={"0":"Sun",
          "8":"Uranus",
          "9":"Neptune"}
 
-TAB="\t"
-
-DEG=np.pi/180
-RAD=1/DEG
 
 ###################################################
 #DATABASE CONNECTION
@@ -201,3 +204,76 @@ def drawMap(proj='robin',
 def plotMap(map,alpha,delta,**args):
     x,y=map(alpha,delta)
     plt.plot(x,y,**args)
+
+def normedArcDistance(p1,p2):
+    """
+    Compute arc distance for points in the unit circle
+    
+    Points are pairs [x,y]
+    Such that 
+       x=longitude/pi \in [-1,1]
+       y=sin(latitude) \in [-1,1]
+    """
+
+    #Points
+    x1,y1=p1
+    x2,y2=p2
+    
+    #Derivative quantities
+    c1=np.sqrt(1-y1**2) # cos(latitude)
+    c2=np.sqrt(1-y2**2)
+    cosdb=c1*c2+y1*y2 # cos(latitue2-latitude1)
+
+    l1=np.pi*x1 # longitude
+    l2=np.pi*x2
+
+    #Haversine
+    h=HAV2(cosdb)+c1*c2*HAV(l2-l1)
+    
+    #Angular distance
+    delta=2*np.arcsin(np.sqrt(h))
+    
+    return delta
+
+def arcDistance(s1,s2):
+    """
+    Compute arc distance for points in longitud, latitude
+
+    Both, input angles and returned distance are in radians 
+    """
+    #Points
+    l1,b1=s1
+    l2,b2=s2
+    
+    #Haversine
+    h=HAV(b2-b1)+np.cos(b1)*np.cos(b2)*HAV(l2-l1)
+
+    #Angular distance
+    delta=2*np.arcsin(np.sqrt(h))
+    
+    return delta
+
+def car2sph(p):
+    """
+    Convert from unit square spherical coordinates to longitude latitude.
+
+    p is a point in the unit square [[-1,1],[-1,1]]
+
+    Return angles are in radians in [[-pi,pi],[-pi/2,pi/2]]
+    """
+    l=PI*p[0]
+    b=np.arcsin(p[1])
+    return np.array([l,b])
+
+def sph2car(p):
+    """
+    Convert from unit longitude,latitude to unit square.
+
+    p \in [[-pi,pi],[-pi/2,pi/2]]
+
+    Return [x,y] \in [[-1,1],[-1,1]]
+    """
+    x=p[0]/PI
+    y=np.sin(p[1])
+    return np.array([x,y])
+
