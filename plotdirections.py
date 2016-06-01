@@ -4,6 +4,9 @@ from gravray import *
 #PARAMETERS
 ###################################################
 radius=float(argv[1])*DEG
+try:qdeep=int(argv[2])
+except:qdeep=False
+
 print "Radius:",radius*RAD
 fdata="scratch/points-r%.2e.data"%(radius*RAD)
 fdataf="scratch/points-r%.2e-filtered.data"%(radius*RAD)
@@ -18,8 +21,10 @@ ps=data[:,:2]
 ###################################################
 #STATISTICS OF DISTANCES
 ###################################################
+#"""
 print "Statistics of distances..."
 distmins=[]
+distmaxs=[]
 i=0
 bad=0
 print "Initial points: ",ss.shape[0]
@@ -28,7 +33,7 @@ psgood=[]
 #timeIt()
 dx=radius/PI
 for s in ss:
-    if (i%1000)==0:
+    if (i%100)==0:
         print "Testing distance to %d..."%i
         #timeIt()
 
@@ -48,19 +53,36 @@ for s in ss:
         ssgood+=[s]
         psgood+=[p]
         distmins+=[min(dists)]
+        distmaxs+=[max(dists)]
 
 ssgood=np.array(ssgood)
 psgood=np.array(psgood)
-data=np.hstack((psgood,ssgood))
+data=np.hstack((psgood,ssgood*DEG))
 np.savetxt(fdataf,data)
 
 print "Bad points: ",bad
 print "Final points: ",ssgood.shape[0]
+
 distmins=np.array(distmins)*RAD
+distmaxs=np.array(distmaxs)*RAD
+
 fig=plt.figure()
 ax=fig.gca()
 ax.hist(distmins)
 fig.savefig("scratch/distance-grid-distrib.png")
+
+fig=plt.figure()
+ax=fig.gca()
+ax.hist(distmaxs)
+fig.savefig("scratch/distance-grid-distrib-max.png")
+
+#"""
+
+"""
+data=np.loadtxt(fdataf)
+ssgood=data[:,2:]
+psgood=data[:,:2]
+#"""
 
 ###################################################
 #MAP

@@ -4,8 +4,12 @@ from gravray import *
 #PARAMETERS
 ###################################################
 radius=float(argv[1])*DEG
+try:qdeep=int(argv[2])
+except:qdeep=False
+
 print "Radius:",radius*RAD
 fdata="scratch/points-r%.2e.data"%(radius*RAD)
+fdataf="scratch/points-r%.2e-filtered.data"%(radius*RAD)
 
 ###################################################
 #CREATE GRID IN THE UNIT-SQUARE
@@ -43,6 +47,7 @@ delta=np.array([normedArcDistance([xs[i],ys[j]],[xs[i+1],ys[j+1]]) for i,j in zi
 ngrid=np.zeros((nx-1,ny-1))
 pgrid=[[[] for j in xrange(ny-1)] for i in xrange(nx-1)]
 fullfill=2*(nx-1)*(ny-1)
+print "Number of cells: ",(nx-1)*(ny-1)
 
 #========================================
 #GRID ROUTINES
@@ -128,7 +133,7 @@ while True:
     ng=ngrid[ix,iy]
 
     #SKIP DOUBLE OCCUPIED CELLS
-    if ng>=2:continue
+    if ng>=5:continue
 
     #============================== 
     #NEIGHBOR CELLS
@@ -154,7 +159,9 @@ while True:
     #============================== 
     if qaccept:
         if (n%100)==0:
-            print "Point %d/%d/rej.%d accepted in cell "%(n,0.7*fullfill,nrej),ix,iy,":",p
+            print TAB,"Point %d/%d/rej.%d accepted in cell "%(n,
+                                                              fullfill,
+                                                              nrej),ix,iy,":",p
         ngrid[ix,iy]+=1
         pgrid[ix][iy]+=[p]
         nrej=0
@@ -165,10 +172,10 @@ while True:
     #============================== 
     cond=ngrid>0
     fill=int(ngrid[cond].sum())
-    if n>0.7*fullfill:
+    if n>2*fullfill:
         print "End by completion"
         break
-    if nrej>0.5*fullfill:
+    if nrej>fullfill:
         print "End by rejection"
         break
 
@@ -186,24 +193,54 @@ for i in xrange(nx-1):
         for p in pgrid[i][j]:
             s=car2sph(p)
             l,b=s
-            ix,iy=xy2ij(p[0],p[1])
-            ncells=[(ix,iy)]+genCells(l,b)
             qaccept=True
-            for ic,jc in ncells:
-                cell=pgrid[ic][jc]
-                if len(cell)==0:continue
-                for t in cell:
-                    dist=normedArcDistance(p,t)
-                    if dist<=radius and dist>0:
-                        qaccept=False
-                        break
-                if not qaccept:break
-            if qaccept:
-                ps+=[p]
-                ss+=[s]
+            ps+=[p]
+            ss+=[s]
 
 ps=np.array(ps)
 ss=np.array(ss)
 data=np.hstack((ps,ss))
 print "Final number:",data.shape[0]
 np.savetxt(fdata,data)
+
+###################################################
+#FILTER POINTS
+###################################################
+print "Filter points..."
+i=0
+bad=0
+print "Initial points: ",ss.shape[0]
+
+ssgood=[]
+psgood=[]
+distmins=[]
+dx=radius/PI
+for s in ss:
+    if (i%100)==0:
+        print TAB,"Testing distance to %d..."%i
+
+    l,b=s
+    p=ps[i]
+
+    if not qdeep:
+        ssearch=ss[np.abs(np.abs(ps[:,0])-np.abs(p[0]))<5*dx]
+    else:
+        ssearch=ss
+    i+=1
+
+    dists=np.array([arcDistance(s,t) for t in ssearch])
+    dists=dists[dists>1e-5]
+    if min(dists)<=radius:
+        bad+=1
+    else:
+        ssgood+=[s]
+        psgood+=[p]
+        distmins+=[min(dists)]
+
+ssgood=np.array(ssgood)
+psgood=np.array(psgood)
+data=np.hstack((psgood,ssgood))
+np.savetxt(fdataf,data)
+
+print "Bad points: ",bad
+print "Final points: ",ssgood.shape[0]

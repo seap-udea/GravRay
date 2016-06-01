@@ -67,6 +67,20 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define NUMOBJS 10
 
 //THESE ARE THE LABELS FOR KERNEL de430
+static char* LABELS[]={
+  "SUN",
+  "MERCURY",
+  "VENUS",
+  "EARTH",
+  "MOON",
+  "MARS",
+  "JUPITER",
+  "SATURN",
+  "URANUS",
+  "NEPTUNE"
+};
+
+
 static char* OBJS[]={
   "10",/*SUN*/
   "1",/*MERCURY*/
@@ -110,6 +124,23 @@ static double GMASSES[]={
   5794548.600000/*URANUS*/,
   6836535.000000/*NEPTUNE*/
 };
+
+/*
+  Gotten from kernes DE430
+ */
+static double RADII[]={
+  696000/*SUN*/,
+  2439.70/*MERCURY*/,
+  6051.80/*VENUS*/,
+  6378.14/*EARTH*/,
+  1737.40/*MOON*/,
+  3396.19/*MARS*/,
+  71492.00/*JUPITER*/,
+  37940585.200000/*SATURN*/,
+  5794548.600000/*URANUS*/,
+  6836535.000000/*NEPTUNE*/
+};
+
 
 struct ObserverStruct{
 
@@ -156,7 +187,7 @@ double UL,UM,UT,UV;
 //////////////////////////////////////////
 int initSpice(void)
 {
-  SpiceInt n;
+  SpiceInt i,n;
   SpiceDouble radii[3];
 
   //KERNELS
@@ -168,10 +199,21 @@ int initSpice(void)
   RPEARTH=radii[0];
   FEARTH=(radii[0]-radii[2])/radii[0];
 
+  //PLANETARY RADII
+  for(i=0;i<10;i++){
+    bodvrd_c(LABELS[i],"RADII",3,&n,radii);
+    RADII[i]=radii[0];
+  }
+
   //RANDOM NUMBERS
   RAND=gsl_rng_alloc(gsl_rng_default);
 
   return 0;
+}
+
+int initRadii(void)
+{
+
 }
 
 char* dec2sex(double dec)
@@ -604,8 +646,14 @@ int EoM(double t,double y[],double dydt[],void *params)
     vscl_c(1E3/UL,object,object);
     sumVec(R,1.0,y,-1.0,object,3);
     Rmag=vnorm_c(R);
-    GM=GMASSES[i]*fac;
-    sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+    if(Rmag*UL/1e3<=RADII[i]){
+      printf("\t\tObject has collided with %s at t = %e days (Rmag = %e, RADII = %e)\n",
+	     LABELS[i],t*UT/DAY,Rmag,RADII[i]);
+      throw(1);
+    }else{
+      GM=GMASSES[i]*fac;
+      sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
+    }
   }
   return 0;
 }
@@ -753,7 +801,9 @@ int rayPropagation(struct ObserverStruct *observer,
   //CONVERTING TO CLASSICAL ELEMENTS IN KM AND KM/S
   vscl_c(UL/1E3,X0,Xu);vscl_c(UV/1E3,X0+3,Xu+3);
   oscelt_c(Xu,t*UT,GKMS*MSUN,E);
+
   vsclg_c(180/M_PI,E+2,4,E+2);
+  vsclg_c(1E3/UL,E,1,E);
 
   //STORE THE ELEMENTS
   copyVec(elements,E,6);
