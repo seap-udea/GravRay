@@ -4,15 +4,18 @@ PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whe
 
 all:$(PROGRAMS)
 
+cleancrap:
+	@echo "Cleaning crap..."
+	@find . -name "*~" -exec rm -rf {} \;
+	@find . -name "#" -exec rm -rf {} \;
+
 cleanexe:
 	@echo "Cleaning executable..."
 	@rm -rf *.pyc *.out *.exe
 
-clean:cleanexe
+clean:cleancrap cleanexe
 	@echo "Cleaning..."
-	@find . -name "*~" -exec rm -rf {} \;
-	@find . -name "#" -exec rm -rf {} \;
-	@rm -rf *.pyc *.out *.exe *.png *.dat
+	@rm -rf *.png *.dat
 
 %.exe:%.opp
 	$(CPP) $^ $(LFLAGS) -o $@
