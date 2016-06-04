@@ -9,7 +9,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 #GRAPHICAL
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt,cm
 from mpl_toolkits.mplot3d import Axes3D as plt3d,art3d
 from mpl_toolkits.basemap import Basemap as Map,shiftgrid as Grid
 

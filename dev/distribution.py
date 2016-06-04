@@ -64,38 +64,43 @@ def plotDistribution(el,limits=[1.0,0.1,1.2,0.1,0.5,0.05],counter=0):
     ax3d.plot(qes[condq],ees[condq],ies[condq],'o',color='r',mec='none',ms=1)
     ax3d.view_init(30,120)
 
-    scplot=dict(color='k',mec='none',ms=2,alpha=0.0)
-    #cmap='rainbow'
+    cmap='rainbow'
     #cmap='CMRmap' #Fire
     #cmap='BrBG' 
     #cmap='afmhot'
     #cmap='brg' #Good
-    cmap='cubehelix' # image
+    #cmap='cubehelix' # image
     #cmap='seismic' # image
+    #cmap='gray'
 
     #interpolation='bicubic'
-    interpolation='gaussian'
+    #interpolation='gaussian'
     #interpolation='nearest'
-    #interpolation='hanning'
+    interpolation='hanning'
     bins=30
     
+    scplot=dict(color='k',mec='none',ms=2,alpha=0.0)
+    sctext=dict(bbox=dict(pad=10,ec='none',
+                          fc=cm.get_cmap(cmap)(0),alpha=1))
+
     H,xe,ye=np.histogram2d(qes[condi],ees[condi],bins=bins,normed=True)
     scale=(qup-qlow)/(eup-elow)
     img=axae.imshow(H.transpose(),origin='lower',interpolation=interpolation,extent=(qmin,qmax,emin,emax),aspect=scale/1.4,cmap=cmap)
     axae.plot(qes[condi],ees[condi],'o',**scplot)
-    axae.text(0.05,0.90,"i = (%.2f,%.2f)"%(10**(iconst-di),10**(iconst+di)),transform=axae.transAxes,color='w')
+    axae.text(0.05,0.90,"i = (%.2f,%.2f)"%(10**(iconst-di),10**(iconst+di)),transform=axae.transAxes,color='w',**sctext)
 
     H,xe,ye=np.histogram2d(qes[conde],ies[conde],bins=bins,normed=True)
     scale=(qup-qlow)/(iup-ilow)
     img=axai.imshow(H.transpose(),origin='lower',interpolation=interpolation,extent=(qmin,qmax,imin,imax),aspect=scale/1.4,cmap=cmap)
     axai.plot(qes[conde],ies[conde],'o',**scplot)
-    axai.text(0.05,0.90,"e = (%.2f,%.2f)"%(econst-de,econst+de),transform=axai.transAxes,color='w')
+    axai.text(0.05,0.90,"e = (%.2f,%.2f)"%(econst-de,econst+de),transform=axai.transAxes,color='w',**sctext)
 
     H,xe,ye=np.histogram2d(ees[condq],ies[condq],bins=bins,normed=True)
     scale=(eup-elow)/(iup-ilow)
     img=axei.imshow(H.transpose(),origin='lower',interpolation=interpolation,extent=(emin,emax,imin,imax),aspect=scale/1.4,cmap=cmap)
     axei.plot(ees[condq],ies[condq],'o',**scplot)
-    axei.text(0.05,0.90,"q = (%.2f,%.2f)"%(qconst-dq,qconst+dq),transform=axei.transAxes,color='w')
+    axei.text(0.05,0.90,"q = (%.2f,%.2f)"%(qconst-dq,qconst+dq),transform=axei.transAxes,color='w',**sctext)
+    plt.colorbar(img)
 
     #DECORATION
     ax3d.set_xlabel("q")
@@ -133,17 +138,22 @@ def plotDistribution(el,limits=[1.0,0.1,1.2,0.1,0.5,0.05],counter=0):
 def animateDistribution(el):
 
     c=1
+
+    ni=nq=ne=30
+
+    #Initial values
     i=-2
     q=0.1
     e=0.0
 
-    for i in np.linspace(-2,2,30):
+    #Plot distribution|
+    for i in np.linspace(-2,2,ni):
         plotDistribution(el,[i,0.1,q,0.1,e,0.05],counter=c)
         c+=1
-    for q in np.linspace(0.1,1.3,30):
+    for q in np.linspace(0.1,1.3,nq):
         plotDistribution(el,[i,0.1,q,0.1,e,0.05],counter=c)
         c+=1
-    for e in np.linspace(0.0,0.7,30):
+    for e in np.linspace(0.0,0.7,ne):
         plotDistribution(el,[i,0.1,q,0.1,e,0.05],counter=c)
         c+=1
 
