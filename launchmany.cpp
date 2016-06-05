@@ -84,9 +84,12 @@ int main(int argc,char* argv[])
     //DETERMINE POSITION FOR THIS INITIAL CONDITION
     ////////////////////////////////////////////////////
     observerVelocity(&observer,h,Az,v);
-    fprintf(stdout,"\tObserver position: %s\n",vec2strn(observer.posabs,6,"%e "));
+    fprintf(stdout,"\tObserver position: %s\n",vec2strn(observer.posabs,6,"%.17e "));
     ncond++;
 
+    ////////////////////////////////////////////////////
+    //PROPAGATE
+    ////////////////////////////////////////////////////
     try {
       rayPropagation(&observer,deltat,elements);
     } 
@@ -96,6 +99,9 @@ int main(int argc,char* argv[])
       continue;
     }
 
+    ////////////////////////////////////////////////////
+    //SAVE
+    ////////////////////////////////////////////////////
     //Components of elements vector: q,e,i,Omega,omega,M
     fprintf(stdout,"\tFinal elements: %s\n",vec2strn(elements,6,"%lf "));
     fprintf(fe,"%s%s\n",

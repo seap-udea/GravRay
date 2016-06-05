@@ -47,5 +47,5 @@ unpack:
 	@echo "Done."
 
 #Programs that depend on objects.hpp
-scenario.exe wherewillitbe.exe:objects.hpp
+launchmany.exe scenario.exe wherewillitbe.exe:objects.hpp
 

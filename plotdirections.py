@@ -6,6 +6,8 @@ from gravray import *
 radius=float(argv[1])*DEG
 try:qdeep=int(argv[2])
 except:qdeep=False
+try:qshow=int(argv[3])
+except:qshow=False
 
 print "Radius:",radius*RAD
 fdata="scratch/points-r%.2e.data"%(radius*RAD)
@@ -124,4 +126,4 @@ ax3d.plot(xs,ys,zs,'o')
 ax3d.plot_surface(x,y,z,rstride=1,cstride=1,color='c',alpha=1,linewidth=0)
 
 plt.savefig("scratch/random-grid-blue-3d.png")
-#plt.show()
+if qshow:plt.show()

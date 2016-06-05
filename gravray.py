@@ -128,8 +128,23 @@ class dict2obj(object):
             exec("self.%s=other.%s"%(attr,attr))
         return self
 
-def mysqlSelect(selection="*",table="Bodies",condition="limit 100"):
+def mysqlSelect(selection="*",table="Bodies",condition="limit 100",typereturn="dict"):
+    """
+    Executes a selection on a given table of the Database.
 
+    Parameters:
+
+       selection: which fields do you want to select from the table.  This is a comma separated list
+                  of fields.  You should use ", " (comma+space) to separate fields.
+
+       table: which table from the database.
+
+       condition: condition for selection.  This is the part of the SQL command following the "from <TABLE>".
+
+            Examples: where Name like '%zuluaga'
+                      limit 1000
+                      order by e
+    """
     #QUERY
     sql="select %s from %s %s"%(selection,table,condition)
     DB.execute(sql)
@@ -141,14 +156,16 @@ def mysqlSelect(selection="*",table="Bodies",condition="limit 100"):
         fields=DB.fetchall()
     else:
         #ONLY COLUMNS IN SELECTION
-        fields=[(field,) for field in selection.split(",")]
+        fields=[(field,) for field in selection.split(", ")]
 
     dresults=[]
     for result in results:
-        row=dict()
+        if typereturn=='dict':row=dict()
+        else:row=[]
         for i in xrange(len(fields)):
             field=fields[i][0]
-            row[field]=result[i]
+            if typereturn=='dict':row[field]=result[i]
+            else:row+=[result[i]]
         dresults+=[row]
 
     return dresults

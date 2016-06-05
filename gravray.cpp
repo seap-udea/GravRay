@@ -60,6 +60,8 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define TOLERANCE 1E-10
 #define EXTMET 1
 #define VERBOSE 0
+#define HTOL 1E-6
+#define MAXSTALL 100
 
 //////////////////////////////////////////
 //OBJECTS
@@ -647,11 +649,17 @@ int EoM(double t,double y[],double dydt[],void *params)
     sumVec(R,1.0,y,-1.0,object,3);
     Rmag=vnorm_c(R);
     if(Rmag*UL/1e3<=RADII[i]){
-      printf("\t\tObject has collided with %s at t = %e days (Rmag = %e, RADII = %e)\n",
+      fprintf(stderr,"\t\tObject has collided with %s at t = %e days (Rmag = %e, RADII = %e)\n",
 	     LABELS[i],t*UT/DAY,Rmag,RADII[i]);
       throw(1);
     }else{
       GM=GMASSES[i]*fac;
+      /*
+      if(i==3){
+	fprintf(stdout,"t=%e, i = %d, R = %e\n",t,i,Rmag);
+	getc(stdin);
+      }
+      */
       sumVec(dydt+3,1.0,dydt+3,-GM/(Rmag*Rmag*Rmag),R,3);
     }
   }
@@ -777,12 +785,20 @@ int rayPropagation(struct ObserverStruct *observer,
   t_stop = t_start + t_step;
 
   h_used = h;
+  int nstall=0;
   do {
     //ADJUST H UNTIL OBTAINING A PROPER TIMESTEP
     while(1){
       status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_used,&h_next,1.0,TOLERANCE,EXTMET,params);
       if(status) h_used/=4.0;
       else break;
+    }
+    if(fabs(h_used/t_step)<HTOL) nstall++;
+    else nstall=0;
+    if(nstall>MAXSTALL){
+      fprintf(stderr,"\t\tIntegration has stalled at t = %e days with h/DT = %e\n",
+	      t*UT/DAY,h_used/t_step);
+      throw(1);
     }
     t+=h_used;
     copyVec(X0,X,6);
