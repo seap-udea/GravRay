@@ -5,10 +5,10 @@ try:qload=int(argv[1])
 except:pass
 
 if qload>0:
-    props="Perihelion_dist,e,i"
+    props="Perihelion_dist, e, i"
     listdict=mysqlSelect(props,
                          condition="where NEO_flag and e>0 and e<1")
-    elements=listdict2matrix(listdict,keys=props.split(","))
+    elements=listdict2matrix(listdict,keys=props.split(", "))
 
 def plotDistribution(el,limits=[1.0,0.1,1.2,0.1,0.5,0.05],counter=0):
     qes=el[:,0];qmin=qes.min();qmax=qes.max()
@@ -64,7 +64,8 @@ def plotDistribution(el,limits=[1.0,0.1,1.2,0.1,0.5,0.05],counter=0):
     ax3d.plot(qes[condq],ees[condq],ies[condq],'o',color='r',mec='none',ms=1)
     ax3d.view_init(30,120)
 
-    cmap='rainbow'
+    #cmap='rainbow'
+    cmap='jet'
     #cmap='CMRmap' #Fire
     #cmap='BrBG' 
     #cmap='afmhot'

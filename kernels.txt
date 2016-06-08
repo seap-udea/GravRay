@@ -8,7 +8,7 @@ KERNELS_TO_LOAD = ('$PATH/de430.bsp',
 		   '$PATH/pck00010.tpc',
 		   '$PATH/frame.tk',
 		   '$PATH/earth_assoc_itrf93.tf',
-		   '$PATH/earth_latest_high_prec.bpc'
+		   '$PATH/earth_latest_high_prec.bpc',
 		   )
 
 \begintext
