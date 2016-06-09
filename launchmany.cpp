@@ -73,6 +73,7 @@ int main(int argc,char* argv[])
   fprintf(fe,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
 	  "#1:xobs","2:yobs","3:zobs","4:vxobs","5:vyobs","6:vzobs",
 	  "7:q(AU)","8:e","9:i","10:Omega","11:omega","12:M");
+
   while(1){
     fscanf(fi,"%lf %lf %lf",&h,&Az,&v);
     if(feof(fi)) break;

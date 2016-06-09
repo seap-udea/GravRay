@@ -152,6 +152,9 @@ struct ObserverStruct{
   //Conversion matrix from ITRF93 to ECLIPJ2000 at time t
   SpiceDouble MEJ[3][3];
 
+  //Conversion matrix from ECLIPJ2000 to EPOCHEQUINOX at time t
+  SpiceDouble MEE[3][3];
+
   //hm convert from itrf93 to local and hi is the inverse
   SpiceDouble hm[3][3];
   SpiceDouble hi[3][3];
@@ -164,6 +167,9 @@ struct ObserverStruct{
 
   //Position with respect to SSB in ECLIPJ2000
   SpiceDouble posabs[6];
+
+  //Position with respect to SSB in ECLIPEPOCH
+  SpiceDouble posepoch[6];
 
   //Rotaion velocity of a still observer with respect to ITRF93
   SpiceDouble v[3];
@@ -676,6 +682,9 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
   pxform_c("ITRF93",ECJ2000,t,observer->MEJ);
 
+  //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
+  pxform_c("ECLIPJ2000","EARTHTRUEEPOCH",t,observer->MEE);
+
   //LOCATE OBSERVER 
   georec_c(D2R(observer->lon),D2R(observer->lat),observer->alt/1000.0,
 	   REARTH,FEARTH,observer->posearth);
@@ -698,6 +707,11 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   mxv_c(observer->MEJ,observer->posearth,observer->posj2000);
   vadd_c(observer->earth,observer->posj2000,observer->posabs);
 
+  //POSITION WITH RESPECT TO SSB IN ECLIPEPOCH
+  //This is not working
+  mxv_c(observer->MEE,observer->posabs,observer->posepoch);
+  mxv_c(observer->MEE,(observer->posabs)+3,(observer->posepoch)+3);
+
 }
 
 int observerVelocity(struct ObserverStruct *observer,
@@ -710,7 +724,11 @@ int observerVelocity(struct ObserverStruct *observer,
   //VELOCITY OF OBSERVER IN SPACE W.R.T. TO LOCAL REFERENCE
   SpiceDouble cA=cos(D2R(Az)),sA=sin(D2R(Az)),ch=cos(D2R(elev)),sh=sin(D2R(elev));
   SpiceDouble vloc[3];
-  vpack_c(v*ch*cA,-v*ch*sA,v*sh,vloc);
+  if(Az==0 && elev==0 && v==0){
+    vpack_c(0,0,0,vloc);
+  }else{
+    vpack_c(v*ch*cA,-v*ch*sA,v*sh,vloc);
+  }
 
   //IMPACT VELOCITY IS THE INVERSE
   vscl_c(-1,vloc,vloc);
@@ -722,7 +740,7 @@ int observerVelocity(struct ObserverStruct *observer,
   //TOTAL VELOCITY WITH RESPECT ITRF93
   vadd_c(observer->v,vmot,observer->posearth+3);
 
-  //VELOCITY W.R.T. EARTH CENTER IN J2000 RF
+  //VELOCITY W.R.T. EARTH CENTER IN ECLIPJ2000 RF
   mxv_c(observer->MEJ,observer->posearth+3,observer->posj2000+3);
 
   //VELOCITY W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
