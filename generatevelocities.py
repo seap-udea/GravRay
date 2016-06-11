@@ -46,7 +46,7 @@ print "Generating %d velocities from source '%s' with distribution '%s'..."%(nsa
 #LOAD REQUIRED INFORMATION
 ###################################################
 velfile="velocities-%s.dat"%(source)
-vp=np.loadtxt("util/%s-pdf.data"%source)
+vp=np.loadtxt("util/data/%s-pdf.data"%source)
 vmin=vp[:,0].min();vmax=vp[:,0].max();
 
 ###################################################
@@ -54,13 +54,13 @@ vmin=vp[:,0].min();vmax=vp[:,0].max();
 ###################################################
 #RANDOM 
 if method=="random":
-    vs=generateVelocities("util/%s-cum.data"%source,nsample)
+    vs=generateVelocities("util/data/%s-cum.data"%source,nsample)
 
 #UNIFORMLY DISTRIBUTED IN CUMMULATIVE 
 else:
     du=1./nsample
     u=np.linspace(du,1,nsample)
-    velcum=np.loadtxt("util/%s-cum.data"%source)
+    velcum=np.loadtxt("util/data/%s-cum.data"%source)
     ifvelcum=interp1d(velcum[:,1],velcum[:,0])
     vs=ifvelcum(u)
 
