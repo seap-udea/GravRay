@@ -321,7 +321,8 @@ dists=[]
 for s in ss:
     dists+=[[arcDistance(s,t) for t in ssearch]]
 dists=np.array(dists)
-print dists[dists>=1e-5].sort()[:10]*RAD
+distsort=dists[dists>=1e-5].sort()
+#print [:10]*RAD
 
 ###################################################
 #PLOT INFORMATION ABOUT POINTS
