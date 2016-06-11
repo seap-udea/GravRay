@@ -54,8 +54,6 @@ fdataf="directions-r%.2e.dat"%(radius*RAD)
 #Maximum number of points accepted in a cell
 MAXOCCUPY=5
 
-#
-
 ###################################################
 #CREATE GRID IN THE UNIT-SQUARE
 ###################################################
@@ -154,7 +152,8 @@ jmax=len(js)-1
 
 n=1
 nrej=0
-np.random.seed(1)
+#np.random.seed(1)
+timeIt()
 while True:
     #============================== 
     #INITIALIZE CELLS
@@ -225,6 +224,7 @@ while True:
         print "End by rejection"
         break
 
+timeIt()
 print "%d points accepted"%n
 print "Fill fraction: %d/%d"%(n,fullfill)
 print "Last rejection rate: %d"%(nrej)
@@ -246,6 +246,7 @@ ss=np.array(ss)
 data=np.hstack((ps,ss))
 print "Final number:",data.shape[0]
 np.savetxt(fdata,data)
+timeIt()
 
 ###################################################
 #FILTER POINTS
@@ -290,12 +291,13 @@ for s in ss:
         iclosest=indes[isort[1]]
         """
         print "Distances:",sorted(dists*RAD)[:5]
-        print "Sorted indexes: ",isort[:5]
+        print "Sorted indexes: ",isort
         print "Closest point: ",iclosest
         print "Bad point at:",s*RAD
         print "Bad point at (by index):",sscomp[ipresent]*RAD
         print "Closest point:",sscomp[iclosest]*RAD
         print "Distance recalculated:",arcDistance(s,sscomp[iclosest])*RAD
+        print "Removing:",ipresent
         #"""
         sscomp=np.delete(sscomp,ipresent,0)
         pscomp=np.delete(pscomp,ipresent,0)
@@ -305,10 +307,11 @@ for s in ss:
         psgood+=[p]
         distmins+=[min(dists[dists>1e-5])]
         distmaxs+=[max(dists[dists>1e-5])]
+timeIt()
 
 ssgood=np.array(ssgood)
 psgood=np.array(psgood)
-data=np.hstack((psgood,ssgood*RAD))
+data=np.hstack((psgood,ssgood))
 np.savetxt(fdataf,data)
 
 print "Bad points: ",bad
@@ -317,12 +320,16 @@ print "Final points: ",ssgood.shape[0]
 ###################################################
 #LAST CHECK
 ###################################################
+print "Last check..."
 dists=[]
-for s in ss:
-    dists+=[[arcDistance(s,t) for t in ssearch]]
+npoints=ssgood.shape[0]
+for i in xrange(npoints):
+    dists+=[arcDistance(ssgood[i],ssgood[j]) for j in xrange(i+1,npoints)]
 dists=np.array(dists)
-distsort=dists[dists>=1e-5].sort()
-#print [:10]*RAD
+dists=dists[dists>1e-5]
+dists.sort()
+print "Minima: ",dists[:5]*RAD
+timeIt()
 
 ###################################################
 #PLOT INFORMATION ABOUT POINTS
@@ -338,12 +345,12 @@ distmaxs=np.array(distmaxs)*RAD
 fig=plt.figure()
 ax=fig.gca()
 ax.hist(distmins)
-fig.savefig("scratch/distmin-distrib.png")
+fig.savefig("scratch/distmin-distrib-r%.2e.png"%(radius*RAD))
 
 fig=plt.figure()
 ax=fig.gca()
 ax.hist(distmaxs)
-fig.savefig("scratch/distmax-distrib.png")
+fig.savefig("scratch/distmax-distrib-r%.2e.png"%(radius*RAD))
 
 ###################################################
 #MAP
@@ -355,16 +362,16 @@ map=drawMap(proj=proj,proj_opts=dict(lon_0=180),
             pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
             pars_opts=dict(labels=[1,1,0,0],fontsize=8),
             mers_opts=dict(labels=[0,0,0,1],fontsize=8))
-plotMap(map,np.mod(ssgood[:,0],360),ssgood[:,1],lw=0,
+plotMap(map,np.mod(ssgood[:,0]*RAD,360),ssgood[:,1]*RAD,lw=0,
         marker='o',color='r',ms=2,mec='none')
-plt.savefig("scratch/directions-map.png")
+plt.savefig("scratch/directions-map-r%.2e.png"%(radius*RAD))
 
 ###################################################
 #3D POINTS MAP
 ###################################################
 print "3D Map of points..."
-ls=np.mod(ssgood[:,0],360.0)
-bs=ssgood[:,1]
+ls=np.mod(ssgood[:,0]*RAD,360.0)
+bs=ssgood[:,1]*RAD
 
 xs=np.cos(bs*DEG)*np.cos(ls*DEG)
 ys=np.cos(bs*DEG)*np.sin(ls*DEG)
@@ -384,5 +391,5 @@ ax3d.plot_wireframe(x, y, z, color="k")
 ax3d.plot(xs,ys,zs,'o')
 ax3d.plot_surface(x,y,z,rstride=1,cstride=1,color='c',alpha=1,linewidth=0)
 
-plt.savefig("scratch/directions-3d.png")
+plt.savefig("scratch/directions-3d-r%.2e.png"%(radius*RAD))
 if qshow:plt.show()
