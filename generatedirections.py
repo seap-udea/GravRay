@@ -38,6 +38,11 @@ try:
     iarg+=1
 except:qdeep=False
 
+try:
+    qshow=int(argv[iarg])
+    iarg+=1
+except:qshow=False
+
 print "Radius:",radius*RAD
 
 fdata="scratch/directions-r%.2e-unfiletered.dat"%(radius*RAD)
@@ -257,6 +262,7 @@ i=0
 bad=0
 
 sscomp=ss
+pscomp=ps
 indesa=np.arange(sscomp.shape[0])
 for s in ss:
     if (i%100)==0:
@@ -266,7 +272,7 @@ for s in ss:
     p=ps[i]
 
     if not qdeep:
-        cond=np.abs(np.abs(ps[:,0])-np.abs(p[0]))<=5*dx
+        cond=np.abs(np.abs(pscomp[:,0])-np.abs(p[0]))<=5*dx
         ssearch=sscomp[cond]
         indes=indesa[cond]
     else:
@@ -290,8 +296,9 @@ for s in ss:
         print "Bad point at (by index):",sscomp[ipresent]*RAD
         print "Closest point:",sscomp[iclosest]*RAD
         print "Distance recalculated:",arcDistance(s,sscomp[iclosest])*RAD
-        """
+        #"""
         sscomp=np.delete(sscomp,ipresent,0)
+        pscomp=np.delete(pscomp,ipresent,0)
         indesa=np.arange(sscomp.shape[0])
     else:
         ssgood+=[s]
@@ -308,12 +315,22 @@ print "Bad points: ",bad
 print "Final points: ",ssgood.shape[0]
 
 ###################################################
+#LAST CHECK
+###################################################
+dists=[]
+for s in ss:
+    dists+=[[arcDistance(s,t) for t in ssearch]]
+dists=np.array(dists)
+print dists[dists>=1e-5].sort()[:10]*RAD
+
+###################################################
 #PLOT INFORMATION ABOUT POINTS
 ###################################################
 
 #========================================
 #DISTANCE STATISTICS
 #========================================
+print "Map of minima..."
 distmins=np.array(distmins)*RAD
 distmaxs=np.array(distmaxs)*RAD
 
@@ -339,7 +356,7 @@ map=drawMap(proj=proj,proj_opts=dict(lon_0=180),
             mers_opts=dict(labels=[0,0,0,1],fontsize=8))
 plotMap(map,np.mod(ssgood[:,0],360),ssgood[:,1],lw=0,
         marker='o',color='r',ms=2,mec='none')
-plt.savefig("scratch/random-grid-blue-map.png")
+plt.savefig("scratch/directions-map.png")
 
 ###################################################
 #3D POINTS MAP
