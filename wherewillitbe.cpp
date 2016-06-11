@@ -11,33 +11,22 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   //GET ARGUMENTS
   ////////////////////////////////////////////////////
-  /*
-    Funcion: 
+  SpiceDouble tini,x,y,z,vx,vy,vz,duration;
+  SpiceInt npoints;
 
-      Propagate the orbit of an object in time starting at a given
-      position and time and including in the integration the combined
-      gravitational effect of the major planets in the Solar System.
+  if(argc==10){
+    tini=atof(argv[1]);
+    x=atof(argv[2]);
+    y=atof(argv[3]);
+    z=atof(argv[4]);
+    vx=atof(argv[5]);
+    vy=atof(argv[6]);
+    vz=atof(argv[7]);
+    duration=atof(argv[8])*365.25*GSL_CONST_MKSA_DAY;
+    npoints=atoi(argv[9]);
+  }else
+    argsError(argv[0]);
 
-    Arguments are: 
-
-      ephemeris time (in seconds), x, y, z, vx, vy, vz (in km and
-      km/s), duration (in sideral years = 365.25), number of
-      intermediate points (sampling points),
-
-    Example:
-
-      ./wherewillitbe.exe 4.80211267185610712e+08  -1.48536453607321531e+08 -8.62147140760204988e+05 -3.96733796100291074e+05 1.97063437949220379e+01 -2.74993804268180604e+01 -1.19226355280104350e+01 2.5 100
-
-  */
-  SpiceDouble tini=atof(argv[1]);
-  SpiceDouble x=atof(argv[2]);
-  SpiceDouble y=atof(argv[3]);
-  SpiceDouble z=atof(argv[4]);
-  SpiceDouble vx=atof(argv[5]);
-  SpiceDouble vy=atof(argv[6]);
-  SpiceDouble vz=atof(argv[7]);
-  SpiceDouble duration=atof(argv[8])*365.25*GSL_CONST_MKSA_DAY;
-  SpiceInt npoints=atoi(argv[9]);
   fprintf(stdout,"Integrating during %.17e seconds\n",duration);
   double direction=duration/abs(duration);
   fprintf(stdout,"Direction:%+.0f\n",direction);

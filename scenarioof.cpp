@@ -11,21 +11,12 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   //GET ARGUMENTS
   ////////////////////////////////////////////////////
-  /*
-    Funcion: 
-
-      Generate a file with the positions of all the objects in the
-      gravitational scenario for a given ray file.
-
-    Arguments are: 
-
-      ray file.
-
-    Example:
-
-      ./scenario.exe ray.dat
-  */
-  char* rayfile=argv[1];
+  char rayfile[100];
+  if(argc==2)
+    strcpy(rayfile,argv[1]);
+  else
+    argsError(argv[0]);
+  
   char line[1000];
   FILE* fr=fopen(rayfile,"r");
   fgets(line,1000,fr);
@@ -58,11 +49,12 @@ int main(int argc,char* argv[])
       fprintf(fs,"%-26s",header);
   }
   fprintf(fs,"\n\n");  
-  while(!feof(fr)){
+  while(1){
     ////////////////////////////////////////////////////
     //GET TIME
     ////////////////////////////////////////////////////
     fscanf(fr,"%lf",&et);
+    if(feof(fr)) break;
     for(i=2;i<=17;i++) fscanf(fr,"%lf",&tmp);
     printf("T = %.9e\n",et);
     
@@ -78,4 +70,9 @@ int main(int argc,char* argv[])
     fprintf(fs,"\n\n");
   }
   fclose(fs);
+
+  ////////////////////////////////////////////////////
+  //PLAIN OUTPUT
+  ////////////////////////////////////////////////////
+  fprintf(stdout,"--PLAIN--\n");
 }

@@ -1,15 +1,55 @@
 from gravray import *
 
 ###################################################
-#PARAMETERS
+#USAGE
 ###################################################
-radius=float(argv[1])*DEG
-try:qdeep=int(argv[2])
+usage="""Generate random directions over a sphere following a blue noise
+distribution (points are separated by a distance larger than a given
+minimum).
+
+python generatedirections.py <radius in degrees> [<perform a deep analysis?>]
+
+Where:
+
+  radius: minimum distance in degrees between generated points.
+
+  qdeep: 1 if you want that the final points generated be analysed
+         deeply to see if some of them are separated by distances
+         lower than the minimum.  All points (not only the closer
+         ones) will be analysed.  If qdeep=0 the vicinity analysis
+         will be done only over the closer points.
+
+The method was devised by Jorge I. Zuluaga and could be very
+inefficient for very small values of the radius."""
+
+###################################################
+#INPUT
+###################################################
+iarg=1
+try:
+    radius=float(argv[iarg])*DEG
+    iarg+=1
+except:
+    print usage
+    exit(1)
+
+try:
+    qdeep=int(argv[iarg])
+    iarg+=1
 except:qdeep=False
 
 print "Radius:",radius*RAD
-fdata="scratch/points-r%.2e.data"%(radius*RAD)
-fdataf="scratch/points-r%.2e-filtered.data"%(radius*RAD)
+
+fdata="scratch/directions-r%.2e-unfiletered.dat"%(radius*RAD)
+fdataf="directions-r%.2e.dat"%(radius*RAD)
+
+###################################################
+#PARAMETERS
+###################################################
+#Maximum number of points accepted in a cell
+MAXOCCUPY=5
+
+#
 
 ###################################################
 #CREATE GRID IN THE UNIT-SQUARE
@@ -47,7 +87,6 @@ delta=np.array([normedArcDistance([xs[i],ys[j]],[xs[i+1],ys[j+1]]) for i,j in zi
 ngrid=np.zeros((nx-1,ny-1))
 pgrid=[[[] for j in xrange(ny-1)] for i in xrange(nx-1)]
 fullfill=2*(nx-1)*(ny-1)
-print "Number of cells: ",(nx-1)*(ny-1)
 
 #========================================
 #GRID ROUTINES
@@ -110,6 +149,7 @@ jmax=len(js)-1
 
 n=1
 nrej=0
+np.random.seed(1)
 while True:
     #============================== 
     #INITIALIZE CELLS
@@ -132,8 +172,8 @@ while True:
     ix,iy=xy2ij(x,y)
     ng=ngrid[ix,iy]
 
-    #SKIP DOUBLE OCCUPIED CELLS
-    if ng>=5:continue
+    #SKIP POINT IF CELL IS OCCUPIED BY MAXOCCUPY POINTS
+    if ng>=MAXOCCUPY:continue
 
     #============================== 
     #NEIGHBOR CELLS
@@ -152,6 +192,7 @@ while True:
             if dist<=radius:
                 qaccept=False
                 nrej+=1
+                break
         if not qaccept:break
 
     #============================== 
@@ -172,7 +213,7 @@ while True:
     #============================== 
     cond=ngrid>0
     fill=int(ngrid[cond].sum())
-    if n>2*fullfill:
+    if n>MAXOCCUPY*fullfill:
         print "End by completion"
         break
     if nrej>fullfill:
@@ -192,8 +233,6 @@ for i in xrange(nx-1):
     for j in xrange(ny-1):
         for p in pgrid[i][j]:
             s=car2sph(p)
-            l,b=s
-            qaccept=True
             ps+=[p]
             ss+=[s]
 
@@ -207,40 +246,125 @@ np.savetxt(fdata,data)
 #FILTER POINTS
 ###################################################
 print "Filter points..."
-i=0
-bad=0
 print "Initial points: ",ss.shape[0]
 
 ssgood=[]
 psgood=[]
 distmins=[]
+distmaxs=[]
 dx=radius/PI
+i=0
+bad=0
+
+sscomp=ss
+indesa=np.arange(sscomp.shape[0])
 for s in ss:
     if (i%100)==0:
-        print TAB,"Testing distance to %d..."%i
+        print TAB,"Testing distance of %d..."%(i)
 
     l,b=s
     p=ps[i]
 
     if not qdeep:
-        ssearch=ss[np.abs(np.abs(ps[:,0])-np.abs(p[0]))<5*dx]
+        cond=np.abs(np.abs(ps[:,0])-np.abs(p[0]))<=5*dx
+        ssearch=sscomp[cond]
+        indes=indesa[cond]
     else:
-        ssearch=ss
+        indes=indesa
+        ssearch=sscomp
     i+=1
 
     dists=np.array([arcDistance(s,t) for t in ssearch])
-    dists=dists[dists>1e-5]
-    if min(dists)<=radius:
+    isort=dists.argsort()
+
+    #Check if the point is too close to other points
+    if dists[isort[1]]<=radius:
         bad+=1
+        ipresent=indes[isort[0]]
+        iclosest=indes[isort[1]]
+        """
+        print "Distances:",sorted(dists*RAD)[:5]
+        print "Sorted indexes: ",isort[:5]
+        print "Closest point: ",iclosest
+        print "Bad point at:",s*RAD
+        print "Bad point at (by index):",sscomp[ipresent]*RAD
+        print "Closest point:",sscomp[iclosest]*RAD
+        print "Distance recalculated:",arcDistance(s,sscomp[iclosest])*RAD
+        """
+        sscomp=np.delete(sscomp,ipresent,0)
+        indesa=np.arange(sscomp.shape[0])
     else:
         ssgood+=[s]
         psgood+=[p]
-        distmins+=[min(dists)]
+        distmins+=[min(dists[dists>1e-5])]
+        distmaxs+=[max(dists[dists>1e-5])]
 
 ssgood=np.array(ssgood)
 psgood=np.array(psgood)
-data=np.hstack((psgood,ssgood))
+data=np.hstack((psgood,ssgood*RAD))
 np.savetxt(fdataf,data)
 
 print "Bad points: ",bad
 print "Final points: ",ssgood.shape[0]
+
+###################################################
+#PLOT INFORMATION ABOUT POINTS
+###################################################
+
+#========================================
+#DISTANCE STATISTICS
+#========================================
+distmins=np.array(distmins)*RAD
+distmaxs=np.array(distmaxs)*RAD
+
+fig=plt.figure()
+ax=fig.gca()
+ax.hist(distmins)
+fig.savefig("scratch/distmin-distrib.png")
+
+fig=plt.figure()
+ax=fig.gca()
+ax.hist(distmaxs)
+fig.savefig("scratch/distmax-distrib.png")
+
+###################################################
+#MAP
+###################################################
+print "Map of points..."
+plt.close("all")
+proj='robin'
+map=drawMap(proj=proj,proj_opts=dict(lon_0=180),
+            pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
+            pars_opts=dict(labels=[1,1,0,0],fontsize=8),
+            mers_opts=dict(labels=[0,0,0,1],fontsize=8))
+plotMap(map,np.mod(ssgood[:,0],360),ssgood[:,1],lw=0,
+        marker='o',color='r',ms=2,mec='none')
+plt.savefig("scratch/random-grid-blue-map.png")
+
+###################################################
+#3D POINTS MAP
+###################################################
+print "3D Map of points..."
+ls=np.mod(ssgood[:,0],360.0)
+bs=ssgood[:,1]
+
+xs=np.cos(bs*DEG)*np.cos(ls*DEG)
+ys=np.cos(bs*DEG)*np.sin(ls*DEG)
+zs=np.sin(bs*DEG)
+
+plt.close("all")
+fig=plt.figure()
+ax3d=plt3d(fig)
+ax3d.set_aspect('equal')
+
+u,v=np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+x=np.cos(u)*np.sin(v)
+y=np.sin(u)*np.sin(v)
+z=np.cos(v)
+
+ax3d.plot_wireframe(x, y, z, color="k")
+ax3d.plot(xs,ys,zs,'o')
+ax3d.plot_surface(x,y,z,rstride=1,cstride=1,color='c',alpha=1,linewidth=0)
+
+plt.savefig("scratch/directions-3d.png")
+if qshow:plt.show()

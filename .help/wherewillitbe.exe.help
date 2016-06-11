@@ -1,0 +1,16 @@
+Funcion: 
+
+  Propagate the orbit of an object in time starting at a given
+  position and time and including in the integration the combined
+  gravitational effect of the major planets in the Solar System.
+
+Arguments are: 
+
+  ephemeris time (in seconds), x, y, z, vx, vy, vz (in km and
+  km/s), duration (in sideral years = 365.25), number of
+  intermediate points (sampling points),
+
+Example:
+
+  ./wherewillitbe.exe 4.80211267185610712e+08  -1.48536453607321531e+08 -8.62147140760204988e+05 -3.96733796100291074e+05 1.97063437949220379e+01 -2.74993804268180604e+01 -1.19226355280104350e+01 2.5 100
+

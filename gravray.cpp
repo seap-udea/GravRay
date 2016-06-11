@@ -53,7 +53,7 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define YEAR (365.25*GSL_CONST_MKSA_DAY)
 #define DAY GSL_CONST_MKSA_DAY
 #define AU GSL_CONST_MKSA_ASTRONOMICAL_UNIT
-
+#define VESC_EARTH 11.217 //km/s
 //////////////////////////////////////////
 //BEHAVIOR
 //////////////////////////////////////////
@@ -173,6 +173,9 @@ struct ObserverStruct{
 
   //Rotaion velocity of a still observer with respect to ITRF93
   SpiceDouble v[3];
+
+  //Direction of velocity in the direction (A,a) with respect to ECLIPJ2000
+  SpiceDouble uv[3];
 
   //Earth position at observer epoch
   SpiceDouble earth[6];
@@ -746,6 +749,26 @@ int observerVelocity(struct ObserverStruct *observer,
   //VELOCITY W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
   vadd_c(observer->earth+3,observer->posj2000+3,observer->posabs+3);
 
+  /*NEW*/
+  //************************************************************
+  //COMPUTING DIRECTION OF INCOMING VELOCITY IN ECLIPJ2000
+  /*
+    It takes into account Earth rotation effect on velocity
+   */
+  //************************************************************
+  SpiceDouble uv[3],nuv;
+  if(Az==0 && elev==0 && v==0){
+    vpack_c(0,0,0,vloc);
+  }else{
+    vpack_c(ch*cA,-ch*sA,sh,uv);
+  }
+  //IMPACT DIRECTION IS THE INVERSE
+  vscl_c(-1,uv,uv);
+  //DIRECTION IN SPACE W.R.T. TO ITRF93
+  mxv_c(observer->hi,uv,vmot);
+  //DIRECTION IN SPACE W.R.T. ECLIPJ2000
+  mxv_c(observer->MEJ,vmot,observer->uv);
+
   return 0;
 }
 
@@ -843,4 +866,13 @@ int rayPropagation(struct ObserverStruct *observer,
   copyVec(elements,E,6);
 
   return 0;
+}
+
+int argsError(char* pname,char* msg="Bad options.")
+{
+    char cmd[1000];
+    sprintf(cmd,"cat .help/%s.help",pname);
+    fprintf(stderr,msg);
+    system(cmd);
+    exit(1);
 }

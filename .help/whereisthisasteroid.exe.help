@@ -1,0 +1,20 @@
+
+Function: 
+
+  Calculate the state vector (position and velocity) with respect
+  to the Solar System Barycenter of an asteroid
+
+Arguments are: 
+
+  asteroid, dat
+
+Date format:
+
+   MM/DD/CCYY HH:MM:SS.dcm UTC-L
+
+Example:
+
+   ./whereisthisasteroid EROS "07/19/2015 00:00:00.000 UTC-5"
+
+For a list of available available asteroids see the end of the sourcefile.
+

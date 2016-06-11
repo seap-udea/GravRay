@@ -35,7 +35,7 @@ out=System("./wherewillitbe.exe %s %s %.17e 100 > /tmp/out.log"%\
 timeIt()
 
 print "Computing scenario position..."
-out=System("./scenario.exe ray.dat")
+out=System("./scenarioof.exe ray.dat")
 timeIt()
 
 #############################################################

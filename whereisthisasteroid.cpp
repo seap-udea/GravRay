@@ -11,44 +11,30 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   //GET ARGUMENTS
   ////////////////////////////////////////////////////
-  /*
-    Funcion: 
-
-      Calculate the state vector (position and velocity) with respect
-      to the Solar System Barycenter of an asteroid
-
-    Arguments are: 
-
-      asteroid, dat
-
-    Date format:
-
-       MM/DD/CCYY HH:MM:SS.dcm UTC-L
-
-    Example:
-
-       ./whereisthisasteroid EROS "07/19/2015 00:00:00.000 UTC-5"
-
-    Available asteroids see list at the end
-
-  */
   SpiceChar date[100],obj[100];
   SpiceDouble t,tjd,ltmp,dt;
 
-  strcpy(obj,argv[1]);
-  strcpy(date,argv[2]);
-  if(strcmp(date,"ET")==0){
-    t=atof(argv[3]);
-  }else{
-    ////////////////////////////////////////////////////
-    //GET EPHEMERIS TIME
-    ////////////////////////////////////////////////////
-    str2et_c(date,&t);
-    deltet_c(t,"et",&dt);
-    fprintf(stdout,"DT = %.2lf\n",dt);
-    fprintf(stdout,"TT = %.9e\n",t);
-    t-=dt;
-  }
+  if(argc>=3){
+    strcpy(obj,argv[1]);
+    strcpy(date,argv[2]);
+    if(strcmp(date,"ET")==0){
+      if(argc==4)
+	t=atof(argv[3]);
+      else
+	argsError(argv[0],"No ET provided.");
+    }else{
+      ////////////////////////////////////////////////////
+      //GET EPHEMERIS TIME
+      ////////////////////////////////////////////////////
+      str2et_c(date,&t);
+      deltet_c(t,"et",&dt);
+      fprintf(stdout,"DT = %.2lf\n",dt);
+      fprintf(stdout,"TT = %.9e\n",t);
+      t-=dt;
+    }
+  }else
+    argsError(argv[0]);
+
   //CORRECT TIME FOR DELTAT.  NOW T IS TDB
   fprintf(stdout,"TDB = ");
   fprintf(stdout,"%.9e ",t);

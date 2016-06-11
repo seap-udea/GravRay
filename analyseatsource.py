@@ -9,7 +9,8 @@ print "*"*80,"\nAnalysing data in '%s'\n"%fname,"*"*80
 #############################################################
 #CONSTANTS AND NUMERICAL PARAMETERS
 #############################################################
-Ninitial=530
+#Ninitial=530
+Ninitial=150
 
 #Weighting factor for computing density
 def wFunction(d,h):
@@ -99,7 +100,7 @@ for n in xrange(Nphys):
     e=ees[n]
     i=ies[n]
     
-    if (n%100)==0:
+    if (n%100)==0 or 1:
         print "Direction %d:"%n,q,e,i
         
     distform="POW(Perihelion_dist-%.17e,2)+POW(e-%.17e,2)+POW((i-%.17e)/45.,2)"%(q,e,i)

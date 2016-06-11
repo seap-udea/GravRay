@@ -11,34 +11,17 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   //GET ARGUMENTS
   ////////////////////////////////////////////////////
-  /*
-    Funcion: 
-      Calculate the position and velocity of an observer at a given
-      geographic position and having a given velocity in space with
-      respect to the local reference frame.
-
-    Arguments are: 
-
-      latitude (degrees), longitude (degrees), elevation (meters),
-      elevation (degrees), azimuth (degrees), velocity (km/s), date
-
-    Date format:
-       MM/DD/CCYY HH:MM:SS.dcm UTC-L
-
-    Example:
-
-       ./whereami.exe 6.2 -75.34 1450.0 45.0 0.0 1.0 "07/19/2015 00:00:00.000 UTC-5"
-
-       ./whereami.exe 0.0 0.0 1560.0 45.0 0.0 1.0 "07/19/2015 10:00:00.000 UTC"
-  */
   SpiceChar date[100];
-  SpiceDouble lat=atof(argv[1]);
-  SpiceDouble lon=atof(argv[2]);
-  SpiceDouble alt=atof(argv[3]);
-  SpiceDouble h=atof(argv[4]);
-  SpiceDouble Az=atof(argv[5]);
-  SpiceDouble v=atof(argv[6]);
-  strcpy(date,argv[7]);
+  SpiceDouble lat,lon,alt,h,Az,v;
+  if(argc==8){
+    lat=atof(argv[1]);
+    lon=atof(argv[2]);
+    alt=atof(argv[3]);
+    h=atof(argv[4]);
+    Az=atof(argv[5]);
+    v=atof(argv[6]);
+    strcpy(date,argv[7]);
+  }else argsError(argv[0]);
 
   ////////////////////////////////////////////////////
   //GET EPHEMERIS TIME

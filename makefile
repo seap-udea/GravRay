@@ -1,6 +1,6 @@
-include compiler
+include compiler.in
 
-PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenario.exe launchmany.exe specialobservers.exe
+PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenarioof.exe throwrays.exe whereonearth.exe
 
 all:$(PROGRAMS)
 
@@ -47,5 +47,5 @@ unpack:
 	@echo "Done."
 
 #Programs that depend on objects.hpp
-launchmany.exe scenario.exe wherewillitbe.exe:objects.hpp
+launchmany.exe scenarioof.exe wherewillitbe.exe:objects.hpp
 

@@ -46,7 +46,7 @@ for i in xrange(npoints):
 
     print "*"*80,"\nCalculating elements for lat = %e, lon = %e...\n"%(lat,lon),"*"*80
     f.write("%e %e\n"%(lat,lon))
-    cmd="time ./launchmany.exe %.9e %.5e %.5e %.4e initial.dat %s/elements-lat_%.5e__lon_%.5e.data"%(t,lat,lon,h,ensdir,lat,lon)
+    cmd="time ./throwrays.exe %.9e %.5e %.5e %.4e initial.dat %s/elements-lat_%.5e__lon_%.5e.data"%(t,lat,lon,h,ensdir,lat,lon)
     system(cmd)
 
 f.close()

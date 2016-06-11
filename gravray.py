@@ -147,6 +147,7 @@ def mysqlSelect(selection="*",table="Bodies",condition="limit 100",typereturn="d
     """
     #QUERY
     sql="select %s from %s %s"%(selection,table,condition)
+    print sql
     DB.execute(sql)
     results=DB.fetchall()
 

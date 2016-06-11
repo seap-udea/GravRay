@@ -1,0 +1,20 @@
+
+Function: 
+
+  Calculate the ephemeris time at a given date.
+
+Arguments are: 
+
+  date, output system
+
+Date format:
+
+   MM/DD/CCYY HH:MM:SS.dcm UTC-L
+
+Output system:
+
+   Available: TAI, TDT, TDB, ET, JED, JDTDB, JDTDT
+
+Example:
+
+   ./whattimeisit "07/19/2015 00:00:00.000 UTC-5" ET

@@ -10,9 +10,9 @@ static int ACTIVE[]={
   1,//MOON
   1,//MARS
   1,//JUPITER
-  0,//SATURN
-  0,//URANUS
-  0,//NEPTUNE
+  1,//SATURN
+  1,//URANUS
+  1,//NEPTUNE
 };
 //*/
 

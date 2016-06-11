@@ -9,44 +9,21 @@ int main(int argc,char* argv[])
   initSpice();
 
   ////////////////////////////////////////////////////
-  //GET ARGUMENTS
-  ////////////////////////////////////////////////////
-  /*
-    Funcion: 
-
-      Launch many objects from a given location on Earth.
-
-    Arguments are: 
-
-      ephemeris time (in seconds), latitude (degrees), longitude
-      (degrees), elevation (meters), file initial conditions
-
-    Example:
-
-      ./launchmany.exe 4.141704340e+08 54.456093 63.492323 8.234765e+04 initial.dat.temp elements.dat
-
-      These are the initial conditions for the Chelyabinsk
-      meteoroid. If everything is correct the result will be:
-
-      Integrating for h = 17.66, A = 104.98, v = 20.46 Observer
-      position: -1.232674e+08 8.134791e+07 -3.465527e+03 -3.359174e+01
-      -1.543290e+01 -6.384145e+00 
-
-      Final elements: 0.702040 0.612004 5.848491 326.515954 102.986331
-      81.443436
-
-  */
-  ////////////////////////////////////////////////////
   //INPUTS
   ////////////////////////////////////////////////////
   SpiceChar file[1000],outfile[1000];
-  SpiceDouble t=atof(argv[1]);
-  SpiceDouble lat=atof(argv[2]);
-  SpiceDouble lon=atof(argv[3]);
-  SpiceDouble alt=atof(argv[4]);
-  strcpy(file,argv[5]);
-  strcpy(outfile,argv[6]);
+  SpiceDouble t,lat,lon,alt;
 
+  if(argc==7){
+    t=atof(argv[1]);
+    lat=atof(argv[2]);
+    lon=atof(argv[3]);
+    alt=atof(argv[4]);
+    strcpy(file,argv[5]);
+    strcpy(outfile,argv[6]);
+  }else
+    argsError(argv[0]);
+  
   ////////////////////////////////////////////////////
   //INITIALIZE OBSERVER
   ////////////////////////////////////////////////////
@@ -61,7 +38,7 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   int ncond=1;
   int ncoll=0;
-  SpiceDouble h,Az,v;
+  SpiceDouble h,Az,v,speed;
   SpiceDouble elements[6];
   SpiceDouble deltat=-2.0;
   char line[1000];
@@ -85,8 +62,9 @@ int main(int argc,char* argv[])
     //DETERMINE POSITION FOR THIS INITIAL CONDITION
     ////////////////////////////////////////////////////
     observerVelocity(&observer,h,Az,v);
-    fprintf(stdout,"\tObserver position: %s\n",vec2strn(observer.posabs,6,"%.17e "));
-    ncond++;
+    fprintf(stdout,"\tObserver position (ECLIPJ2000): %s\n",vec2strn(observer.posabs,6,"%.8e "));
+    speed=vnorm_c(observer.posabs+3);
+    fprintf(stdout,"\tObserver speed: %e\n",speed);
 
     ////////////////////////////////////////////////////
     //PROPAGATE
@@ -103,8 +81,9 @@ int main(int argc,char* argv[])
     ////////////////////////////////////////////////////
     //SAVE
     ////////////////////////////////////////////////////
-    //Components of elements vector: q,e,i,Omega,omega,M
-    fprintf(stdout,"\tFinal elements: %s\n",vec2strn(elements,6,"%lf "));
+    fprintf(stdout,"\tFinal elements for ray %d: %s\n",
+	    ncond,
+	    vec2strn(elements,6,"%lf "));
     fprintf(fe,"%s%s\n",
 	    vec2strn(observer.posabs,6,"%-26.17e"),
 	    vec2strn(elements,6,"%-+26.17e"));

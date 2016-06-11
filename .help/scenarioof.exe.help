@@ -1,0 +1,12 @@
+Function: 
+
+  Generate a file with the positions of all the objects in the
+  gravitational scenario for a given ray file.
+
+Arguments are: 
+
+  ray file.
+
+Example:
+
+  ./scenario.exe ray.dat
