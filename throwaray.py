@@ -1,16 +1,43 @@
 from gravray import *
 
 #############################################################
+#USAGE
+#############################################################
+usage="""Launch an object into orbit.
+
+python throwaray.py <lat> <lon> <alt> <elev> <azim> <vimp> <date> <tspan> [npoints]
+
+Where:
+
+   <lat>,<lon>: latitude and longitude in degrees.
+   <alt>: altitude in meters.
+   <elev>,<azim>: elevation and azimuth in degrees.
+   <vimp>: impact velocity in km/s
+   <date>: date in format MM/DD/CCYY HH:MM:SS.dcm UTC-L
+   <tspan>: integration time (in years)
+   <npoints>: sampling points
+
+"""
+
+#############################################################
 #INPUT
 #############################################################
-lat=float(argv[1])
-lon=float(argv[2])
-alt=float(argv[3])
-elev=float(argv[4])
-azim=float(argv[5])
-vimp=float(argv[6])
-date=argv[7]
-tspan=float(argv[8])
+try:
+    lat=float(argv[1])
+    lon=float(argv[2])
+    alt=float(argv[3])
+    elev=float(argv[4])
+    azim=float(argv[5])
+    vimp=float(argv[6])
+    date=argv[7]
+    tspan=float(argv[8])
+except:
+    print usage
+    exit(1)
+
+try:
+    npoints=int(argv[9])
+except:npoints=100
 
 t=0
 #############################################################
@@ -29,9 +56,9 @@ timeIt()
 #INTEGRATE ORBIT
 #############################################################
 print "Integrating orbit..."
-out=System("./wherewillitbe.exe %s %s %.17e 100 > /tmp/out.log"%\
-           (props["TDB"],vec2str(props["ECJ2000(6)"]),tspan))
-
+cmd="./wherewillitbe.exe %s %s %.17e %d > /tmp/out.log"%\
+    (props["TDB"],vec2str(props["ECJ2000(6)"]),tspan,npoints)
+out=System(cmd)
 timeIt()
 
 print "Computing scenario position..."
@@ -42,6 +69,7 @@ timeIt()
 #GET FINAL ORBITAL ELEMENTS
 #############################################################
 data=np.loadtxt("ray.dat")
+print data.shape
 elements=data[-1,9:]
 print "Orbital elements:"
 print TAB,"q = ",elements[0]/UL
@@ -84,7 +112,7 @@ axe.set_xticklabels([])
 for ax in axq,axe,axi:
     ax.grid()
 
-fig.savefig("scratch/elements.png")
+fig.savefig("scratch/ray-elements.png")
 plt.close("all")
 timeIt()
 
@@ -94,12 +122,7 @@ timeIt()
 print "Plotting trajectory..."
 fig3d=plt.figure()
 ax=plt3d(fig3d)
-
-#==============================
-#RAY
-#==============================
 data[:,1:7]=np.array([data[i,1:7]/STATECONV for i in xrange(data.shape[0])])
-ax.plot(data[:,1],data[:,2],data[:,3],'k-',label='Ray')
 
 #==============================
 #SCENARIO
@@ -117,8 +140,12 @@ for objid in objects:
         ax.plot(objdata[cond,0],objdata[cond,1],objdata[cond,2],
                 marker='o',mec='none',ms=3,lw=0,label='%s'%OBJECTS[objid])
 
+#==============================
+#RAY
+#==============================
+ax.plot(data[:,1],data[:,2],data[:,3],'k-',label='Ray')
+
 ax.legend(loc="best")
-fig3d.savefig("scratch/trajectory3d.png")
 
 ax.set_xlim(-ext,ext)
 ax.set_ylim(-ext,ext)
@@ -127,6 +154,6 @@ ax.set_zlim(-ext,ext)
 ax.set_xlabel('x (AU)')
 ax.set_ylabel('y (AU)')
 ax.set_zlabel('z (AU)')
-fig3d.savefig("scratch/orbit.png")
+fig3d.savefig("scratch/ray-orbit.png")
 
 timeIt()

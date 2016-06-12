@@ -11,7 +11,7 @@ cleancrap:
 
 cleanexe:
 	@echo "Cleaning executable..."
-	@rm -rf *.pyc *.out *.exe
+	@rm -rf *.pyc *.out *.exe *.log
 
 clean:cleancrap cleanexe
 	@echo "Cleaning..."

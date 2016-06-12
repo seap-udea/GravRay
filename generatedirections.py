@@ -320,6 +320,7 @@ print "Final points: ",ssgood.shape[0]
 ###################################################
 #LAST CHECK
 ###################################################
+"""
 print "Last check..."
 dists=[]
 npoints=ssgood.shape[0]
@@ -330,6 +331,7 @@ dists=dists[dists>1e-5]
 dists.sort()
 print "Minima: ",dists[:5]*RAD
 timeIt()
+#"""
 
 ###################################################
 #PLOT INFORMATION ABOUT POINTS

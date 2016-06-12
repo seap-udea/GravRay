@@ -69,8 +69,11 @@ int main(int argc,char* argv[])
   SpiceDouble cA=cos(D2R(Az)),sA=sin(D2R(Az)),ch=cos(D2R(h)),sh=sin(D2R(h));
   vpack_c(v*ch*cA,-v*ch*sA,v*sh,vloc);
   fprintf(stdout,"\tVelocity observer w.r.t. LOCAL (outwards): %s\n",vec2str(vloc,"%.17e"));
-  vscl_c(-1,vloc,vloc);
-  fprintf(stdout,"\tVelocity observer w.r.t. LOCAL (inwards): %s\n",vec2str(vloc,"%.17e"));
+  /*
+    //IN CASE YOU NEED THE NEGATIVE VELOCITY
+    vscl_c(-1,vloc,vloc);
+    fprintf(stdout,"\tVelocity observer w.r.t. LOCAL (inwards): %s\n",vec2str(vloc,"%.17e"));
+  */
 
   //VELOCITY OF OBSERVER IN SPACE W.R.T. TO ITRF93
   mxv_c(hi,vloc,vmotitrf93);

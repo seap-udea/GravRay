@@ -1,11 +1,44 @@
 from gravray import *
 
 ###################################################
+#USAGE
+###################################################
+usage="""Generate initial conditions file for a GRT analysis.
+
+python generateinitialconditions.py <file.dirs> <file.vels> <file.initial>
+
+Where:
+
+  <file.dirs>: file with random directions to be used as Azimuths
+  (longitude) and latitudes.  It can be generated using
+  generatedirections.py script. There are a set of precalculated
+  directions that could be used here and that are in the util/data
+  directory
+
+  <file.vels>: file with the list of velocities that will be used in
+  the simulation.
+
+  <file.initial>: output file cointaining the initial conditions of
+  the simulation (a matrix with Az, h and v).
+
+"""
+
+###################################################
 #INPUTS
 ###################################################
-randir=argv[1]
-ranvel=argv[2]
-inifile=argv[3]
+iarg=1
+try:
+    randir=argv[iarg];iarg+=1
+    ranvel=argv[iarg];iarg+=1
+    inifile=argv[iarg];iarg+=1
+except:
+    print usage
+    exit(1)
+try:
+    qshow=int(argv[iarg])
+    iarg+=1
+except:qshow=False
+
 f=open(inifile,"w")
 datadir=np.loadtxt(randir)
 datavel=np.loadtxt(ranvel)
@@ -56,7 +89,8 @@ z=np.cos(v)
 ax3d.plot_wireframe(x, y, z, color="k")
 ax3d.plot(xs,ys,zs,'o')
 ax3d.plot_surface(x,y,z,rstride=1,cstride=1,color='c',alpha=1,linewidth=0)
-plt.show()
+plt.savefig("scratch/initial-directions.png")
+if qshow:plt.show()
 
 ###################################################
 #END GENERATION
