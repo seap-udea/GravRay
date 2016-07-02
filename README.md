@@ -51,9 +51,9 @@ Once cloned you need to perform the following basic actions (just once):
 
 1. Create a copy of the "compiler.in.temp" as the file "compile.in":
 
-```
+   ```
        cp compile.in.temp compile.in
-```
+   ```
 
 2. Set your system architecture.  Edit "compiler" file and uncomment
    your architecture (32 or 64 bits).  GravRay used precompiled
