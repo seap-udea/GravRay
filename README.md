@@ -325,9 +325,9 @@ Thus you may run a program in two ways:
    4.90536036000000000e+08
    ```
 
-You should notice that the plain information declares which
-information will be displayed below, in this case the time information
-returned by the program.
+   You should notice that the plain information declares which
+   information will be displayed below, in this case the time information
+   returned by the program.
 
 Testing the accuracy
 --------------------
@@ -337,9 +337,9 @@ You can test the accuracy of the programs with different methods.
 1. Comparing the results with NASA Horizons system.  For that purpose
    you may just run the ``tests/test-positions.sh`` script.
 
-```
+   ```
        bash tests/test-positions.sh "07/19/2015 00:00:00.000 UTC"
-```
+   ```
 
    This will create an output file ``scratch/test-positions.log`` with
    the position of the major planets at a given date.  Go to NASA
@@ -349,15 +349,15 @@ You can test the accuracy of the programs with different methods.
    comparing the results with its expected position according to
    SPICE.  You can run this test with:
 
-```
-       bash tests/test-integrator.sh Planet MOON
-```
+   ```
+       python tests/test-integrator.sh Planet MOON
+   ```
 
    or:
 
-```
-       bash tests/test-integrator.sh Asteroid EROS
-```
+   ```
+       python tests/test-integrator.sh Asteroid EROS
+   ```
 
    This script will integrate the orbit of the given object using as
    force field the list of objects in ``objects.hpp``.  It is important
@@ -365,11 +365,11 @@ You can test the accuracy of the programs with different methods.
    disable in ``objects.hpp`` the respective planet. Not modification of
    this file is needed when is the case of an Asteroid.
 
-   The test will produce the following files: dray.dat (difference
+   The test will produce the following files: ``dray.dat`` (difference
    between the integrated and the SPICE trajectory),
-   dray-pos(vel).png, dray-dist-pos(vel).png (different among the
-   integrated position and velocities and the SPICE ones), and
-   dray3d.png, which is the trajectory of the ray in 3D.
+   ``dray-pos(vel).png``, ``dray-dist-pos(vel).png`` (different among
+   the integrated position and velocities and the SPICE ones), and
+   ``dray3d.png``, which is the trajectory of the ray in 3D.
 
    All these file are generated in the ``scratch`` directory.
 
@@ -377,9 +377,9 @@ You can test the accuracy of the programs with different methods.
    difference. This is a classical test of an integrator.  You may run
    this test similarly as the previous tests:
 
-```
+   ```
        bash tests/test-direction.sh Planet MOON
-```
+      ```
 
    or:
 
