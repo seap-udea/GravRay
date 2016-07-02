@@ -1,7 +1,7 @@
 Gravitational Raytracing
 ========================
 
-A software by Jorge I. Zuluaga (C) 2016
+## A software by Jorge I. Zuluaga (C) 2016
 
 Presentation
 ------------
@@ -9,7 +9,6 @@ Presentation
 *GravRay* is a package that implements the "Gravitational Raytracing"
 method [1]. The method was originally devised by Jorge I. Zuluaga of
 the Solar, Earth and Planetary Physics Group of the University of
-Antioquia and developed with the collaboration of Mario Sucerquia.
 
 The method was originally intended for studying the spatial
 distribution of meteoroid and asteroid impacts on the Earth.  However
@@ -39,7 +38,7 @@ use:
 ```
    git clone git@github.com:seap-udea/GravRay.git
 ```
-  
+
 The package uses ~300 Mb of disk space (represented mainly by SPICE
 Kernels which are used to calculate accurately the position of Solar
 System objects).
@@ -69,7 +68,7 @@ Once cloned you need to perform the following basic actions (just once):
 
 4. Compile the codes.  For this you will need "g++" installed in the
    machine.
-   
+
 ```
        make
 ```
@@ -95,7 +94,7 @@ and run:
 Then go to the MPCDatabase directory and run:
 
 ```
-   cat user.sql database.sql | mysql -u root -p 
+   cat user.sql database.sql | mysql -u root -p
 ```
 
 You will need the password of root user in your mysql server.
@@ -211,7 +210,7 @@ example tests you may run:
     ./whereisthisasteroid.exe EROS "07/19/2015 00:00:00.000 UTC-5"
 ```
 
-  or 
+  or
 
 ```
     ./whereisthisasteroid.exe EROS ET 4.905360682e+08
@@ -332,7 +331,7 @@ You can test the accuracy of the programs with different methods.
 
 1. Comparing the results with NASA Horizons system.  For that purpose
    you may just run the "tests/test-positions.sh" script.
-   
+
 ```
        bash tests/test-positions.sh "07/19/2015 00:00:00.000 UTC"
 ```
@@ -378,7 +377,7 @@ You can test the accuracy of the programs with different methods.
 ```
 
    or:
-   
+
 ```
        bash tests/test-direction.sh Asteroid EROS
 ```
@@ -512,7 +511,7 @@ Below we describe the scripts:
    at a given velocity.
 
   Usage:
-      
+
   python throwaray.py <lat> <lon> <alt> <elev> <azim> <vimp> <date> <tspan> [npoints]
 
   Where:
@@ -524,12 +523,11 @@ Below we describe the scripts:
    <date>: date in format MM/DD/CCYY HH:MM:SS.dcm UTC-L
    <tspan>: integration time (in years)
    <npoints>: sampling points
-  
+
   Example: This example launch to space the Chelyabinsk impactor.  The
   negative velocity is chosen because the object is impacting;
   correspondingly the total time is also chosen negative.
-  
+
 ```
   python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
 ```
-	   
