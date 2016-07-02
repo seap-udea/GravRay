@@ -19,10 +19,10 @@ bodies entrance to earth sphere of influence).
 
 If you use or modify this package please cite:
 
->   [1] Zuluaga, J.I. and Sucerquia, M., Towards a theoretical
->   determination of the geogpraphical probability distibution of
->   meteoroid impacts, Planetary and Space Science, under submission
->   (2016).
+>   "[1] Zuluaga, J.I. and Sucerquia, M., Towards a theoretical
+   determination of the geogpraphical probability distibution of
+   meteoroid impacts, Planetary and Space Science, under submission
+   (2016)."
 
 Get the package
 ---------------
@@ -49,8 +49,7 @@ Basic configuration
 
 Once cloned you need to perform the following basic actions (just once):
 
-1. Create the compiler information file "compile.in".  Copy the
-   template "compiler.in.temp" as the local file:
+1. Create a copy of the "compiler.in.temp" as the file "compile.in":
 
 ```
        cp compile.in.temp compile.in
