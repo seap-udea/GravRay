@@ -48,13 +48,14 @@ Basic configuration
 
 Once cloned you need to perform the following basic actions (just once):
 
-1. Create a copy of the "compiler.in.temp" as the file "compile.in":
+1. Create a copy of the template file ``compiler.in.temp`` as the file
+   ``compile.in``:
 
    ```
        cp compile.in.temp compile.in
    ```
 
-2. Set your system architecture.  Edit "compiler" file and uncomment
+2. Set your system architecture.  Edit ``compiler`` file and uncomment
    your architecture (32 or 64 bits).  GravRay used precompiled
    versions of two of its main dependencies, namely CSPICE and GSL.
 
@@ -62,29 +63,29 @@ Once cloned you need to perform the following basic actions (just once):
    than 100 Mb) need to be splitted for distribution with git.  Before
    using the package "unsplit" them using:
 
-```
+   ```
        make unpack
-```
+   ```
 
-4. Compile the codes.  For this you will need "g++" installed in the
+4. Compile the codes.  For this you will need "g++`` installed in the
    machine.
 
-```
+   ```
        make
-```
+   ```
 
-If everything compiles as expected you're ready to use the package.
+   If everything compiles as expected you're ready to use the package.
 
 The MPC Database
 ----------------
 
-Before using the package some modules will also need a copy of the
+Before using some modules of the package will also need a copy of the
 Minor Planet Center database.
 
 We have independently prepared a MySQL easy to install version of the
 database that can be downloaded also from our github repository.
 
-For downloading and installing the database go to the "util" directory
+For downloading and installing the database go to the ``util`` directory
 and run:
 
 ```
@@ -94,7 +95,7 @@ and run:
 Then go to the MPCDatabase directory and run:
 
 ```
-   cat user.sql database.sql | mysql -u root -p
+   cat database.sql user.sql | mysql -u root -p
 ```
 
 You will need the password of root user in your mysql server.
@@ -111,50 +112,51 @@ Structure of the package
 
 The package has a set of programs having specific functionalities.
 
-Programs has easy to recall names such as "whattimeisit" or
-"wherewillitbe".
+Programs has easy to recall names such as ``whattimeisit`` or
+``wherewillitbe``.
 
 Below I summarize the functionality of the most important programs:
 
-- *whattimeisit*: convert from standard date format to ephemeris time
+- ``whattimeisit``: convert from standard date format to ephemeris time
    and Julian Date.
 
-- *whereami*: compute the cartesian coordinates and velocity of an
+- ``whereami``: compute the cartesian coordinates and velocity of an
    observer in the surface of the Earth with respect to the Solar
    System Barycenter in the ecliptic reference frame of the epoch.
 
-- *whereisit*: compute the position of a given major solar system
+- ``whereisit``: compute the position of a given major solar system
    object with respect to the SSB in the EclipticJ2000 reference
    frame.
 
-- *whereisthisasteroid*: the same as "whereisit" but for major
+- ``whereisthisasteroid``: the same as ``whereisit`` but for major
    Asteroids.
 
-- *whereisinsky*: calculates the position in the sky (RA, DEC, Az,
+- ``whereisinsky``: calculates the position in the sky (RA, DEC, Az,
    Alt) of a given object with respect to a given observer in the
-   surface of the Earth.
+   surface of the Earth (precision of the results below 1 arcsec).
 
-- *wherewillitbe*: integrates the trajectory of a test particle in the
-   scenario defined by the objects listed in *objects.hpp*.
+- ``wherewillitbe``: integrates the trajectory of a test particle in the
+   scenario defined by the objects listed in ``objects.hpp``.
 
-- *scenarioof*: calculates the position of major solar system objects at
+- ``scenarioof``: calculates the position of major solar system objects
+   at the times defined in a ray trajectory (the output of
+   wherewillitbe).
+
+- ``scenarioof``: calculates the position of major solar system objects at
    the times defined in a ray trajectory.
 
-- *scenarioof*: calculates the position of major solar system objects at
-   the times defined in a ray trajectory.
-
-- *whereonearth*: calculates matrices defining certain regions of
+- ``whereonearth``: calculates matrices defining certain regions of
    interest on the earth (angle with respect to velocity vector - apex
    = 1, antiapex = -1, cosine of ecliptic colatitude - ecliptic = 0,
    among others).
 
-- *throwrays*: this program will throw many rays starting in a given place
+- ``throwrays``: this program will throw many rays starting in a given place
    in the world.  
 
 The main routines and information required for all the programs are in
-the master file *gravray.cpp*.  The list of objects used on any
-integration is defined in the *objects.hpp* file.  When you change
-this file you should recompile the programs using "make all".  It will
+the master file ``gravray.cpp``.  The list of objects used on any
+integration is defined in the ``objects.hpp`` file.  When you change
+this file you should recompile the programs using ``make all``.  It will
 only recompile the files depending on the objects file.
 
 Testing the package
@@ -166,118 +168,121 @@ example tests you may run:
 
 - Get the ephemeris time of a given date:
 
-```
+  ```
     ./whattimeisit.exe <date> <output_system>
-```
+  ```
 
-```
+  ```
     ./whattimeisit.exe "07/19/2015 00:00:00.000 UTC-5" ET
-```
+  ```
 
 - Calculate the position of an observer on the Earth:
 
-```
+  ```
     ./whereami.exe <lat(deg)> <lon(deg)> <alt(m)> <elev(deg)> <azim(deg)> <vel(km/s)> <date>
-```
+  ```
 
-```
+  ```
     ./whereami.exe 6.2 -75.34 1450.0 45.0 0.0 1.0 "07/19/2015 00:00:00.000 UTC-5"
-```
+  ```
 
 - Calculate the position of a major solar system object:
 
-```
+  ```
     ./whereisit.exe <object> [<date> | ET <time>]
-```
+  ```
 
-```
+  ```
     ./whereisit.exe MARS_BARYCENTER "07/19/2015 00:00:00.000 UTC-5"
-```
+  ```
 
   or
 
-```
+  ```
     ./whereisit.exe MARS_BARYCENTER ET 4.905360682e+08
-```
+  ```
 
 - Calculate the position of an Asteroid:
 
-```
+  ```
     ./whereisit.exe <asteroid> [<date> | ET <time>]
-```
+  ```
 
-```
+  ```
     ./whereisthisasteroid.exe EROS "07/19/2015 00:00:00.000 UTC-5"
-```
+  ```
 
   or
 
-```
+  ```
     ./whereisthisasteroid.exe EROS ET 4.905360682e+08
-```
+  ```
+
+  A list of the available asteroids is at the end of
+  ``whereisthisasteroid.cpp`` source code file.
 
 - Calculate position in the sky of a major solar system object as seen
   from a given place on the Earth:
 
-```
+  ```
     ./whereisinsky.exe <object> <lat(deg)> <lon(deg)> <alt(m)> <date>
-```
+  ```
 
-```
+  ```
     ./whereisinsky.exe MARS_BARYCENTER 6.2 -75.34 1450.0 "07/19/2015 00:00:00.000 UTC-5"
-```
+  ```
 
 - Propagate the orbit of a body in a given gravitational scenario
-  defined by the *objects.hpp* file:
+  defined by the ``objects.hpp`` file:
 
-```
+  ```
     ./wherewillitbe.exe <time(ET seconds)> <x> <y> <z> <vx> <vy> <vz> <time(years)> <timesteps>
-```
+  ```
 
-```
+  ```
     ./wherewillitbe.exe 4.905360000e+08 -7.47594519221052825e+07 1.52138798910335392e+08 4.49404456025594100e+06 -2.69676500003677440e+01 -1.39288966833683254e+01 -5.76432883102505045e+00 +20.0 300
-```
+  ```
 
   This piece of code will propagate for instance the orbit of asteroid
   Eros 20 years in the future starting with its state vector of a
-  given date.  The output will be stored in the file *ray.dat*.  300
+  given date.  The output will be stored in the file ``ray.dat``.  300
   data points will be considered for this calculation.
 
-- Calculate the position and velocity of *objects.hpp* at the specific
-  times defined in *ray.dat*:
+- Calculate the position and velocity of ``objects.hpp`` at the specific
+  times defined in ``ray.dat``:
 
-```
+  ```
     ./scenarioof.exe <file>
-```
+  ```
 
-```
+  ```
     ./scenarioof.exe ray.dat
-```
+  ```
 
 - Get the ecliptic colatitude and the colatitude of every point on
   Earth with respect to Earth's velocity at a given date:
 
-```
+  ```
     ./whereonearth.exe [ET|NOMAT] <date>|<ephemeris.time>
-```
+  ```
 
-```
+  ```
     ./whereonearth.exe "02/15/2013 03:20:34 UTC"
-```
+  ```
 
 - Calculate the final orbital properties of a set of rays launched
   from a given location on Earth.  This is probably the more important
   program in the package since it is the basis for the GRT method.
 
-```
+  ```
     ./throwrays.exe <TDB> <lat> <lon> <alt> <input-file> <output-file>
-```
+  ```
 
-```
+  ```
     ./throwrays.exe 4.141704340e+08 54.456093 63.492323 8.234765e+04 initial.dat.temp elements.dat
-```
+  ```
 
-All input and outputs are given in km and km/s.
+  All input and outputs are given in km and km/s.
 
 Stdout and Stderr
 -----------------
@@ -295,7 +300,7 @@ Thus you may run a program in two ways:
 
 1. If you want the user friendly output:
 
-```
+   ```
    ./whattimeisit.exe "07/19/2015 00:00:00.000 UTC-5" TDB 2> /dev/null
 
    Input date: 07/19/2015 00:00:00.000 UTC
@@ -304,11 +309,11 @@ Thus you may run a program in two ways:
    TDB = 4.905360000e+08
    Julian Date at TDB = 2457222.500000
    Custom system (TAI) = 4.90536036000000000e+08
-```
+   ```
 
-2) If instead you want only the plain information:
+2. If instead you want only the plain information:
 
-```
+   ```
    ./whattimeisit.exe "07/19/2015 00:00:00.000 UTC-5" TDB > /dev/null
 
    ET,JD,DT,TDB,JDB,TAI
@@ -318,7 +323,7 @@ Thus you may run a program in two ways:
    4.905360000e+08
    2457222.500000
    4.90536036000000000e+08
-```
+   ```
 
 You should notice that the plain information declares which
 information will be displayed below, in this case the time information
@@ -330,13 +335,13 @@ Testing the accuracy
 You can test the accuracy of the programs with different methods.
 
 1. Comparing the results with NASA Horizons system.  For that purpose
-   you may just run the "tests/test-positions.sh" script.
+   you may just run the ``tests/test-positions.sh`` script.
 
 ```
        bash tests/test-positions.sh "07/19/2015 00:00:00.000 UTC"
 ```
 
-   This will create an output file "scratch/test-positions.log" with
+   This will create an output file ``scratch/test-positions.log`` with
    the position of the major planets at a given date.  Go to NASA
    Horizon system and compare your results with this system.
 
@@ -355,9 +360,9 @@ You can test the accuracy of the programs with different methods.
 ```
 
    This script will integrate the orbit of the given object using as
-   force field the list of objects in *objects.hpp*.  It is important
+   force field the list of objects in ``objects.hpp``.  It is important
    that before running this script in the case of major planets, you
-   disable in *objects.hpp* the respective planet. Not modification of
+   disable in ``objects.hpp`` the respective planet. Not modification of
    this file is needed when is the case of an Asteroid.
 
    The test will produce the following files: dray.dat (difference
@@ -366,7 +371,7 @@ You can test the accuracy of the programs with different methods.
    integrated position and velocities and the SPICE ones), and
    dray3d.png, which is the trajectory of the ray in 3D.
 
-   All these file are generated in the "scratch" directory.
+   All these file are generated in the ``scratch`` directory.
 
 3) Integrate forward then backward and orbit and calculate the
    difference. This is a classical test of an integrator.  You may run
@@ -382,8 +387,8 @@ You can test the accuracy of the programs with different methods.
        bash tests/test-direction.sh Asteroid EROS
 ```
 
-   The script will generate two plots: *dray-pos-direction.png* and
-   *dray-vel-direction.png* showing the relative error of position and
+   The script will generate two plots: ``dray-pos-direction.png`` and
+   ``dray-vel-direction.png`` showing the relative error of position and
    velocities calculated in one direction then in the other.
 
 Launching an asteroid
@@ -429,7 +434,7 @@ Get the initial time in TDB and the coordinates of the impactor site and propaga
 ./wherewillitbe.exe 4.141704340e+08 -1.23267387774847016e+08 +8.13479129058280289e+07 -3.46552733682456437e+03 -3.35917408466760889e+01 -1.54328967796338485e+01 -6.38414481564572078e+00 -2.0 100
 ```
 
-The output will be available in the file "ray.dat".  In particular you
+The output will be available in the file ``ray.dat``.  In particular you
 should be interested in the last line:
 
 ```
@@ -451,7 +456,7 @@ analysis.
 
 Below we describe the scripts:
 
-- *generatevelocities.py*: generate a set of impact velocities.
+- ``generatevelocities.py``: generate a set of impact velocities.
 
   Usage:
 
@@ -475,7 +480,7 @@ Below we describe the scripts:
   python generatevelocities.py 10 velimp regular
 ```
 
-- *generatedirections.py*: This script generate random directions
+- ``generatedirections.py``: This script generate random directions
    obeying the random noise distribution, i.e. the distance between
    the points is larger than a given radius.
 
@@ -503,11 +508,11 @@ Below we describe the scripts:
   python generatevelocities.py 10.0 1 1
 ```
 
-- *generateinitialconditions.py*: This script generate random directions
+- ``generateinitialconditions.py``: This script generate random directions
    obeying the random noise distribution, i.e. the distance between
    the points is larger than a given radius.
 
-- *throwaray.py*: throw a particle from a given location on Earth and
+- ``throwaray.py``: throw a particle from a given location on Earth and
    at a given velocity.
 
   Usage:
