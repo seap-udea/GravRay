@@ -23,6 +23,10 @@ Where:
    <altitude>: altitude where the rays start in meters (default:
    80,000 m)
 
+Output:
+
+   
+
 """
 
 #############################################################
