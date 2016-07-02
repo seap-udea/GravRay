@@ -19,10 +19,10 @@ bodies entrance to earth sphere of influence).
 
 If you use or modify this package please cite:
 
->   "[1] Zuluaga, J.I. and Sucerquia, M., Towards a theoretical
+>  [1] Zuluaga, J.I. and Sucerquia, M., Towards a theoretical
    determination of the geogpraphical probability distibution of
    meteoroid impacts, Planetary and Space Science, under submission
-   (2016)."
+   (2016).
 
 Get the package
 ---------------
