@@ -471,7 +471,7 @@ Below we describe the scripts:
 
 	source: which source of objects velocities do you want to use.
         	Available sources are: velimp (impact velocities),
-        	velinf (velocitt at infinite), velast (velocities with
+        	velinf (velocity at infinite), velast (velocities with
         	respect to SSB)
 
 	method: generation method, either random (following PDF) or
@@ -518,24 +518,25 @@ Below we describe the scripts:
 - ``throwaray.py``: throw a particle from a given location on Earth and
    at a given velocity.
 
+  ```
   Usage:
 
-  python throwaray.py <lat> <lon> <alt> <elev> <azim> <vimp> <date> <tspan> [npoints]
+	python throwaray.py <lat> <lon> <alt> <elev> <azim> <vimp> <date> <tspan> [npoints]
 
   Where:
 
-   <lat>,<lon>: latitude and longitude in degrees.
-   <alt>: altitude in meters.
-   <elev>,<azim>: elevation and azimuth in degrees.
-   <vimp>: impact velocity in km/s
-   <date>: date in format MM/DD/CCYY HH:MM:SS.dcm UTC-L
-   <tspan>: integration time (in years)
-   <npoints>: sampling points
+    <lat>,<lon>: latitude and longitude in degrees.
+    <alt>: altitude in meters.
+    <elev>,<azim>: elevation and azimuth in degrees.
+    <vimp>: impact velocity in km/s
+    <date>: date in format MM/DD/CCYY HH:MM:SS.dcm UTC-L
+    <tspan>: integration time (in years)
+    <npoints>: sampling points
 
   Example: This example launch to space the Chelyabinsk impactor.  The
   negative velocity is chosen because the object is impacting;
   correspondingly the total time is also chosen negative.
 
-```
-  python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
-```
+    python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
+
+  ```
