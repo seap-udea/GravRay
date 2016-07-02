@@ -378,18 +378,18 @@ You can test the accuracy of the programs with different methods.
    this test similarly as the previous tests:
 
    ```
-       bash tests/test-direction.sh Planet MOON
-      ```
+       python tests/test-direction.py Planet MOON
+   ```
 
    or:
 
-```
-       bash tests/test-direction.sh Asteroid EROS
-```
+   ```
+       python tests/test-direction.py Asteroid EROS
+   ```
 
    The script will generate two plots: ``dray-pos-direction.png`` and
-   ``dray-vel-direction.png`` showing the relative error of position and
-   velocities calculated in one direction then in the other.
+   ``dray-vel-direction.png`` showing the relative error of position
+   and velocities calculated in one direction then in the other.
 
 Launching an asteroid
 ---------------------
