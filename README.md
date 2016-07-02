@@ -428,14 +428,15 @@ TDB,JD,DT,ITRF93(6),ECJ2000(6)
 -1.23267387774847016e+08 +8.13479129058280289e+07 -3.46552733682456437e+03 -3.35917408466760889e+01 -1.54328967796338485e+01 -6.38414481564572078e+00
 ```
 
-Get the initial time in TDB and the coordinates of the impactor site and propagate into the past for two years:
+Get the initial time in TDB and the coordinates of the impactor site
+and propagate into the past for two years:
 
 ```
 ./wherewillitbe.exe 4.141704340e+08 -1.23267387774847016e+08 +8.13479129058280289e+07 -3.46552733682456437e+03 -3.35917408466760889e+01 -1.54328967796338485e+01 -6.38414481564572078e+00 -2.0 100
 ```
 
-The output will be available in the file ``ray.dat``.  In particular you
-should be interested in the last line:
+The output will be available in the file ``ray.dat``.  In particular
+you should be interested in the last line:
 
 ```
 tail -n 1 ray.dat
@@ -456,11 +457,13 @@ analysis.
 
 Below we describe the scripts:
 
-- ``generatevelocities.py``: generate a set of impact velocities.
+- ``generatevelocities.py``: generate a set of impact velocities
+  following a given distribution.
 
+  ```
   Usage:
 
-  python generatevelocities.py [<nsample>] [<source>] [<method>]
+        python generatevelocities.py [<nsample>] [<source>] [<method>]
 
   Where:
 
@@ -476,17 +479,17 @@ Below we describe the scripts:
 
   Example:
 
-```
-  python generatevelocities.py 10 velimp regular
-```
+	python generatevelocities.py 10 velimp regular
+  ```
 
 - ``generatedirections.py``: This script generate random directions
-   obeying the random noise distribution, i.e. the distance between
-   the points is larger than a given radius.
+   obeying a blue noise distribution, i.e. the distance between the
+   points is larger than a given radius.
 
+  ``` 
   Usage:
 
-  python generatedirections.py <radius in degrees> [<perform a deep analysis?>]
+     python generatedirections.py <radius in degrees> [<perform a deep analysis?>]
 
   Where:
 
@@ -504,9 +507,9 @@ Below we describe the scripts:
 
   Example:
 
-```
-  python generatevelocities.py 10.0 1 1
-```
+    python generatevelocities.py 10.0 1 1
+
+  ```
 
 - ``generateinitialconditions.py``: This script generate random directions
    obeying the random noise distribution, i.e. the distance between
