@@ -33,7 +33,7 @@ To get the package directly from the github repository use:
    git clone http://github.com/seap-udea/GravRay.git
 ```
 
-If you are a contributer and your key is already registered in GitHub
+If you are a contributor and your key is already registered in GitHub
 use:
 
 ```
@@ -49,11 +49,18 @@ Basic configuration
 
 Once cloned you need to perform the following basic actions (just once):
 
-1. Set your system architecture.  Edit "compiler" file and uncomment
+1. Create the compiler information file "compile.in".  Copy the
+   template "compiler.in.temp" as the local file:
+
+```
+       cp compile.in.temp compile.in
+```
+
+2. Set your system architecture.  Edit "compiler" file and uncomment
    your architecture (32 or 64 bits).  GravRay used precompiled
    versions of two of its main dependencies, namely CSPICE and GSL.
 
-2. "Unpack" large kernels.  Large CSPICE kernels (those having more
+3. "Unpack" large kernels.  Large CSPICE kernels (those having more
    than 100 Mb) need to be splitted for distribution with git.  Before
    using the package "unsplit" them using:
 
@@ -61,7 +68,7 @@ Once cloned you need to perform the following basic actions (just once):
        make unpack
 ```
 
-3. Compile the codes.  For this you will need "g++" installed in the
+4. Compile the codes.  For this you will need "g++" installed in the
    machine.
    
 ```
