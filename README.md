@@ -484,7 +484,7 @@ Below we describe the scripts:
 
 - ``generatedirections.py``: This script generate random directions
    obeying a blue noise distribution, i.e. the distance between the
-   points is larger than a given radius.
+   points is larger than a given radius.  
 
   ``` 
   Usage:
@@ -510,6 +510,9 @@ Below we describe the scripts:
     python generatevelocities.py 10.0 1 1
 
   ```
+
+  This directions could be used either for initial geographical
+  positions or for initial directions in the sky.
 
 - ``generateinitialconditions.py``: This script generate random directions
    obeying the random noise distribution, i.e. the distance between

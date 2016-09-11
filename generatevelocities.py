@@ -45,8 +45,8 @@ print "Generating %d velocities from source '%s' with distribution '%s'..."%(nsa
 ###################################################
 #LOAD REQUIRED INFORMATION
 ###################################################
-velfile="velocities-%s.dat"%(source)
-vp=np.loadtxt("util/data/%s-pdf.data"%source)
+velfile="sample-"+source
+vp=np.loadtxt(source)
 vmin=vp[:,0].min();vmax=vp[:,0].max();
 
 ###################################################
@@ -54,13 +54,13 @@ vmin=vp[:,0].min();vmax=vp[:,0].max();
 ###################################################
 #RANDOM 
 if method=="random":
-    vs=generateVelocities("util/data/%s-cum.data"%source,nsample)
+    vs=generateVelocities(source,nsample)
 
 #UNIFORMLY DISTRIBUTED IN CUMMULATIVE 
 else:
     du=1./nsample
     u=np.linspace(du,1,nsample)
-    velcum=np.loadtxt("util/data/%s-cum.data"%source)
+    velcum=np.loadtxt(source)
     ifvelcum=interp1d(velcum[:,1],velcum[:,0])
     vs=ifvelcum(u)
 
@@ -75,9 +75,11 @@ np.savetxt(velfile,vs)
 ###################################################
 nbins=vp.shape[0]
 h,x=np.histogram(vs,nbins,(vmin,vmax))
+F=cumDistrib((x[:-1]+x[1:])/2,h,x[0],x[-1])
+
 fig=plt.figure()
 ax=fig.gca()
-ax.plot(x[:-1],h,'-')
+ax.plot(F[:,0],F[:,1]*nsample,'-')
 ax.plot(vs,np.zeros_like(vs),'k+',ms=10)
 ax.plot(vp[:,0],vp[:,1]*nsample,'-')
 fig.savefig("scratch/%s-pdf-sample.png"%source)

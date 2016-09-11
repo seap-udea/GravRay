@@ -203,7 +203,7 @@ def drawMap(proj='robin',
             coasts=False,
             fill=False,
             coasts_opts=dict(linewidth=0.5),
-            fill_opts=dict(color='g',alpha=0.3,lake_color='aqua')
+            fill_opts=dict(color='g',alpha=0.3,lake_color='aqua'),
             ):
 
     m=Map(projection=proj,**proj_opts)
@@ -294,3 +294,40 @@ def sph2car(p):
     y=np.sin(p[1])
     return np.array([x,y])
 
+def s2d(g,m=0,s=0):
+    return g+m/60.+s/3600.
+
+def histOutline(histIn,binsIn):
+    stepSize = binsIn[1] - binsIn[0]
+
+    bins = np.zeros(len(binsIn)*2 + 2, dtype=np.float)
+    data = np.zeros(len(binsIn)*2 + 2, dtype=np.float)
+    for bb in range(len(binsIn)):
+        bins[2*bb + 1] = binsIn[bb]
+        bins[2*bb + 2] = binsIn[bb] + stepSize
+        if bb < len(histIn):
+            data[2*bb + 1] = histIn[bb]
+            data[2*bb + 2] = histIn[bb]
+
+    bins[0] = bins[1]
+    bins[-1] = bins[-2]
+    data[0] = 0
+    data[-1] = 0
+
+    return (bins, data)
+
+def cumDistrib(x,h,x0=None,xn=None):
+    norm=h.sum()
+    F=np.zeros_like(h)
+    F[0]=h[0]
+    for i in xrange(1,h.shape[0]):
+        F[i]=F[i-1]+h[i]
+    F=F/(1.0*norm)
+    if x0 is not None:
+        x=np.concatenate(([x0],x))
+        F=np.concatenate(([0],F))
+    if xn is not None:
+        x=np.concatenate((x,[xn]))
+        F=np.concatenate((F,[1]))
+    Fcum=np.vstack((x,F)).transpose()
+    return Fcum
