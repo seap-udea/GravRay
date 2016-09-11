@@ -7,12 +7,14 @@ from os import system
 #############################################################
 usage="""Make a GRT analysis of a whole geopgraphic region.
 
-python makeagravray.py <date> <file.geopos> <file.initials> [<altitude>]
+python makeagravray.py <date> <deg|rad> <file.geopos> <file.locals> [<altitude>]
 
 Where:
 
    <date>: date of analysis.
            Use format MM/DD/CCYY HH:MM:SS.dcm UTC-L.
+
+   <deg|rad>: indicate if positions in geo.files are in deg or rad
 
    <file.geopos>: file with the geographical position (generated with
                   generatedirections.py)

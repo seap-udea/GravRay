@@ -615,23 +615,21 @@ using the aforementioned programs and scripts, perform all the
 dynamical simulation and analysis required for a GRT result.
 
 Before start you need to generate random directions on a sphere for
-both geographical positions and incoming directions.  You can use the
-previously described ``generatedirections.py`` script to achieve this.
+geographical positions.  You can use the previously described
+``generatedirections.py`` script to achieve this.
 
 Precalculated files with directions are available at ``util/data``
 directory (eg. ``util/data/directions-r1.00e+01.data``,
 ``util/data/directions-r1.80e+01.data``, etc.)
 
-You may also need to have cumulative distribution functions of the
-impact speeds at different angles with respect to apex.  Precalculated
-distribution functions have been placed also in the ``util/data``
-directory (eg. ``util/data/vdistrib-qapex_0_180.data``,
-``util/data/vdistrib-qapex_0_60.data``, etc.)
+You will also need to generate local impact conditions (azimuth,
+elevation and velocities).  This can be done using the
+``generatelocals.py`` script as explained in the previous section.
 
-To perform the analysis you just need to run the script ``makeagravray.py``:
+Once you have the geographical positions you may run the analysis
+using the ``makeagravray.py`` script:
 
   ```
-  python makeagravray.py "02/15/2013 3:20:34 UTC" util/data/directions-r1.50e+01.data util/data/directions-r3.00e+01.data
+  python makeagravray.py "02/15/2013 3:20:34 UTC" util/data/directions-r1.50e+01.data locals.dat 8e4
   ```
   
-This script
