@@ -447,18 +447,11 @@ tail -n 1 ray.dat
 Whose columns are: #1:t, 2:x, 3:y, 4:z, 5:vx, 6:vy, 7:vz, 8:r, 9:v,
 10:q, 11:e, 12:i, 13:W, 14:w, 15:M, 16:t0, 17:mu.
 
-Python Scripts and GRT Analysis
--------------------------------
+Python Scripts
+--------------
 
-In order to perform a Ray Tracing analysis of a given site or a given
-geographical region, we have prepared a set of python scripts that,
-using the aforementioned programs and scripts, perform all the
-dynamical simulation and analysis required for a GRT result.
-
-Before start you need to generate random directions on a sphere for
-both geographical positions and incoming directions.
-
-Precalculated 
+Besides simulation and analysis programs, several useful python
+scripts are included with the package.  Here we describe them.
 
 - ``generatedirections.py``: This script generate random directions
    obeying a blue noise distribution, i.e. the distance between the
@@ -519,39 +512,7 @@ Precalculated
   This directions could be used either for initial geographical
   positions or for initial directions in the sky.
 
-Simulation scripts
-------------------
-
-Once files with directions and velocities are generated
-
-
-
-- ``generateinitialconditions.py``: This script generate random directions
-   obeying the random noise distribution, i.e. the distance between
-   the points is larger than a given radius.
-
-  ```
-  Usage:
-
-      python generateinitialconditions.py <file.dirs> <file.vels> <file.initial>
-
-  Where:
-
-	<file.dirs>: file with random directions to be used as
-		     Azimuths (longitude) and latitudes.  It can be
-		     generated using generatedirections.py
-		     script. There are a set of precalculated
-		     directions that could be used here and that are
-		     in the util/data directory
-
-	<file.vels>: file with the list of velocities that will be
-	             used in the simulation.
-
-	<file.initial>: output file cointaining the initial conditions
-  	 		of the simulation (a matrix with Az, h and v).
-  
-  ```
-
+   
 - ``throwaray.py``: throw a particle from a given location on Earth and
    at a given velocity.
 
@@ -580,3 +541,31 @@ Once files with directions and velocities are generated
 
 Python Scripts and GRT Analysis
 -------------------------------
+
+In order to perform a Ray Tracing analysis of a given site or a given
+geographical region, we have prepared a set of python scripts that,
+using the aforementioned programs and scripts, perform all the
+dynamical simulation and analysis required for a GRT result.
+
+Before start you need to generate random directions on a sphere for
+both geographical positions and incoming directions.  You can use the
+previously described ``generatedirections.py`` script to achieve this.
+
+Precalculated files with directions are available at ``util/data``
+directory (eg. ``util/data/directions-r1.00e+01.data``,
+``util/data/directions-r1.80e+01.data``, etc.)
+
+You may also need to have cumulative distribution functions of the
+impact speeds at different angles with respect to apex.  Precalculated
+distribution functions have been placed also in the ``util/data``
+directory (eg. ``util/data/vdistrib-qapex_0_180.data``,
+``util/data/vdistrib-qapex_0_60.data``, etc.)
+
+
+GRT analysis of a single site
+-----------------------------
+
+The first kind of analysis you want to perform is that of a single
+geographic site.  This analysis allow you to understand how a site is
+"connected" to the configuration space.
+
