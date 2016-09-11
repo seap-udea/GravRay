@@ -452,35 +452,19 @@ Python Scripts and GRT Analysis
 
 In order to perform a Ray Tracing analysis of a given site or a given
 geographical region we have prepared a set of python scripts that
-using the aofrementioned programs performed all the required dynamical
+using the aforementioned programs performed all the required dynamical
 analysis.
 
-Below we describe the scripts:
+Basic scripts
+-------------
 
-- ``generatevelocities.py``: generate a set of impact velocities
-  following a given distribution.
+In order to perform the analysis we need to generate basic information
+to create initial conditions, namely:
 
-  ```
-  Usage:
+- Random directions on a sphere.
+- Random velocities.
 
-        python generatevelocities.py [<nsample>] [<source>] [<method>]
-
-  Where:
-
-	nsample: number of velocities to be generated.
-
-	source: which source of objects velocities do you want to use.
-        	Available sources are: velimp (impact velocities),
-        	velinf (velocity at infinite), velast (velocities with
-        	respect to SSB)
-
-	method: generation method, either random (following PDF) or
-        	regular (spaced proportionally to probability)
-
-  Example:
-
-	python generatevelocities.py 10 velimp regular
-  ```
+Below we describe the scripts to perform this simple tasks:
 
 - ``generatedirections.py``: This script generate random directions
    obeying a blue noise distribution, i.e. the distance between the
@@ -514,6 +498,32 @@ Below we describe the scripts:
   This directions could be used either for initial geographical
   positions or for initial directions in the sky.
 
+
+- ``generatevelocities.py``: generate a set of impact velocities
+  following a given distribution.
+
+  ```
+  Usage:
+
+        python generatevelocities.py [<nsample>] [<source>] [<method>]
+
+  Where:
+
+	nsample: number of velocities to be generated.
+
+	source: which source of objects velocities do you want to use.
+        	Available sources are: velimp (impact velocities),
+        	velinf (velocity at infinite), velast (velocities with
+        	respect to SSB)
+
+	method: generation method, either random (following PDF) or
+        	regular (spaced proportionally to probability)
+
+  Example:
+
+	python generatevelocities.py 10 velimp regular
+  ```
+
 - ``generateinitialconditions.py``: This script generate random directions
    obeying the random noise distribution, i.e. the distance between
    the points is larger than a given radius.
@@ -539,10 +549,9 @@ Below we describe the scripts:
   	 		of the simulation (a matrix with Az, h and v).
   
   ```
-   
 
 - 
-
+   
 - ``throwaray.py``: throw a particle from a given location on Earth and
    at a given velocity.
 
@@ -562,9 +571,9 @@ Below we describe the scripts:
     <npoints>: sampling points
 
   Example: This example launch to space the Chelyabinsk impactor.  The
-  negative velocity is chosen because the object is impacting;
-  correspondingly the total time is also chosen negative.
+  	   negative velocity is chosen because the object is
+  	   impacting; correspondingly the total time is also chosen
+  	   negative.
 
-    python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
-
+	       python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
   ```
