@@ -30,17 +30,31 @@ Return:
   Files:
 
      locals.dat: output file cointaining the initial conditions of
-                 the simulation (a matrix with Az, h and vs).
+                 the simulation (a matrix with Az, h and velocities).
 
   Figures: all figures are generated at the scratch directory.
      
      initial-directions.png: 3d map of the initial directions.
+
+
+Example:
+
+  python generatelocals.py util/data/directions-r3.00e+01.data 10 regular -1,util/data/vdistrib-qapex_0_180.data 0,util/data/vdistrib-qapex_0_60.data 60,util/data/vdistrib-qapex_60_120.data 120,util/data/vdistrib-qapex_120_180.data
+
+Output example: locals.dat
+
+
+    #1:Elevation(deg)   2:Azimuth(deg)      3:v(qapex=-1)       4:v(qapex=0)        5:v(qapex=60)       6:v(qapex=120)      
+    +6.6036e+00         +1.9436e+02         +1.2864e+01         +1.1968e+01         +1.3488e+01         +1.2249e+01         
+    +6.6036e+00         +1.9436e+02         +1.3983e+01         +1.2694e+01         +1.4824e+01         +1.2804e+01         
+    +6.6036e+00         +1.9436e+02         +1.5054e+01         +1.3461e+01         +1.6042e+01         +1.3233e+01         
 
 """
 
 ###################################################
 #INPUTS
 ###################################################
+qshow=1
 iarg=1
 try:
     randir=argv[iarg];iarg+=1
@@ -75,7 +89,9 @@ print "Number of apex velocities:",napex
 #READ DIRECTIONS
 ###################################################
 datadir=np.loadtxt(randir)
-print "Number of random directions:",datadir.shape[0]
+bs=datadir[:,3]
+ndirs=datadir[bs>0].shape[0]
+print "Number of random directions:",ndirs
 
 ###################################################
 #GENERATE VELOCITIES
@@ -83,7 +99,6 @@ print "Number of random directions:",datadir.shape[0]
 vels=np.zeros((nvel,napex))
 for j in xrange(napex):
     source=velcums[j]
-    print source
 
     #RANDOM 
     if method=="random":
@@ -95,10 +110,10 @@ for j in xrange(napex):
         u=np.linspace(du,0.999,nvel)
         velcum=np.loadtxt(source)
         ifvelcum=interp1d(velcum[:,1],velcum[:,0])
-        print u
         vs=ifvelcum(u)
 
-exit(0)
+    vels[:,j]=vs
+print "Number of velocities:",nvel
 
 ###################################################
 #GENERATE INITIAL CONDITIONS
@@ -112,37 +127,26 @@ for direction in datadir[:,2:]:
     if b<0:continue
     Azs+=[l]
     Els+=[b]
-    f.write("%-+20.4e%-+20.4e"%(b,l))
 
     for i in xrange(nvel):
-        for j in napex:
-            source=velcums[j]
-
-            #RANDOM 
-            if method=="random":
-                vs=generateVelocities(source,nsample)
-
-            #UNIFORMLY DISTRIBUTED IN CUMMULATIVE 
-            else:
-                du=1./nsample
-                u=np.linspace(du,1,nsample)
-                velcum=np.loadtxt(source)
-                ifvelcum=interp1d(velcum[:,1],velcum[:,0])
-                vs=ifvelcum(u)
-
-            f.write("%-+20.4e%-+20.4e"%(b,l))
-    
+        f.write("%-+20.4e%-+20.4e"%(b,l))
+        for j in xrange(napex):
+            f.write("%-+20.4e"%(vels[i,j]))
         f.write("\n")
         n+=1
+    f.write("#\n")
 
 print "%d initial conditions generated..."%n
-Els=np.array(Els)
-Azs=np.array(Azs)
+
 
 ###################################################
 #PLOT RANDOM DIRECTION IN 3D
 ###################################################
 plt.close("all")
+
+Els=np.array(Els)
+Azs=np.array(Azs)
+
 print "3D Map of directions..."
 xs=np.cos(Els*DEG)*np.cos(Azs*DEG)
 ys=np.cos(Els*DEG)*np.sin(Azs*DEG)

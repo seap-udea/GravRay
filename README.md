@@ -512,6 +512,57 @@ scripts are included with the package.  Here we describe them.
   This directions could be used either for initial geographical
   positions or for initial directions in the sky.
 
+- ``generatelocals.py``: generate local conditions for rays (azimuth,
+  elevation, impact velocities).
+
+  ```
+    Usage:
+
+    python generateinitialconditions.py <file.dirs> <nvel> <method> <qapex>,<file.vels>
+
+    Where:
+
+      <file.dirs>: file with random directions to be used as Azimuths
+                   (longitude) and latitudes.  It can be generated using
+                   generatedirections.py script. There are a set of
+                   precalculated directions that could be used here and
+                   that are in the util/data directory
+
+      <nvel>: number of velocities to generate per direction
+
+      <method>: generation method, either random (following PDF) or
+                regular (spaced proportionally to probability)
+
+      <qapex>,<file.vels>: list of files with cumulative distributions for
+                           velocities at different apex directions.  qapex
+                           is the initial value of the qapex interval (-1
+                           if it is the whole interval).
+
+    Return:
+
+      Files:
+
+         locals.dat: output file cointaining the initial conditions of
+                     the simulation (a matrix with Az, h and velocities).
+
+      Figures: all figures are generated at the scratch directory.
+
+         initial-directions.png: 3d map of the initial directions.
+
+
+    Example:
+
+      python generatelocals.py util/data/directions-r3.00e+01.data 10 regular -1,util/data/vdistrib-qapex_0_180.data 0,util/data/vdistrib-qapex_0_60.data 60,util/data/vdistrib-qapex_60_120.data 120,util/data/vdistrib-qapex_120_180.data
+
+    Output example: locals.dat
+
+
+        #1:Elevation(deg)   2:Azimuth(deg)      3:v(qapex=-1)       4:v(qapex=0)        5:v(qapex=60)       6:v(qapex=120)      
+        +6.6036e+00         +1.9436e+02         +1.2864e+01         +1.1968e+01         +1.3488e+01         +1.2249e+01         
+        +6.6036e+00         +1.9436e+02         +1.3983e+01         +1.2694e+01         +1.4824e+01         +1.2804e+01         
+        +6.6036e+00         +1.9436e+02         +1.5054e+01         +1.3461e+01         +1.6042e+01         +1.3233e+01         
+
+  ```
    
 - ``throwaray.py``: throw a particle from a given location on Earth and
    at a given velocity.
