@@ -17,6 +17,21 @@ Where:
    <tspan>: integration time (in years)
    <npoints>: sampling points
 
+Return:
+
+   Standard output:
+
+       Classical elements of the asymptotic orbit
+
+   Data files:
+
+       ray.dat: trajectory.
+
+   Figures: all figures are generated in the scratch directory.
+
+       ray-elements.png: orbital elements of the ray.
+
+       ray-orbit.png: 3d realization of the ray.
 """
 
 #############################################################

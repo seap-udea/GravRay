@@ -5,40 +5,6 @@ from scipy.optimize import curve_fit
 #############################################################
 #INPUTS
 #############################################################
-def histOutline(histIn,binsIn):
-    stepSize = binsIn[1] - binsIn[0]
-
-    bins = np.zeros(len(binsIn)*2 + 2, dtype=np.float)
-    data = np.zeros(len(binsIn)*2 + 2, dtype=np.float)
-    for bb in range(len(binsIn)):
-        bins[2*bb + 1] = binsIn[bb]
-        bins[2*bb + 2] = binsIn[bb] + stepSize
-        if bb < len(histIn):
-            data[2*bb + 1] = histIn[bb]
-            data[2*bb + 2] = histIn[bb]
-
-    bins[0] = bins[1]
-    bins[-1] = bins[-2]
-    data[0] = 0
-    data[-1] = 0
-
-    return (bins, data)
-
-def cumDistrib(x,h,x0=None,xn=None):
-    norm=h.sum()
-    F=np.zeros_like(h)
-    F[0]=h[0]
-    for i in xrange(1,h.shape[0]):
-        F[i]=F[i-1]+h[i]
-    F=F/(1.0*norm)
-    if x0 is not None:
-        x=np.concatenate(([x0],x))
-        F=np.concatenate(([0],F))
-    if xn is not None:
-        x=np.concatenate((x,[xn]))
-        F=np.concatenate((F,[1]))
-    Fcum=np.vstack((x,F)).transpose()
-    return Fcum
 
 VESC=11.1
 def theoVimp(v,p,a,vso):
@@ -272,6 +238,7 @@ def apexVelocityDistribution():
 
     # ANALYTICAL CUMULATIVE
     Fcum=cumDistrib(vbs,pvbs)
+    Fcum[-1,1]=1.0
     np.savetxt("vdistrib-qapex_0_180.data",Fcum)
 
     # NORMALIZATION
@@ -346,6 +313,7 @@ def apexVelocityDistribution():
 
             # ANALYTICAL CUMULATIVE
             Fcum=cumDistrib(vbs,pvbs)
+            Fcum[-1,1]=1.0
             np.savetxt("vdistrib-qapex_%.0f_%.0f.data"%(tm,tM),Fcum)
 
             if pnorm:ppl=pvbs/pvbs.max()

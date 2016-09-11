@@ -531,6 +531,22 @@ scripts are included with the package.  Here we describe them.
     <tspan>: integration time (in years)
     <npoints>: sampling points
 
+  Return:
+
+     Standard output:
+
+         Classical elements of the asymptotic orbit
+
+     Data files:
+
+         ray.dat: trajectory.
+
+     Figures: all figures are generated in the scratch directory.
+
+         ray-elements.png: orbital elements of the ray.
+
+         ray-orbit.png: 3d realization of the ray.
+
   Example: This example launch to space the Chelyabinsk impactor.  The
   	   negative velocity is chosen because the object is
   	   impacting; correspondingly the total time is also chosen
@@ -539,8 +555,8 @@ scripts are included with the package.  Here we describe them.
 	       python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
   ```
 
-Python Scripts and GRT Analysis
--------------------------------
+GRT Analysis
+------------
 
 In order to perform a Ray Tracing analysis of a given site or a given
 geographical region, we have prepared a set of python scripts that,
@@ -561,11 +577,10 @@ distribution functions have been placed also in the ``util/data``
 directory (eg. ``util/data/vdistrib-qapex_0_180.data``,
 ``util/data/vdistrib-qapex_0_60.data``, etc.)
 
+To perform the analysis you just need to run the script ``makeagravray.py``:
 
-GRT analysis of a single site
------------------------------
-
-The first kind of analysis you want to perform is that of a single
-geographic site.  This analysis allow you to understand how a site is
-"connected" to the configuration space.
-
+  ```
+  python makeagravray.py "02/15/2013 3:20:34 UTC" util/data/directions-r1.50e+01.data util/data/directions-r3.00e+01.data
+  ```
+  
+This script

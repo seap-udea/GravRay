@@ -11,17 +11,17 @@ python makeagravray.py <date> <file.geopos> <file.initials> [<altitude>]
 
 Where:
 
-   <date>: date of analysis.  Use format MM/DD/CCYY HH:MM:SS.dcm
-   UTC-L.
+   <date>: date of analysis.
+           Use format MM/DD/CCYY HH:MM:SS.dcm UTC-L.
 
    <file.geopos>: file with the geographical position (generated with
-   generatedirections.py)
+                  generatedirections.py)
 
-   <file.initials>: file with the initial impacting conditions at each
-   site (generate using generateinitialconditions.py)
+   <file.locals>: file with the initial impacting conditions at each
+                  site (generate using generatelocals.py)
 
    <altitude>: altitude where the rays start in meters (default:
-   80,000 m)
+               80,000 m)
 
 Output:
 
@@ -67,8 +67,8 @@ System("mkdir -p %s"%outdir)
 #############################################################
 #GEOGRAPHIC POSITIONS
 data=np.loadtxt(geofile)
-lons=data[:,2]*180/np.pi
-lats=data[:,3]*180/np.pi
+lons=data[:,2]*RAD
+lats=data[:,3]*RAD
 npoints=len(lats)
 
 timeIt()
@@ -81,7 +81,7 @@ for i in xrange(npoints):
     #THROW RAYS FROM THIS PLACE
     print "*"*80,"\nCalculating elements for lat = %e, lon = %e...\n"%(lat,lon),"*"*80
     cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %s/rays-lat_%.5e__lon_%.5e.data"%(t,lat,lon,h,inifile,outdir,lat,lon)
-    system(cmd)
+    #system(cmd)
     timeIt()
 
     #ANALYSE PROBABILITY OF THESE RAYS
