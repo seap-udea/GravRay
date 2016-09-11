@@ -258,7 +258,7 @@ char* vec2str(double vec[],char frm[]="%.8e ")
   return str;
 }
 
-char* vec2strn(double vec[],int n,char frm[]="%.8e")
+char* vec2strn(double vec[],int n,char frm[]="%.8e ")
 {
   int i;
   char format[100];

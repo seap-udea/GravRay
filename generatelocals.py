@@ -82,6 +82,8 @@ for i in xrange(napex):
     s="%d:v(qapex=%s)"%(c,qapexs[i])
     f.write("%-20s"%s)
     c+=1
+s="%d:End"%c
+f.write("%-20s"%s)
 f.write("\n")
 print "Number of apex velocities:",napex
 
@@ -132,9 +134,9 @@ for direction in datadir[:,2:]:
         f.write("%-+20.4e%-+20.4e"%(b,l))
         for j in xrange(napex):
             f.write("%-+20.4e"%(vels[i,j]))
-        f.write("\n")
+        f.write("%-+20d\n"%(-1))
         n+=1
-    f.write("#\n")
+    #f.write("#\n")
 
 print "%d initial conditions generated..."%n
 
