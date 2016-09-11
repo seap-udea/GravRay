@@ -518,6 +518,31 @@ Below we describe the scripts:
    obeying the random noise distribution, i.e. the distance between
    the points is larger than a given radius.
 
+  ```
+  Usage:
+
+      python generateinitialconditions.py <file.dirs> <file.vels> <file.initial>
+
+  Where:
+
+	<file.dirs>: file with random directions to be used as
+		     Azimuths (longitude) and latitudes.  It can be
+		     generated using generatedirections.py
+		     script. There are a set of precalculated
+		     directions that could be used here and that are
+		     in the util/data directory
+
+	<file.vels>: file with the list of velocities that will be
+	             used in the simulation.
+
+	<file.initial>: output file cointaining the initial conditions
+  	 		of the simulation (a matrix with Az, h and v).
+  
+  ```
+   
+
+- 
+
 - ``throwaray.py``: throw a particle from a given location on Earth and
    at a given velocity.
 
