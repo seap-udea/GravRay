@@ -451,20 +451,14 @@ Python Scripts and GRT Analysis
 -------------------------------
 
 In order to perform a Ray Tracing analysis of a given site or a given
-geographical region we have prepared a set of python scripts that
-using the aforementioned programs performed all the required dynamical
-analysis.
+geographical region, we have prepared a set of python scripts that,
+using the aforementioned programs and scripts, perform all the
+dynamical simulation and analysis required for a GRT result.
 
-Basic scripts
--------------
+Before start you need to generate random directions on a sphere for
+both geographical positions and incoming directions.
 
-In order to perform the analysis we need to generate basic information
-to create initial conditions, namely:
-
-- Random directions on a sphere.
-- Random velocities.
-
-Below we describe the scripts to perform this simple tasks:
+Precalculated 
 
 - ``generatedirections.py``: This script generate random directions
    obeying a blue noise distribution, i.e. the distance between the
@@ -486,43 +480,51 @@ Below we describe the scripts to perform this simple tasks:
                vicinity analysis will be done only over the closer
                points.
 
+	qshow: 1 if you want to show in a plot the results of the
+	       generation.
+
+  Output:
+
+     Data files: 
+
+        directions-r<radius>.dat, scratch/direcions-r<radius>-unfiltered.dat
+
+	    Random directions generated.  Columns are:
+	    x(-1,1),y(-1,1),lon(-pi,pi),lat(-pi/2,pi/2)
+
+     Plots: (All plots are saved in the scratch directory)
+     
+        distmin-r<radius>.png,distmin-r<radius>.png 
+	
+            Distribution of minimum/maximum distance.
+
+	directions-map-r<radius>.png
+	
+            Plain map of the directions generated.
+
+	directions-3d-r<radius>.png
+	
+            3D rendering of the directions generated.  It is
+            recommended to set the qshow option in 1 to drag plot.
+
   The method was devised by Jorge I. Zuluaga and could be very
   inefficient for very small values of the radius (<3 degrees).
 
   Example:
 
-    python generatevelocities.py 10.0 1 1
+    python generatedirections.py 10.0 1 0
 
   ```
 
   This directions could be used either for initial geographical
   positions or for initial directions in the sky.
 
+Simulation scripts
+------------------
 
-- ``generatevelocities.py``: generate a set of impact velocities
-  following a given distribution.
+Once files with directions and velocities are generated
 
-  ```
-  Usage:
 
-        python generatevelocities.py [<nsample>] [<source>] [<method>]
-
-  Where:
-
-	nsample: number of velocities to be generated.
-
-	source: which source of objects velocities do you want to use.
-        	Available sources are: velimp (impact velocities),
-        	velinf (velocity at infinite), velast (velocities with
-        	respect to SSB)
-
-	method: generation method, either random (following PDF) or
-        	regular (spaced proportionally to probability)
-
-  Example:
-
-	python generatevelocities.py 10 velimp regular
-  ```
 
 - ``generateinitialconditions.py``: This script generate random directions
    obeying the random noise distribution, i.e. the distance between
@@ -550,8 +552,6 @@ Below we describe the scripts to perform this simple tasks:
   
   ```
 
-- 
-   
 - ``throwaray.py``: throw a particle from a given location on Earth and
    at a given velocity.
 
@@ -577,3 +577,6 @@ Below we describe the scripts to perform this simple tasks:
 
 	       python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
   ```
+
+Python Scripts and GRT Analysis
+-------------------------------

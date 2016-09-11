@@ -45,7 +45,7 @@ print "Generating %d velocities from source '%s' with distribution '%s'..."%(nsa
 ###################################################
 #LOAD REQUIRED INFORMATION
 ###################################################
-velfile="sample-"+source
+velfile="sample-velocities.dat"
 vp=np.loadtxt(source)
 vmin=vp[:,0].min();vmax=vp[:,0].max();
 
@@ -82,4 +82,4 @@ ax=fig.gca()
 ax.plot(F[:,0],F[:,1]*nsample,'-')
 ax.plot(vs,np.zeros_like(vs),'k+',ms=10)
 ax.plot(vp[:,0],vp[:,1]*nsample,'-')
-fig.savefig("scratch/%s-pdf-sample.png"%source)
+fig.savefig("scratch/sample-velocities.png")
