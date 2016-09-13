@@ -861,7 +861,6 @@ def experimen2(el):
     #"""
     grtid="B151A2" 
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_average',title='Chelyabinsk (average speed distribution)')
-    """
     grtid="36206D" 
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_apex',title='Chelyabinsk (apex dependent speed distribution)')
     #"""

@@ -29,6 +29,9 @@ Output:
    database to the test particle; probability is the "normalized"
    probability for this point.
 
+Example:
+   
+
 """
 
 #############################################################
@@ -127,8 +130,9 @@ for n in xrange(Nphys):
                                 "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
+
     if verb:print TAB,"Number of targets:",ntarg
-    d2t,qt,et,it=0,0,0,0
+    d2c,qc,ec,ic=0,0,0,0
     density=0
     if ntarg>0:
         d2c,qc,ec,ic=result[0,:]
