@@ -114,6 +114,7 @@ else:UNIT=RAD
 
 #DETERMINE NUMBER OF QAPEX
 datos=np.loadtxt(inifile)
+Ninitial=len(datos)
 napex=datos.shape[1]-2
 
 #############################################################
@@ -162,7 +163,8 @@ for i in xrange(npoints):
     #==================================================
     data=np.loadtxt("%s/%s.prob"%(outdir,outfile))
     p=data[:,7]
-    print>>stderr,"Total probability:",p.sum()
-    f.write("%-+15.6f%-+15.6f%-+15.6f\n"%(lat,lon,p.sum()))
+    Ptot=p.sum()/(1.0*Ninitial)
+    print>>stderr,"Total probability:",Ptot
+    f.write("%-+15.6f%-+15.6f%-+15.6f\n"%(lat,lon,Ptot))
 
 f.close()
