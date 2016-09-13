@@ -60,6 +60,7 @@ int main(int argc,char* argv[])
   SpiceDouble rho,vcirc,vrot[3],vrotitrf93[3];
   rho=sqrt(observerITRF93[0]*observerITRF93[0]+observerITRF93[1]*observerITRF93[1]);
   vcirc=2*M_PI*rho/GSL_CONST_MKSA_DAY;
+  //THE MINUS SIGN INDICATED 
   vpack_c(0.0,-vcirc,0.0,vrot);
   mxv_c(hi,vrot,vrotitrf93);
   fprintf(stdout,"\tVelocity of rotation w.r.t. ITRF93: %s\n",vec2str(vrotitrf93,"%.17e"));

@@ -478,6 +478,10 @@ double maxAbsVec(double a[],int n)
   return max;
 }
 
+/*
+Adapted from: http://www.mymathlib.com/diffeq/bulirsch_stoer.html
+ */
+
 static int Rational_Extrapolation_to_Zero(double *fzero,double tableau[],
 					  double x[],double f,int n) 
 {

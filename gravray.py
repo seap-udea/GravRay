@@ -7,6 +7,7 @@ from sys import argv,exit
 from time import time
 import numpy as np
 from scipy.interpolate import interp1d
+import hashlib
 
 #GRAPHICAL
 from matplotlib import pyplot as plt,cm
@@ -113,11 +114,13 @@ def out2dict(output):
     
 ETIME=time()
 TIME=time()
-def timeIt():
+def timeIt(msg='',stream=None):
     global TIME,ETIME
     ETIME=time()-ETIME
     total=time()-TIME
-    print "[Elapsed: last %.2f msec, total %.3f]"%(1e3*ETIME,total)
+    msg="[Elapsed %s: last %.3f (%.0f msec), total %.3f sec]"%(msg,ETIME,1e3*ETIME,total)
+    if stream is None:print msg
+    else:print>>stream,msg
     ETIME=time()
 
 class dict2obj(object):
@@ -146,7 +149,6 @@ def mysqlSelect(selection="*",table="Bodies",condition="limit 100",typereturn="d
     """
     #QUERY
     sql="select %s from %s %s"%(selection,table,condition)
-    print sql
     DB.execute(sql)
     results=DB.fetchall()
 
@@ -331,3 +333,48 @@ def cumDistrib(x,h,x0=None,xn=None):
         F=np.concatenate((F,[1]))
     Fcum=np.vstack((x,F)).transpose()
     return Fcum
+
+def MD5STR(str,len=-1):
+    MD5=hashlib.md5()
+    MD5.update(str)
+    return MD5.hexdigest()[:len].upper()
+
+#Weighting factor for computing density
+def wFunction(d,h):
+    """
+    Schoenber B-spline function
+    See: https://arxiv.org/pdf/1012.1885.pdf
+
+    Plot:
+        h=0.1
+        sigma=wNormalization(h)
+        fig=plt.figure()
+        ax=fig.gca()
+        ds=np.linspace(0,5*h,100)
+        ws=np.array([sigma*wFunction(d,h) for d in ds])
+        ax.plot(ds,ws)
+        fig.savefig("scratch/weighting-shoenberg.png")
+
+    Test it:
+        from scipy.integrate import quad
+        wnorm=lambda d:wFunction(d,h)*sigma
+        print quad(wnorm,0,2*h)
+    """
+    q=d/h
+    if q<1:w=0.25*(2-q)**3-(1-q)**3
+    elif q<2:w=0.25*(2-q)**3
+    else:w=0
+    return w
+
+def wNormalization(h):
+    from scipy.integrate import quad
+    sigma=1/quad(wFunction,0,2*h,args=(h,))[0]
+    return sigma
+
+def drummondDistance(q,e,i):
+    """
+    Drummond (1981)
+    """
+    #distform="POW(Perihelion_dist-%.17e,2)+POW(e-%.17e,2)+POW((i-%.17e)/45.,2)"%(q,e,i)
+    distform="POW((Perihelion_dist-%.17e)/(Perihelion_dist+%.17e),2)+POW((e-%.17e)/(e+%.17e),2)+POW((i-%.17e)/180.,2)"%(q,q,e,e,i)
+    return distform

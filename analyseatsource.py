@@ -1,68 +1,77 @@
 from gravray import *
 
 #############################################################
+#USAGE
+#############################################################
+usage="""Make a GRT analysis of a whole geopgraphic region.
+
+python analyseatsource.py <file.locals> <file.elements>
+
+Where:
+
+   <file.locals>: file with initial conditions (azimuth, elevation,
+                  velocities).
+
+   <file.elements>: file with resulting elements after analysis with
+                    throwrays.exe
+
+Output:
+
+   <file.elements>.prob: file containing the probability associated to
+                         each ray.  Columns:
+
+      #1:q       2:e        3:i        4:ntarg  5:qclose  6:eclose  7:iclose  8:probability
+      +7.935e-01 +3.545e-01 +1.039e+01    634   6.277e-01 2.484e-01 6.888e+00 +9.10427e-03
+   
+   where ntarg is the number of objects in the database with values of
+   the orbital elements close to that of the test particle;
+   qclose,eclose,iclose are the elements of the closest object in the
+   database to the test particle; probability is the "normalized"
+   probability for this point.
+
+"""
+
+#############################################################
 #INPUTS
 #############################################################
-fname=argv[1]
-print "*"*80,"\nAnalysing data in '%s'\n"%fname,"*"*80
+try:
+    iarg=1
+    inifile=argv[iarg];iarg+=1
+    elements=argv[iarg];iarg+=1
+except:
+    print usage
+    exit(1)
+
+print "*"*80,"\nAnalyzing data in '%s'\n"%elements,"*"*80
 
 #############################################################
 #CONSTANTS AND NUMERICAL PARAMETERS
 #############################################################
-#Ninitial=530
-Ninitial=150
-
-#Weighting factor for computing density
-def wFunction(d,h):
-    """
-    Schoenber B-spline function
-    See: https://arxiv.org/pdf/1012.1885.pdf
-
-    Plot:
-    h=0.1
-    sigma=wNormalization(h)
-    fig=plt.figure()
-    ax=fig.gca()
-    ds=np.linspace(0,5*h,100)
-    ws=np.array([sigma*wFunction(d,h) for d in ds])
-    ax.plot(ds,ws)
-    fig.savefig("scratch/weighting-shoenberg.png")
-
-    Test it:
-    from scipy.integrate import quad
-    wnorm=lambda d:wFunction(d,h)*sigma
-    print quad(wnorm,0,2*h)
-    """
-    q=d/h
-    if q<1:w=0.25*(2-q)**3-(1-q)**3
-    elif q<2:w=0.25*(2-q)**3
-    else:w=0
-    return w
-
-def wNormalization(h):
-    from scipy.integrate import quad
-    sigma=1/quad(wFunction,0,2*h,args=(h,))[0]
-    return sigma
 
 #############################################################
 #GET DATA FROM FILE
 #############################################################
-data=np.loadtxt(fname)
-Norbits=data.shape[0]
+initials=np.loadtxt(inifile)
+Ninitial=len(initials)
 
+data=np.loadtxt(elements)
+Norbits=data.shape[0]
 Ncoll=Ninitial-Norbits
 
-print "Number of initial conditions:",Ninitial
-print "Number of succesfull orbits:",Norbits
-print "Number of collisions:",Ncoll
+print "Basic properties:"
+print TAB,"Number of initial conditions:",Ninitial
+print TAB,"Number of succesfull orbits:",Norbits
+print TAB,"Number of collisions:",Ncoll
 
 #############################################################
 #READ ELEMENTS OF IMPACTORS
 #############################################################
-qes=data[:,6]
-ees=data[:,7]
-ies=data[:,8]
+qes=data[:,9]
+ees=data[:,10]
+ies=data[:,11]
 
+Nhyp=len(ees[ees>=1])
+Nret=len(ies[ies>=180])
 cond=(ees<1)*(ies<180)
 
 qes=qes[cond]
@@ -71,13 +80,19 @@ ies=ies[cond]
 
 Nphys=ees.shape[0]
 
-print "NUmber of bound, prograde orbits:",Nphys
+print "Filter:"
+print TAB,"Number of hyperbolic orbits:",Nhyp
+print TAB,"Number of retrograde orbits:",Nret
+print TAB,"Number of bound, prograde orbits:",Nphys
 
 aes=qes/(1-ees)
 
 #############################################################
 #NUMERICAL PARAMTERES
 #############################################################
+#Debugging
+verb=0
+adv=0
 
 #Maximum weighted euclidean distance in configuration space
 dmax=0.1
@@ -86,48 +101,55 @@ dmax=0.1
 sigma=wNormalization(dmax)
 
 #Normalization of number density
-normal=1000.0*Ninitial
+normal=5000.0*Ninitial
 
 #############################################################
 #COMPUTE DENSITY
 #############################################################
 Ptot=0
 
-fp=open(fname+".prob","w")
+timeIt()
+fp=open(elements+".prob","w")
 for n in xrange(Nphys):
  
     q=qes[n]
     e=ees[n]
     i=ies[n]
-    
-    if (n%100)==0 or 1:
+    if verb:print "Test particle:",q,e,i
+
+    if (n%(Nphys/10))==0 and adv:
         print "Direction %d:"%n,q,e,i
         
-    distform="POW(Perihelion_dist-%.17e,2)+POW(e-%.17e,2)+POW((i-%.17e)/45.,2)"%(q,e,i)
-    distance=lambda qt,et,it:((qt-q)**2+(e-et)**2+((i-it)/90)**2)**0.5
+    distform=drummondDistance(q,e,i)
 
     result=np.array(mysqlSelect("%s, Perihelion_dist, e, i"%distform,
                                 "NEOS",
                                 "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
+    if verb:print TAB,"Number of targets:",ntarg
     d2t,qt,et,it=0,0,0,0
     density=0
     if ntarg>0:
-        d2t,qt,et,it=result[0,:]
+        d2c,qc,ec,ic=result[0,:]
+        n=0
         for target in result:
             d2,q,e,i=target
+            if verb:print TAB,"Target %d:"%n,q,e,i,", Distance:",d2
             d=d2**0.5
             p=sigma*wFunction(d,dmax)
-            #print "\tTarget: d = %.2e, p = %.2e"%(d,p)
+            if verb:print TAB,"Target: d = %.2e, p = %.6e"%(d,p)
+            if verb:raw_input()
             density+=p
+            n+=1
 
     Pn=density/normal
     Ptot+=Pn
-    #print "Probability contribution: ",Pn/normal
-    #print Pn
-    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e\n"%(q,e,i,ntarg,qt,et,it,Pn))
+    if verb:print TAB,"Probability contribution: ",Pn/normal
+    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e\n"%(q,e,i,ntarg,qc,ec,ic,Pn))
+    if verb:raw_input()
     if n>100e2:break
 
 fp.close()    
 print "Total probability for this site: ",Ptot
+timeIt()

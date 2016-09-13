@@ -606,6 +606,44 @@ scripts are included with the package.  Here we describe them.
 	       python throwaray.py 54.456093 63.492323 8.234765e+04 17.664618 104.975030 -2.045864e+01 "02/15/2013 3:20:34 UTC" -2.0
   ```
 
+- ``analyseatsource.py``: analyse results of a given site and compute
+  the *impact* probability from those results.
+
+  ```
+  Usage:
+
+    python analyseatsource.py <file.locals> <file.elements>
+
+    Where:
+
+       <file.locals>: file with initial conditions (azimuth, elevation,
+                      velocities).
+
+       <file.elements>: file with resulting elements after analysis with
+                        throwrays.exe
+
+    Output:
+
+       <file.elements>.prob: file containing the probability associated to
+                             each ray.  Columns:
+
+          #1:q       2:e        3:i        4:ntarg  5:qclose  6:eclose  7:iclose  8:probability
+          +7.935e-01 +3.545e-01 +1.039e+01    634   6.277e-01 2.484e-01 6.888e+00 +9.10427e-03
+
+       where ntarg is the number of objects in the database with values of
+       the orbital elements close to that of the test particle;
+       qclose,eclose,iclose are the elements of the closest object in the
+       database to the test particle; probability is the "normalized"
+       probability for this point.
+
+  ```
+  
+- ``makeagravray.py``: analyse results of a given site and compute the
+  *impact* probability from those results.
+
+  ```
+  ```
+
 GRT Analysis
 ------------
 

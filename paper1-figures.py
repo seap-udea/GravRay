@@ -1,6 +1,7 @@
 from gravray import *
 from scipy import signal as sig
 from scipy.optimize import curve_fit
+from os import system
 
 #############################################################
 #INPUTS
@@ -25,9 +26,18 @@ qload=0
 try:qload=int(argv[1])
 except:pass
 
-if qload>0:
+if qload==1:
+    print "Getting elements for closest NEAs..."
     props="Perihelion_dist, Aphelion_dist, e, i"
     condition="where Perihelion_dist<=1 and Perihelion_dist>=(1-e)/(1+e) and (e>0 and e<1)"
+    listdict=mysqlSelect(props,
+                         condition=condition)
+    elements=listdict2matrix(listdict,keys=props.split(", "))
+
+elif qload==2:
+    print "Getting elements for all NEAs..."
+    props="Perihelion_dist, e, i"
+    condition="where NEO_flag and e>0 and e<1 and Perihelion_dist<=1"
     listdict=mysqlSelect(props,
                          condition=condition)
     elements=listdict2matrix(listdict,keys=props.split(", "))
@@ -596,8 +606,285 @@ def readECSS2008():
     x=np.concatenate(data.transpose()[::2,:])
     n=np.concatenate(data.transpose()[1::2,:])
 
+def plotKernel():
+    h=0.1
+    sigma=wNormalization(h)
+    fig=plt.figure()
+    ax=fig.gca()
+    ds=np.linspace(0,5*h,100)
+    ws=np.array([sigma*wFunction(d,h) for d in ds])
+    ax.plot(ds,ws)
+    figfile=FIGDIR+"WeightingShoenberg.png"
+    print "Plotting ",figfile
+    fig.savefig(figfile)
+
+def testParticle():
+    system("make && python throwaray.py 54.456093 63.492323 8e+04 17.664618 104.975030 -2.045864e+01 '02/15/2013 3:20:34 UTC' -2.0")
+
+def showDistrib(el):
+
+    #==================================================
+    #DATA FROM NEA
+    #==================================================    
+    #LOAD DATA
+    qes=el[:,0];qmin=qes.min();qmax=qes.max()
+    ees=el[:,1];emin=ees.min();emax=ees.max()
+    ies=np.log10(el[:,2]);imin=ies.min();imax=ies.max()
+    aes=qes/(1-ees**2);amin=aes.min();amax=aes.max()
+
+    #INTERVALS
+    qlow=qmin;qup=qmax
+    alow=amin;aup=amax*0+3
+    elow=emin;eup=emax
+    ilow=imin*0;iup=imax
+
+    #==================================================
+    #CALCULATE DENSITY
+    #==================================================    
+    bins=30
+
+    print "Showing Source Distribution..."
+
+    #==================================================
+    #PLOT
+    #==================================================    
+    #cmap='gray'
+    #interpolation='hanning'
+    interpolation='nearest'
+    cmap='rainbow'
+    cmap='jet'
+
+    factor=1.0
+    pprop=dict(ms=5,mec='none')
+
+    fig=plt.figure(figsize=(18,7))
+    fsize=18
+
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # q vs. e
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(qes[condi],ees[condi],bins=bins,normed=True)
+    axae=fig.add_subplot(131)
+    scale=(qup-qlow)/(eup-elow)
+    img=axae.imshow(H.transpose(),origin='lower',
+                  interpolation=interpolation,
+                  extent=(qmin,qmax,emin,emax),aspect=scale/factor,cmap=cmap)
+    axae.set_xlabel("$q$ (AU)",fontsize=fsize)
+    axae.set_ylabel("$e$",fontsize=fsize)
+    #if not qnofile:axae.plot(data[:,6],data[:,7],'ko',**pprop)
+    axae.set_xlim((qlow,qup))
+    axae.set_ylim((elow,eup))
+    
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # q vs. i
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(qes[condi],ies[condi],bins=bins,normed=True)
+    axai=fig.add_subplot(132)
+    scale=(qup-qlow)/(iup-ilow)
+    img=axai.imshow(H.transpose(),origin='lower',
+                    interpolation=interpolation,
+                    extent=(qmin,qmax,imin,imax),aspect=scale/factor,cmap=cmap)
+    axai.set_xlabel("$q$ (AU)",fontsize=fsize)
+    axai.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
+    #if not qnofile:axai.plot(data[:,6],np.log10(data[:,8]),'ko',**pprop)
+    axai.set_xlim((qlow,qup))
+    axai.set_ylim((ilow,iup))
+
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # e vs. i
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(ees[condi],ies[condi],bins=bins,normed=True)
+    axei=fig.add_subplot(133)
+    scale=(eup-elow)/(iup-ilow)
+    img=axei.imshow(H.transpose(),origin='lower',
+                    interpolation=interpolation,
+                    extent=(emin,emax,imin,imax),aspect=scale/factor,cmap=cmap)
+    axei.set_xlabel("$e$",fontsize=fsize)
+    axei.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
+    
+    #if not qnofile:
+    #    axai.set_title("Source distribution",position=(0.5,1.05),fontsize=16)
+    #    axei.plot(data[:,7],np.log10(data[:,8]),'ko',**pprop)
+
+    axai.set_title("Marginal distributions of %d NEAs"%len(el),position=(0.5,1.05),fontsize=20)    
+
+    axei.set_xlim((elow,eup))
+    axei.set_ylim((ilow,iup))
+
+    fig.tight_layout()
+    fig.savefig(FIGDIR+"NEODistribution.png")
+
+def pointMap(el,fname,sname,title=None):
+
+    #==================================================
+    #DATA FROM NEA
+    #==================================================    
+    #LOAD NEOS DATA
+    qes=el[:,0];qmin=qes.min();qmax=qes.max()
+    ees=el[:,1];emin=ees.min();emax=ees.max()
+    ies=np.log10(el[:,2]);imin=ies.min();imax=ies.max()
+    aes=qes/(1-ees**2);amin=aes.min();amax=aes.max()
+
+    #==================================================
+    #DATA FOR SITE
+    #==================================================    
+    data=np.loadtxt(fname)
+    qdata=data[:,9]
+    edata=data[:,10]
+    idata=np.log10(data[:,11])
+    cond=edata<1
+    edata=edata[cond]
+    qdata=qdata[cond]
+    idata=idata[cond]
+    adata=qdata/(1-edata)
+
+    """
+    ip=10
+    iini=ip*23;iend=(ip+1)*23
+    iini=239
+    iend=iini+1
+    print iini,iend
+    edata=edata[iini:iend]
+    qdata=qdata[iini:iend]
+    idata=idata[iini:iend]
+    print edata,qdata,idata
+    """
+
+    #==================================================
+    #CHELYABINSK IMPACT
+    #==================================================    
+    eimp=0.6
+    iimp=np.log10(6.0)
+    qimp=0.75
+    
+    #INTERVALS
+    qlow=qmin;qup=qmax
+    alow=amin;aup=amax*0+3
+    elow=emin;eup=emax
+    ilow=imin*0;iup=imax
+
+    #==================================================
+    #CALCULATE DENSITY
+    #==================================================    
+    bins=30
+
+    print "Showing Source Distribution for site '%s'..."%sname
+
+    #==================================================
+    #PLOT
+    #==================================================    
+    interpolation='nearest'
+    cmap='rainbow'
+    #cmap='jet'
+
+    factor=1.0
+    pprop=dict(ms=8,mec='none')
+    iprop=dict(ms=15,mec='k',color='w')
+
+    fig=plt.figure(figsize=(18,7))
+    fsize=18
+
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # q vs. e
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(qes[condi],ees[condi],bins=bins,normed=True)
+    axae=fig.add_subplot(131)
+    scale=(qup-qlow)/(eup-elow)
+    img=axae.imshow(H.transpose(),origin='lower',
+                  interpolation=interpolation,
+                  extent=(qmin,qmax,emin,emax),aspect=scale/factor,cmap=cmap)
+    axae.set_xlabel("$q$ (AU)",fontsize=fsize)
+    axae.set_ylabel("$e$",fontsize=fsize)
+    axae.plot(qdata,edata,'ko',**pprop)
+    axae.plot([qimp],[eimp],'kv',**iprop)
+    axae.set_xlim((qlow,qup))
+    axae.set_ylim((elow,eup))
+    
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # q vs. i
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(qes[condi],ies[condi],bins=bins,normed=True)
+    axai=fig.add_subplot(132)
+    scale=(qup-qlow)/(iup-ilow)
+    img=axai.imshow(H.transpose(),origin='lower',
+                    interpolation=interpolation,
+                    extent=(qmin,qmax,imin,imax),aspect=scale/factor,cmap=cmap)
+    axai.set_xlabel("$q$ (AU)",fontsize=fsize)
+    axai.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
+    axai.plot(qdata,idata,'ko',**pprop)
+    axai.plot([qimp],[iimp],'kv',**iprop)
+    axai.set_xlim((qlow,qup))
+    axai.set_ylim((ilow,iup))
+
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # e vs. i
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(ees[condi],ies[condi],bins=bins,normed=True)
+    axei=fig.add_subplot(133)
+    scale=(eup-elow)/(iup-ilow)
+    img=axei.imshow(H.transpose(),origin='lower',
+                    interpolation=interpolation,
+                    extent=(emin,emax,imin,imax),aspect=scale/factor,cmap=cmap)
+    axei.set_xlabel("$e$",fontsize=fsize)
+    axei.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
+    axei.plot(edata,idata,'ko',**pprop)    
+    axei.plot([eimp],[iimp],'kv',**iprop)
+    axei.set_xlim((elow,eup))
+    axei.set_ylim((ilow,iup))
+
+    if title is None:
+        title=sname
+    axai.text(0.5,1.05,"Point Distribution for site %s"%title,transform=axai.transAxes,fontsize=20,ha='center')    
+
+    fig.tight_layout()
+    fig.savefig(FIGDIR+"pointMap-%s.png"%sname)
+    
+
+def allPoints(el):
+    """
+    Generate point distributions:
+    """
+    #grtid="078645" #120 test particles
+    grtid="9104FD" #271 test particles
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk')
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_-1.89000e+01__lon_4.75000e+01.data'%grtid,'Madagascar')
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_2.18000e+01__lon_-1.57000e+02.data'%grtid,'Hawaii')
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_-7.78500e+01__lon_1.66400e+02.data'%grtid,'Antartica')
+
+def experimen2(el):
+    #"""
+    grtid="B151A2" 
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_average',title='Chelyabinsk (average speed distribution)')
+    """
+    grtid="36206D" 
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_apex',title='Chelyabinsk (apex dependent speed distribution)')
+    #"""
+
+    """
+    loc="lat_2.18000e+01__lon_-1.57000e+02"
+    grtid="2BAF32" #
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_average',title='Hawaii (average speed distribution)')
+    grtid="ED2863" #
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_apex',title='Hawaii (apex dependent speed distribution)')
+    #"""
+
+    """
+    loc="lat_-1.89000e+01__lon_4.75000e+01"
+    grtid="0F13D5" #
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Madagascar_average',title='Madagascar (average speed distribution)')
+    grtid="21A94B" #
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Madagascar_apex',title='Madagascar (apex dependent speed distribution)')
+    #"""
+
 #############################################################
 #EXECUTE
 #############################################################
 #distanceTunguskaChelyabisnk()
 #plotGeographicPositions()
+

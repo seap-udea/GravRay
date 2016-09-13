@@ -71,6 +71,7 @@ timeIt()
 #INTEGRATE ORBIT
 #############################################################
 print "Integrating orbit..."
+
 cmd="./wherewillitbe.exe %s %s %.17e %d > /tmp/out.log"%\
     (props["TDB"],vec2str(props["ECJ2000(6)"]),tspan,npoints)
 out=System(cmd)
@@ -84,7 +85,6 @@ timeIt()
 #GET FINAL ORBITAL ELEMENTS
 #############################################################
 data=np.loadtxt("ray.dat")
-print data.shape
 elements=data[-1,9:]
 print "Orbital elements:"
 print TAB,"q = ",elements[0]/UL
@@ -115,9 +115,9 @@ axq.plot(ts,data[:,9]/UL)
 axe.plot(ts,data[:,10])
 axi.plot(ts,data[:,11])
 
-axq.set_ylabel("q (AU)")
-axe.set_ylabel("e")
-axi.set_ylabel("i (deg)")
+axq.set_ylabel("$q$ (AU)")
+axe.set_ylabel("$e$")
+axi.set_ylabel("$i$ (deg)")
 axi.set_xlabel(r"$t-t_{\rm impact}$ (years)")
 
 #DECORATION
@@ -144,7 +144,7 @@ data[:,1:7]=np.array([data[i,1:7]/STATECONV for i in xrange(data.shape[0])])
 #==============================
 ext=0
 if ext==0:
-    ext=1.5*max(np.abs(data[:,1:4].min()),data[:,1:4].max())
+    ext=0.8*max(np.abs(data[:,1:4].min()),data[:,1:4].max())
 
 for objid in objects:
     if 'ts' in objid:continue
@@ -153,14 +153,14 @@ for objid in objects:
     cond=np.array([norm(objdata[i,0:3])<=ext for i in xrange(objdata.shape[0])])
     if len(objdata[cond,0])>0:
         ax.plot(objdata[cond,0],objdata[cond,1],objdata[cond,2],
-                marker='o',mec='none',ms=3,lw=0,label='%s'%OBJECTS[objid])
+                '-',mec='none',ms=3,lw=1,label='%s'%OBJECTS[objid])
 
 #==============================
 #RAY
 #==============================
-ax.plot(data[:,1],data[:,2],data[:,3],'k-',label='Ray')
+ax.plot(data[:,1],data[:,2],data[:,3],'k--',label='Test particle')
 
-ax.legend(loc="best")
+ax.legend(loc="upper left",fontsize=10)
 
 ax.set_xlim(-ext,ext)
 ax.set_ylim(-ext,ext)

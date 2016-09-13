@@ -112,8 +112,8 @@ int main(int argc,char* argv[])
       v=vels[0];
     }
 
-    fprintf(stdout,"Condition %d:Integrating for h = %.2lf, A = %.2lf, v = %.2lf, qapex = %.2fl\n",
-	    ncond,h,Az,v,qapex);
+    fprintf(stdout,"Condition %d at lat=%.5lf,lon=%.5lf: Integrating for h = %.2lf, A = %.2lf, v = %.2lf (qvel? %d), qapex = %.2f\n",
+	    ncond,lat,lon,h,Az,v,qvel,qapex);
 
     ////////////////////////////////////////////////////
     //DETERMINE POSITION FOR THIS INITIAL CONDITION
