@@ -47,7 +47,7 @@ int main(int argc,char* argv[])
   int ncoll=0;
   SpiceDouble h,Az,v,speed;
   SpiceDouble elements[6];
-  SpiceDouble deltat=-2.0;
+  SpiceDouble deltat=-0.5;
   char line[1000];
 
   FILE* fi=fopen(file,"r");

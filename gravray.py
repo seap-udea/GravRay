@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt,cm
 from mpl_toolkits.mplot3d import Axes3D as plt3d,art3d
 from mpl_toolkits.basemap import Basemap as Map,shiftgrid as Grid
 
-import visual as v
+#import visual as v
 
 #DATABASE
 import MySQLdb as mdb
