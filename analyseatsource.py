@@ -103,8 +103,11 @@ dmax=0.1
 #Weighting function normalization
 sigma=wNormalization(dmax)
 
+#Maximim value of the smoothing kernel
+wmax=sigma*wFunction(0,dmax)
+
 #Normalization of number density
-normal=5000.0*Ninitial
+normal=2000.0
 
 #############################################################
 #COMPUTE DENSITY
@@ -146,14 +149,25 @@ for n in xrange(Nphys):
             if verb:raw_input()
             density+=p
             n+=1
+        Pn=density/wmax
+    else:
+        Pn=0
 
-    Pn=density/normal
-    Ptot+=Pn
-    if verb:print TAB,"Probability contribution: ",Pn/normal
-    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e\n"%(q,e,i,ntarg,qc,ec,ic,Pn))
+    if verb:print TAB,"Probability contribution: ",Pn
+    Ptot+=Pn/normal
+    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e\n"%(q,e,i,ntarg,qc,ec,ic,Pn/normal))
+
+    """
+    print ntarg,density,Pn
+    raw_input()
+    """
+
     if verb:raw_input()
     if n>100e2:break
 
 fp.close()    
+
+#Normalize total probability
+Ptot=Ptot/(1.0*Ninitial)
 print "Total probability for this site: ",Ptot
 timeIt()

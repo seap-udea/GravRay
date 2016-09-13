@@ -54,7 +54,7 @@ Output example: locals.dat
 ###################################################
 #INPUTS
 ###################################################
-qshow=1
+qshow=0
 iarg=1
 try:
     randir=argv[iarg];iarg+=1

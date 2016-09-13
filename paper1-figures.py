@@ -742,6 +742,17 @@ def pointMap(el,fname,sname,title=None):
     adata=qdata/(1-edata)
 
     """
+    h=data[cond,0]
+    qapex=data[cond,15]
+    cond=h>40
+    edata=edata[cond]
+    qdata=qdata[cond]
+    idata=idata[cond]
+    qapex=qapex[cond]
+    print len(qdata)
+    """
+
+    """
     ip=10
     iini=ip*23;iend=(ip+1)*23
     iini=239
@@ -858,14 +869,14 @@ def allPoints(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_-7.78500e+01__lon_1.66400e+02.data'%grtid,'Antartica')
 
 def experimen2(el):
-    #"""
+    """
     grtid="B151A2" 
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_average',title='Chelyabinsk (average speed distribution)')
     grtid="36206D" 
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_apex',title='Chelyabinsk (apex dependent speed distribution)')
     #"""
 
-    """
+    #"""
     loc="lat_2.18000e+01__lon_-1.57000e+02"
     grtid="2BAF32" #
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_average',title='Hawaii (average speed distribution)')
