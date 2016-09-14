@@ -378,3 +378,11 @@ def drummondDistance(q,e,i):
     #distform="POW(Perihelion_dist-%.17e,2)+POW(e-%.17e,2)+POW((i-%.17e)/45.,2)"%(q,e,i)
     distform="POW((Perihelion_dist-%.17e)/(Perihelion_dist+%.17e),2)+POW((e-%.17e)/(e+%.17e),2)+POW((i-%.17e)/180.,2)"%(q,q,e,e,i)
     return distform
+
+def theoFlux_DoubleTrigCos(q,f,a,b):
+    if q<=90:
+        fv=f*np.cos(np.pi/2-q*DEG)**a
+    else:
+        fv=f*np.cos(np.pi/2-q*DEG)**b
+    return fv
+theoFlux_DoubleTrigCos=np.vectorize(theoFlux_DoubleTrigCos)

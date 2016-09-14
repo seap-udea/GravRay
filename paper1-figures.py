@@ -8,11 +8,55 @@ from spiceypy import wrapper as spy
 #############################################################
 #INPUTS
 #############################################################
+plt.close("all")
 
 VESC=11.1
 def theoVimp(v,p,a,vso):
     pv=p*((v-VESC)/vso)*np.exp(-((v-VESC)/vso)**a)
     return pv
+
+def theoFlux_Trig(q,f,a,b):
+    fv=f*(q*DEG)**a*np.sin(q*DEG)**b
+    return fv
+
+def theoFlux_DoubleTrigSin(q,fa,fb,a,b):
+    if q<=90:
+        fv=fa*np.sin(q*DEG)**a
+    else:
+        fv=fb*np.sin(q*DEG)**b
+    return fv
+theoFlux_DoubleTrigSin=np.vectorize(theoFlux_DoubleTrigSin)
+
+def theoFlux_DoubleTrigCos(q,f,a,b):
+    if q<=90:
+        fv=f*np.cos(np.pi/2-q*DEG)**a
+    else:
+        fv=f*np.cos(np.pi/2-q*DEG)**b
+    return fv
+theoFlux_DoubleTrigCos=np.vectorize(theoFlux_DoubleTrigCos)
+
+def theoFlux_DoubleExp(q,f,a,qa,b,qb):
+    if qa<0 or qb<0:return 1e100
+    if q<=90:
+        fv=np.exp(-((90-q)*DEG/qa)**a)
+    else:
+        fv=((q-90)*DEG/qb)**(-b)
+        #fv=np.exp(-((q-90)*DEG/qb)**b)
+    fv*=f
+    return fv
+theoFlux_DoubleExp=np.vectorize(theoFlux_DoubleExp)
+
+def theoFlux_PowExp(q,f,a,b,qt):
+    fv=f*(q*DEG)**a/(1+np.exp((q**DEG/qt)**b))
+    return fv
+
+def softSignal(s,window=3):
+    ns=len(s)
+    ss=s
+    for i in xrange(window,ns-window):
+        ies=np.arange(i-window,i+window,1)
+        ss[i]=s[ies].mean()
+    return ss
 
 #############################################################
 #CONSTANTS AND NUMERICAL PARAMETERS
@@ -35,6 +79,7 @@ if qload==1:
     listdict=mysqlSelect(props,
                          condition=condition)
     elements=listdict2matrix(listdict,keys=props.split(", "))
+    print len(elements)," objects discovered..."
 
 elif qload==2:
     print "Getting elements for all NEAs..."
@@ -43,6 +88,7 @@ elif qload==2:
     listdict=mysqlSelect(props,
                          condition=condition)
     elements=listdict2matrix(listdict,keys=props.split(", "))
+    print len(elements)," objects discovered..."
 
 #############################################################
 #FUNCTIONS
@@ -351,11 +397,34 @@ def apexVelocityDistribution():
     # PLOT DISTRIBUTION OF DIRECTIONS
     # ########################################
     print "Distribution of directions..."
+    h,t=np.histogram(tapexs,40)
+    tm=(t[1:]+t[:-1])/2
+
+    #AREA CORRECTION
+    hc=h/np.cos(np.pi/2-tm*DEG)
+
+    #REGULARIZATION
+    hc=softSignal(hc,window=4)
+    hc=hc/hc.max()
+
+    #FIT ANALYTICAL FUNCTION
+    function=theoFlux_DoubleTrigCos
+    f=0.1;a=1;b=2
+    fit=curve_fit(function,tm,hc,(f,a,b))
+    param=fit[0]
+    print "Flux parameters:",param
+    qts=np.linspace(0,180.0,100)
+    fts=function(qts,*param)
+
+    #PLOT
     fig=plt.figure()
     ax=fig.gca()
-    ax.hist(tapexs,40)
+    bins,n=histOutline(hc,t)
+    ax.plot(bins,n)
+    ax.plot(qts,fts)
+    ax.set_xlim((0,180))
     fig.savefig(FIGDIR+"DirectionDistributions.png")
-    
+
     # ########################################
     # DELETE DATA
     # ########################################
@@ -364,6 +433,22 @@ def apexVelocityDistribution():
 def velocityDistribution(el,verbose=0):
 
     from scipy.optimize import curve_fit
+
+    ###################################################
+    #OBSERVED FIREBALLS
+    ###################################################
+    data=np.loadtxt("util/data/fireballs.data")
+    fvimps=data[:,5]
+    cond=fvimps!=123456789
+    fvimps=fvimps[cond]
+    ndataf=len(fvimps)
+    hf,xf=np.histogram(fvimps,10)
+    xmedf=(xf[:-1]+xf[1:])/2
+    herrf=np.sqrt(hf)
+    normf=1.0*ndataf*(xf[1]-xf[0])
+    hnf=hf/normf
+    herrnf=herrf/normf
+    
 
     nbodies=el.shape[0]
 
@@ -533,10 +618,18 @@ def velocityDistribution(el,verbose=0):
     bins,n=histOutline(hmeaninfsrcs/nsubsample,xinfsrc)
     ax.plot(bins,n,label=r'Source $v_\infty$')
     """
+    
+    # FIREBALL DISTRIBUTION
+    # binsf,nf=histOutline(hf,xf)
+    # ax.plot(binsf,nf,'k-',lw=3,label='Observed fireballs velocities')
+    ax.errorbar(xmedf,hnf,yerr=herrnf,fmt='o',label='NASA fireball reports')
+    
 
+    # INITIAL DISTRIBUTION
     bins,n=histOutline(hmeaninfinis/nsubsample,xinfini)
     ax.plot(bins,n,label='Initial velocities $v_\infty$')
 
+    # IMPACT DISTRIBUTION
     bins,n=histOutline(hmeanimps/nsubsample,ximp)
     ax.plot(bins,n,label=r'Impact velocities $v_{\rm imp}$')
     
@@ -563,7 +656,7 @@ def velocityDistribution(el,verbose=0):
     param=fit[0]
     print param[2]**(1/param[1])
     print "Fit result:",param
-    ax.plot(vs,theoVimp(vs,*param),'k',label=r'Continuous fit: $\alpha=0.88,\;\Delta v=3.04$ km/s')
+    ax.plot(vs,theoVimp(vs,*param),'k',label=r'Continuous fit:$\alpha=0.88,\;\Delta v=3.04$ km/s')
 
     #MEAN VALUE
     vmean=((ximp[:-1]+ximp[1:])/2*hmeanimps/nsubsample).sum()
@@ -576,7 +669,7 @@ def velocityDistribution(el,verbose=0):
     ax.axvspan(0,vesc,color='k',alpha=0.2)
     ax.set_xlabel(r"$v$ (km/s)",fontsize=14)
     ax.set_ylabel(r"Frequency",fontsize=14)
-    ax.legend(loc="upper right",fontsize=10)
+    ax.legend(loc="upper right",fontsize=10,frameon=False)
     ax.set_xlim((0,42))
     ax.set_ylim((0,0.09))
 
@@ -661,7 +754,8 @@ def showDistrib(el):
     factor=1.0
     pprop=dict(ms=5,mec='none')
 
-    fig=plt.figure(figsize=(18,7))
+    #fig=plt.figure(figsize=(18,7))
+    fig=plt.figure()
     fsize=18
 
     # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -676,7 +770,6 @@ def showDistrib(el):
                   extent=(qmin,qmax,emin,emax),aspect=scale/factor,cmap=cmap)
     axae.set_xlabel("$q$ (AU)",fontsize=fsize)
     axae.set_ylabel("$e$",fontsize=fsize)
-    #if not qnofile:axae.plot(data[:,6],data[:,7],'ko',**pprop)
     axae.set_xlim((qlow,qup))
     axae.set_ylim((elow,eup))
     
@@ -692,9 +785,9 @@ def showDistrib(el):
                     extent=(qmin,qmax,imin,imax),aspect=scale/factor,cmap=cmap)
     axai.set_xlabel("$q$ (AU)",fontsize=fsize)
     axai.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
-    #if not qnofile:axai.plot(data[:,6],np.log10(data[:,8]),'ko',**pprop)
     axai.set_xlim((qlow,qup))
     axai.set_ylim((ilow,iup))
+    axai.set_title("Marginal distributions of %d NEAs"%len(el),position=(0.5,1.05),fontsize=20)    
 
     # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     # e vs. i
@@ -708,12 +801,6 @@ def showDistrib(el):
                     extent=(emin,emax,imin,imax),aspect=scale/factor,cmap=cmap)
     axei.set_xlabel("$e$",fontsize=fsize)
     axei.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
-    
-    #if not qnofile:
-    #    axai.set_title("Source distribution",position=(0.5,1.05),fontsize=16)
-    #    axei.plot(data[:,7],np.log10(data[:,8]),'ko',**pprop)
-
-    axai.set_title("Marginal distributions of %d NEAs"%len(el),position=(0.5,1.05),fontsize=20)    
 
     axei.set_xlim((elow,eup))
     axei.set_ylim((ilow,iup))
@@ -941,6 +1028,7 @@ def genFireballsFile():
         'TotalImpactEnergy' #ktons
     ]
     
+    print "Reading csv data..."
     data=[]
     for line in lines:
         i+=1
@@ -949,10 +1037,10 @@ def genFireballsFile():
         subline=[]
         for value in line:
             j+=1
+            field=fields[j]
             if value=='':
                 subline+=[123456789]
                 continue
-            field=fields[j]
             if field=='DateTime':
                 et=spy.str2et(value)
                 datetime=value.replace(" ","").replace(":","").replace("-","")
@@ -976,17 +1064,132 @@ def genFireballsFile():
         data+=[subline]
     data=np.array(data)
     f.close()
-    np.savetxt("util/data/fireballs.data",data,fmt="%-+26.17e")
 
-def distributionFireballs():
+    filename="util/data/fireballs.data"
+    np.savetxt(filename,data,fmt="%-+26.17e")
+
+    print "Creating header..."
+    ffrm="#"
+    fhead=()
+    i=0
+    for field in fields:
+        ffrm+="%-26s "
+        fhead+=("%d:"%i+field,)
+        i+=1
+    ffrm+="\n"
+    f=open(filename,"a")
+    f.write(ffrm%fhead)
+    f.close()
+
+def distributionFireballs(qload=0):
     data=np.loadtxt("util/data/fireballs.data")
-    vimps=data[
-    
+    ovimps=data[:,5]
+    lats=data[:,2]
+    lons=data[:,3]
+    energy=data[:,10]
+    datetime=data[:,0]
+    ets=data[:,1]
+
+    condv=ovimps!=123456789
+    vimps=ovimps[condv]
+
+    print "Number of velocities:",len(vimps)
+
+    conlatlon=(lats!=123456789)*(lons!=123456789)*(energy!=123456789)
+    datetime=datetime[conlatlon]
+    ets=ets[conlatlon]
+    lats=lats[conlatlon]
+    lons=lons[conlatlon]
+    energy=energy[conlatlon]
+    vimpqs=ovimps[conlatlon]
+
+    print "Number of impacts:",len(lats)
+
+    print "Most recent impact: %d"%datetime[0],lats[0],lons[0],energy[0]
+
+    emin=energy.min()
+    emax=energy.max()
+    logemin=np.log10(emin)
+    logemax=np.log10(emax)
+    smin=2
+    smax=10
+    me=(smax-smin)/(logemax-logemin)
+    print "Range of energies:",emin,emax
+
+    # DIRECTION OF IMPACT SITE WITH RESPECT TO APEX
+    if not qload:
+        print "Computing apex distributions..."
+        projs=[]
+        for i in xrange(len(lats)):
+            #if i<390:continue
+            cmd="./whereisapex.exe ET %.9e %.6e %.6e > /dev/null"%(ets[i],lats[i],lons[i])
+            out=System(cmd)
+            rproj=float(out.split("\n")[2])
+            vproj=float(out.split("\n")[3])
+            projs+=[[rproj,vproj]]
+
+        projs=np.array(projs)
+        projs=np.savetxt("util/data/fireball-apex.data",projs)
+
+    print "Loading apex distributions..."
+    projs=np.loadtxt("util/data/fireball-apex.data")
+    vprojs=np.arccos(projs[:,1])*RAD
+    print "Range of apex directions:",len(vprojs),vprojs.min(),vprojs.max()
+
+    h,q=np.histogram(vprojs,15,normed=1)
+    qm=(q[:-1]+q[1:])/2
 
     fig=plt.figure()
-    
-    fig.savefig(FIGDIR+"fireballs-velocities.png")
+    ax=fig.gca()
+    #ax.plot(90-qm,h/np.cos(np.pi/2-qm*DEG))
+    hc=h
+    qc=qm
 
+    hc=h/np.cos(np.pi/2-qm*DEG)
+    qc=90-qm
+    
+    bins,n=histOutline(hc,qc)
+    ax.plot(bins,n)
+    ax.set_xlim((-90,90))
+    fig.savefig(FIGDIR+"fireball-apex-distribution.png")
+    
+    # IMPACT VELOCITY AS A FUNCTION OF TETAPEX
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(vprojs,vimpqs,'ko')
+
+    vmax=vimpqs[vimpqs<123456789].max()
+    vmin=vimpqs.min()
+    ax.set_ylim((vmin,40))
+    fig.savefig(FIGDIR+"fireball-apex-velocity.png")
+
+    exit(0)
+
+    # MAP OF IMPACTS
+    fig=plt.figure()
+    ax=fig.gca()
+    proj='moll'
+    proj='robin'
+    proj='cyl'
+    map=drawMap(proj=proj,proj_opts=dict(lon_0=0,ax=ax),
+                pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
+                pars_opts=dict(labels=[0,1,0,0],fontsize=8),
+                mers_opts=dict(labels=[0,0,0,1],fontsize=8),
+                coasts=True)
+    for i in xrange(len(lats)):
+        lenergy=np.log10(energy[i])
+        ms=me*(lenergy-logemin)+smin
+        plotMap(map,lons[i],lats[i],lw=0,
+                marker='o',color='r',ms=ms,mec='none')
+
+    fig.tight_layout()
+    fig.savefig(FIGDIR+"fireballs-map.png")
+
+    # DISTRIBUTION OF VELOCITIES
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.hist(vimps,10)
+    fig.savefig(FIGDIR+"fireballs-velocities.png")
 
 #############################################################
 #EXECUTE

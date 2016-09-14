@@ -6,12 +6,16 @@ KERNELS_TO_LOAD = ('$PATH/de430.bsp',
 		   '$PATH/codes_300ast_20100725.bsp',
 		   '$PATH/naif0011.tls',
 		   '$PATH/pck00010.tpc',
-		   '$PATH/frame.tk',
-		   '$PATH/earth_assoc_itrf93.tf',
+		   '$PATH/earth_720101_070426.bpc',
 		   '$PATH/earth_latest_high_prec.bpc',
+		   '$PATH/earth_070425_370426_predict.bpc',		   
+		   '$PATH/frame.tk',
 		   )
 
 \begintext
+
+Latest high precision: '$PATH/earth_latest_high_prec.bpc',
+		   '$PATH/earth_assoc_itrf93.tf',
 
 Available at: http://naif.jpl.nasa.gov/pub/naif
 

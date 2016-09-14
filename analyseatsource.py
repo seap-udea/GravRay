@@ -72,6 +72,7 @@ print TAB,"Number of collisions:",Ncoll
 qes=data[:,9]
 ees=data[:,10]
 ies=data[:,11]
+qxs=data[:,15]
 
 Nhyp=len(ees[ees>=1])
 Nret=len(ies[ies>=180])
@@ -80,6 +81,7 @@ cond=(ees<1)*(ies<180)
 qes=qes[cond]
 ees=ees[cond]
 ies=ies[cond]
+qxs=qxs[cond]
 
 Nphys=ees.shape[0]
 
@@ -109,6 +111,10 @@ wmax=sigma*wFunction(0,dmax)
 #Normalization of number density
 normal=2000.0
 
+#Flux function parameters
+#Obtained with paper1-figures, apexVelocityDistribution()
+fparam=(0.9721768,6.84870896,2.40674371)
+
 #############################################################
 #COMPUTE DENSITY
 #############################################################
@@ -121,6 +127,9 @@ for n in xrange(Nphys):
     q=qes[n]
     e=ees[n]
     i=ies[n]
+    qx=qxs[n]
+    flux=theoFlux_DoubleTrigCos(qx,*fparam)
+
     if verb:print "Test particle:",q,e,i
 
     if (n%(Nphys/10))==0 and adv:
@@ -149,7 +158,7 @@ for n in xrange(Nphys):
             if verb:raw_input()
             density+=p
             n+=1
-        Pn=density/wmax
+        Pn=flux*density/wmax
     else:
         Pn=0
 
