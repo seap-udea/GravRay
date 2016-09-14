@@ -420,9 +420,14 @@ def apexVelocityDistribution():
     fig=plt.figure()
     ax=fig.gca()
     bins,n=histOutline(hc,t)
-    ax.plot(bins,n)
-    ax.plot(qts,fts)
+    ax.plot(bins,n,label='Softed scaled flux')
+    ax.plot(qts,fts,'k',lw=2,label='Trigonometric fit')
     ax.set_xlim((0,180))
+
+    ax.set_xlabel(r"$\theta_{\rm apex}^\circ$",fontsize=14)
+    ax.set_ylabel("Scaled frequency",fontsize=14)
+    ax.legend(loc='upper left',fontsize=12)
+
     fig.savefig(FIGDIR+"DirectionDistributions.png")
 
     # ########################################
