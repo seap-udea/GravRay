@@ -118,6 +118,13 @@ Ninitial=len(datos)
 napex=datos.shape[1]-2
 
 #############################################################
+#GENERATE OBSERVERS MATRICES (ECLIPTIC AND APEX POSITION)
+#############################################################
+cmd="make && ./whereonearth.exe '%s'"%date
+system(cmd)
+system("cp -r scratch/observers-matrices.dat %s/"%outdir)
+
+#############################################################
 #MAKE ANALYSIS
 #############################################################
 #GEOGRAPHIC POSITIONS

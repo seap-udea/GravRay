@@ -605,6 +605,8 @@ def readECSS2008():
     data=np.loadtxt("dev/ECSS.data")
     x=np.concatenate(data.transpose()[::2,:])
     n=np.concatenate(data.transpose()[1::2,:])
+    data=np.vstack((x,n)).transpose()
+    np.savetxt("util/data/ECSS.data",data)
 
 def plotKernel():
     h=0.1
@@ -869,28 +871,82 @@ def allPoints(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_-7.78500e+01__lon_1.66400e+02.data'%grtid,'Antartica')
 
 def experimen2(el):
-    """
-    grtid="B151A2" 
+    #"""
+    grtid="19C993" 
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_average',title='Chelyabinsk (average speed distribution)')
-    grtid="36206D" 
+    grtid="FA0C86" 
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_apex',title='Chelyabinsk (apex dependent speed distribution)')
     #"""
 
     #"""
     loc="lat_2.18000e+01__lon_-1.57000e+02"
     grtid="2BAF32" #
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_average',title='Hawaii (average speed distribution)')
     grtid="ED2863" #
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_apex',title='Hawaii (apex dependent speed distribution)')
     #"""
 
-    """
+    #"""
     loc="lat_-1.89000e+01__lon_4.75000e+01"
     grtid="0F13D5" #
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Madagascar_average',title='Madagascar (average speed distribution)')
     grtid="21A94B" #
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Madagascar_apex',title='Madagascar (apex dependent speed distribution)')
     #"""
+
+    #"""
+    loc="lat_-7.78500e+01__lon_1.66400e+02"
+    grtid="1C8476" #
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Antartica_average',title='Antartica (average speed distribution)')
+    loc="lat_-7.78500e+01__lon_1.66400e+02"
+    grtid="431628" #
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Antartica_apex',title='Antartica (average speed distribution)')
+    #"""
+
+def mapProbability(el):
+
+    #AVERAGE VELOCITY MAP DATA
+    grtid="1EF483"
+    system("python mapatsource.py data/grt-20130215032034-%s 0"%grtid)
+    system("cp data/grt-20130215032034-%s/probability-map-contour.png %s/probability-map-contour-average.png"%(grtid,FIGDIR))
+
+    #APEX DEPENDENT MAP DATA
+    grtid="2B353A"
+    system("python mapatsource.py data/grt-20130215032034-%s 0"%grtid)
+    system("cp data/grt-20130215032034-%s/probability-map-contour.png %s/probability-map-contour-apex.png"%(grtid,FIGDIR))
+
+def apexFireballs():
+    #READ FIREBALL DATA
+    import csv
+    
+    
+    f=open('references/Data/fireballs.csv','r')
+    lines=csv.reader(f,delimiter=',')
+    i=0
+    fields=\
+    [
+        'Time',
+        'Latitude','Longitude','Altitude', #Degrees
+        'Velocity','vx','vy','vz', #km/s, with respect to J2000
+        'TotalRadiatedEnergy', #Joules
+        'TotalImpactEnergy' #ktons
+    ]
+    
+    for line in lines:
+        i+=1
+        if i==1:continue
+        print line
+        if i>10:break
+    f.close()
+
 
 #############################################################
 #EXECUTE

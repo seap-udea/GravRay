@@ -14,3 +14,25 @@ for p in sdata:
     print "Spherical:",car2sph(p)
 exit(0)
 
+
+if qload:
+    #############################################################
+    #GET ENSAMBLE PROPERTIES
+    #############################################################
+    out=System("ls -m %s/*.data.prob"%edir)
+    dataensamble=[]
+    for fname in out.split(","):
+        fname=fname.strip("\n ");
+        pcoords=fname.split("-lat")[1].split("__")
+        lat=float(pcoords[0].replace("_",""))
+        lon=float(pcoords[1].replace("lon_","").replace(".data.prob",""))
+        data=np.loadtxt(fname)
+        Ptot=data[:,7].sum()/(1.0*Ninitial)
+        dataensamble+=[[lat,lon,Ptot]]
+        print fname,lat,lon,Ptot
+        break
+        
+    dataensamble=np.array(dataensamble)
+    print dataensamble
+    exit(0)
+
