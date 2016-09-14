@@ -1,0 +1,26 @@
+.DS_Store
+.DS_Store?
+*.o
+.tar
+.gz
+.zip
+*.pyc
+*.so
+
+# Spice Kernels
+*.bsp
+*.bpc
+*.ek
+*.tpc
+*.tsc
+*.tf
+*.tls
+
+# Cspice
+cspice/
+
+# Test meta kernels
+test/*.txt
+
+# Pycharm specific things
+.idea/
