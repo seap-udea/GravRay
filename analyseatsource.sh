@@ -5,7 +5,6 @@ tini=$(date +%s)
 for ray in $grtdir/rays-*.data
 do
     python analyseatsource.py $locals $ray
-    exit 0
 done
 tend=$(date +%s)
 time=$((tend-tini))
