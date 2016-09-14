@@ -2,6 +2,8 @@ from gravray import *
 from scipy import signal as sig
 from scipy.optimize import curve_fit
 from os import system
+import csv
+from spiceypy import wrapper as spy
 
 #############################################################
 #INPUTS
@@ -923,29 +925,67 @@ def mapProbability(el):
     system("python mapatsource.py data/grt-20130215032034-%s 0"%grtid)
     system("cp data/grt-20130215032034-%s/probability-map-contour.png %s/probability-map-contour-apex.png"%(grtid,FIGDIR))
 
-def apexFireballs():
+def genFireballsFile():
     #READ FIREBALL DATA
-    import csv
-    
+    spy.furnsh("kernels.txt")
     
     f=open('references/Data/fireballs.csv','r')
     lines=csv.reader(f,delimiter=',')
     i=0
     fields=\
     [
-        'Time',
+        'DateTime','TimeET',
         'Latitude','Longitude','Altitude', #Degrees
         'Velocity','vx','vy','vz', #km/s, with respect to J2000
         'TotalRadiatedEnergy', #Joules
         'TotalImpactEnergy' #ktons
     ]
     
+    data=[]
     for line in lines:
         i+=1
         if i==1:continue
-        print line
-        if i>10:break
+        j=-1
+        subline=[]
+        for value in line:
+            j+=1
+            if value=='':
+                subline+=[123456789]
+                continue
+            field=fields[j]
+            if field=='DateTime':
+                et=spy.str2et(value)
+                datetime=value.replace(" ","").replace(":","").replace("-","")
+                date,time=value.split(" ")
+                h,m,s=time.split(":")
+                datetime=date.replace("-","")+"%02d%02d%02d"%(int(h),int(m),int(s))
+                subline+=[int(datetime),et]
+                j+=1
+            elif field=="Latitude":
+                sgn=+1
+                if 'S' in value:sgn=-1
+                value=sgn*float(value[:-1])
+                subline+=[value]
+            elif field=="Longitude":
+                sgn=+1
+                if 'W' in value:sgn=-1
+                value=sgn*float(value[:-1])
+                subline+=[value]
+            else:
+                subline+=[float(value)]
+        data+=[subline]
+    data=np.array(data)
     f.close()
+    np.savetxt("util/data/fireballs.data",data,fmt="%-+26.17e")
+
+def distributionFireballs():
+    data=np.loadtxt("util/data/fireballs.data")
+    vimps=data[
+    
+
+    fig=plt.figure()
+    
+    fig.savefig(FIGDIR+"fireballs-velocities.png")
 
 
 #############################################################
