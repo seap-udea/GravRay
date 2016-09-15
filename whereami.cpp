@@ -35,12 +35,25 @@ int main(int argc,char* argv[])
   fprintf(stdout,"Julian Date = %.6lf\n",tjd);
 
   ////////////////////////////////////////////////////
+  //CHECK TIME
+  ////////////////////////////////////////////////////
+  //CHECK DATES
+  SpiceDouble tref;
+  if(t>=ETINI && t<=ETEND){
+    tref=t;
+  }else{
+    if(t<ETINI) tref=ETINI;
+    else tref=ETEND;
+  }
+  fprintf(stdout,"ETINI = %.10e, t = %.10e, tref = %.10e\n",ETINI,t,tref);
+
+  ////////////////////////////////////////////////////
   //GET OBSERVER POSITION IN TIME
   ////////////////////////////////////////////////////
   SpiceDouble earthSSBJ2000[6];
   SpiceDouble M_ITRF93_J2000[3][3];
   SpiceDouble observerITRF93[6],observerJ2000[6],observerSSBJ2000[6];
-  pxform_c("ITRF93",ECJ2000,t,M_ITRF93_J2000);
+  pxform_c("ITRF93",ECJ2000,tref,M_ITRF93_J2000);
 
   //OBSERVER POSITION W.R.T. EARTH CENTER IN ITRF93
   georec_c(D2R(lon),D2R(lat),alt/1000.0,REARTH,FEARTH,observerITRF93);

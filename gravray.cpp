@@ -44,6 +44,18 @@ http://naif.jpl.nasa.gov/pub/naif/
 //FOR LOCAL EPHEMERIS
 #define J2000 "J2000"
 
+/*
+  Range of Ephemeris Times where data to calculate precise ITRF93
+  frame directions is availanle
+ */
+
+// 01/21/1962 00:00:00.000 UTC
+#define ETINI -1.197460759e+09
+// 01/01/2000 00:00:00.000 UTC
+//#define ETINI -4.313581609e+04
+// 07/17/2037 00:00:00.000 UTC
+#define ETEND 1.184673668e+09
+
 //////////////////////////////////////////
 //CONSTANTS
 //////////////////////////////////////////
@@ -682,15 +694,24 @@ int EoM(double t,double y[],double dydt[],void *params)
 int initObserver(SpiceDouble t,struct ObserverStruct* observer)
 {
   SpiceDouble rho,vcirc,vrot[3];
-  SpiceDouble lt;
-
+  SpiceDouble lt,tref;
+  
   observer->t=t;
   
-  //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
-  pxform_c("ITRF93",ECJ2000,t,observer->MEJ);
+  //CHECK DATES
+  if(t>=ETINI && t<=ETEND){
+    tref=t;
+  }else{
+    if(t<ETINI) tref=ETINI;
+    else tref=ETEND;
+  }
+  fprintf(stdout,"ETINI = %.10e, t = %.10e, tref = %.10e\n",ETINI,t,tref);
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
-  pxform_c("ECLIPJ2000","EARTHTRUEEPOCH",t,observer->MEE);
+  pxform_c("ITRF93",ECJ2000,tref,observer->MEJ);
+
+  //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
+  pxform_c("ECLIPJ2000","EARTHTRUEEPOCH",tref,observer->MEE);
 
   //LOCATE OBSERVER 
   georec_c(D2R(observer->lon),D2R(observer->lat),observer->alt/1000.0,

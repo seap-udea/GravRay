@@ -102,7 +102,7 @@ print "Plotting impact probability map (discrete)"
 plt.close("all")
 proj='robin'
 map=drawMap(proj=proj,proj_opts=dict(lon_0=0),
-            pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
+            pars=[-45,-30,-15,0,15,30,45],mers=[0,45,90,135,180,225,270,315],
             pars_opts=dict(labels=[1,1,0,0],fontsize=8),
             mers_opts=dict(labels=[0,0,0,1],fontsize=8),
             coasts=True
@@ -130,10 +130,12 @@ print "Plotting impact probability map (continuous)"
 plt.close("all")
 fig=plt.figure(figsize=(8,6))
 proj='robin'
+pars=np.arange(-75,90,15)
+mers=np.arange(0,360,30)
 map=drawMap(proj=proj,proj_opts=dict(lon_0=0.0),
-            pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
-            pars_opts=dict(labels=[1,1,0,0],fontsize=8),
-            mers_opts=dict(labels=[0,0,1,0],fontsize=8),
+            pars=pars,mers=mers,
+            pars_opts=dict(labels=[0,0,1,0],fontsize=8),
+            mers_opts=dict(labels=[0,0,0,0],fontsize=8),
             coasts=True
         )
 ax=plt.gca()
@@ -159,11 +161,15 @@ aLN,aLT=map(LONS,LATS)
 #colormap="spectral"
 #colormap="gray"
 #colormap="jet"
-#colormap="rainbow"
-colormap="seismic"
+colormap="rainbow"
+#colormap="seismic"
+#colormap="Paired"
+#colormap="PuOr"
+#colormap="gnuplot"
+#colormap="RdYlGn"
 cmap=cm.get_cmap(colormap)
-levels=np.linspace(Pmin,Pmax,10)
-c=map.contourf(LN,LT,Pmatrix,levels=levels,alpha=0.5,lw=0,cmap=cmap)
+levels=np.linspace(Pmin,Pmax,1000)
+c=map.contourf(LN,LT,Pmatrix,levels=levels,alpha=1.0,lw=0,cmap=cmap)
 
 #==============================
 #CONTOUR OF COLATITUDES
@@ -174,7 +180,10 @@ map.contour(cLN,cLT,colat,levels=[0],colors=['k'],linewidths=[3])
 #CONTOUR OF COAPEX
 #==============================
 map.contour(aLN,aLT,coapex,levels=[0,0.999,-0.999],colors=['k','r','b'],linestyles=['--','-','-'],linewidths=[2])
-#plt.tight_layout()
+plt.tight_layout()
+
+x,y=map(64.5,53.4)
+ax.plot(x,y,'ko',ms=10)
 
 #==============================
 #DECORATION
@@ -187,7 +196,7 @@ cbar=plt.colorbar(c,drawedges=False,cax=cax,orientation='horizontal',
 cbar.ax.tick_params(labelsize=8)
 cbar.ax.set_title("Normalized probability",fontsize=14,position=(0.5,-1.5))
 
-fig.tight_layout()
+#fig.tight_layout()
 plt.savefig("%s/probability-map-contour.png"%edir)
 
 #############################################################

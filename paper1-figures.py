@@ -627,7 +627,7 @@ def velocityDistribution(el,verbose=0):
     # FIREBALL DISTRIBUTION
     # binsf,nf=histOutline(hf,xf)
     # ax.plot(binsf,nf,'k-',lw=3,label='Observed fireballs velocities')
-    ax.errorbar(xmedf,hnf,yerr=herrnf,fmt='o',label='NASA fireball reports')
+    ax.errorbar(xmedf,hnf,yerr=herrnf,fmt='o',label='NASA NEO program')
     
 
     # INITIAL DISTRIBUTION
@@ -737,7 +737,7 @@ def showDistrib(el):
     #INTERVALS
     qlow=qmin;qup=qmax
     alow=amin;aup=amax*0+3
-    elow=emin;eup=emax
+    elow=emin;eup=emax*0
     ilow=imin*0;iup=imax
 
     #==================================================
@@ -815,6 +815,9 @@ def showDistrib(el):
 
 def pointMap(el,fname,sname,title=None):
 
+    """
+    Run this with option 2 in command line
+    """
     #==================================================
     #DATA FROM NEA
     #==================================================    
@@ -837,29 +840,6 @@ def pointMap(el,fname,sname,title=None):
     idata=idata[cond]
     adata=qdata/(1-edata)
 
-    """
-    h=data[cond,0]
-    qapex=data[cond,15]
-    cond=h>40
-    edata=edata[cond]
-    qdata=qdata[cond]
-    idata=idata[cond]
-    qapex=qapex[cond]
-    print len(qdata)
-    """
-
-    """
-    ip=10
-    iini=ip*23;iend=(ip+1)*23
-    iini=239
-    iend=iini+1
-    print iini,iend
-    edata=edata[iini:iend]
-    qdata=qdata[iini:iend]
-    idata=idata[iini:iend]
-    print edata,qdata,idata
-    """
-
     #==================================================
     #CHELYABINSK IMPACT
     #==================================================    
@@ -869,7 +849,6 @@ def pointMap(el,fname,sname,title=None):
     
     #INTERVALS
     qlow=qmin;qup=qmax
-    alow=amin;aup=amax*0+3
     elow=emin;eup=emax
     ilow=imin*0;iup=imax
 
@@ -908,9 +887,10 @@ def pointMap(el,fname,sname,title=None):
     axae.set_ylabel("$e$",fontsize=fsize)
     axae.plot(qdata,edata,'ko',**pprop)
     axae.plot([qimp],[eimp],'kv',**iprop)
+
     axae.set_xlim((qlow,qup))
     axae.set_ylim((elow,eup))
-    
+
     # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     # q vs. i
     # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -942,6 +922,7 @@ def pointMap(el,fname,sname,title=None):
     axei.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
     axei.plot(edata,idata,'ko',**pprop)    
     axei.plot([eimp],[iimp],'kv',**iprop)
+
     axei.set_xlim((elow,eup))
     axei.set_ylim((ilow,iup))
 
@@ -965,7 +946,32 @@ def allPoints(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_-7.78500e+01__lon_1.66400e+02.data'%grtid,'Antartica')
 
 def experimen2(el):
-    #"""
+
+    """
+    Run this with option 2 in command line
+    """
+
+    grtid="7F5C81" 
+    loc="lat_-1.50000e+01__lon_1.35000e+02"
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Australia_apex',title='Australia (apex speed distribution)')
+
+    data=np.loadtxt("data/grt-20130215032034-%s/rays-%s.data"%(grtid,loc))
+    qapex=np.unique(data[:,15])
+    print qapex
+    print np.percentile(qapex,[0,25,50,90])
+
+    grtid="7368BB" 
+    loc="lat_1.50000e+01__lon_-4.50000e+01"
+    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
+    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Atlantic_apex',title='Atlantic (apex speed distribution)')
+
+    data=np.loadtxt("data/grt-20130215032034-%s/rays-%s.data"%(grtid,loc))
+    qapex=np.unique(data[:,15])
+    print qapex
+    print np.percentile(qapex,[0,25,50,90])
+
+    """
     grtid="19C993" 
     print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_average',title='Chelyabinsk (average speed distribution)')
@@ -974,7 +980,7 @@ def experimen2(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_apex',title='Chelyabinsk (apex dependent speed distribution)')
     #"""
 
-    #"""
+    """
     loc="lat_2.18000e+01__lon_-1.57000e+02"
     grtid="2BAF32" #
     print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
@@ -984,7 +990,7 @@ def experimen2(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_apex',title='Hawaii (apex dependent speed distribution)')
     #"""
 
-    #"""
+    """
     loc="lat_-1.89000e+01__lon_4.75000e+01"
     grtid="0F13D5" #
     print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
@@ -994,7 +1000,7 @@ def experimen2(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Madagascar_apex',title='Madagascar (apex dependent speed distribution)')
     #"""
 
-    #"""
+    """
     loc="lat_-7.78500e+01__lon_1.66400e+02"
     grtid="1C8476" #
     print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
@@ -1008,9 +1014,9 @@ def experimen2(el):
 def mapProbability(el):
 
     #AVERAGE VELOCITY MAP DATA
-    grtid="1EF483"
-    system("python mapatsource.py data/grt-20130215032034-%s 0"%grtid)
-    system("cp data/grt-20130215032034-%s/probability-map-contour.png %s/probability-map-contour-average.png"%(grtid,FIGDIR))
+    #grtid="1EF483"
+    #system("python mapatsource.py data/grt-20130215032034-%s 0"%grtid)
+    #system("cp data/grt-20130215032034-%s/probability-map-contour.png %s/probability-map-contour-average.png"%(grtid,FIGDIR))
 
     #APEX DEPENDENT MAP DATA
     grtid="2B353A"
@@ -1165,7 +1171,10 @@ def distributionFireballs(qload=0):
 
     vmax=vimpqs[vimpqs<123456789].max()
     vmin=vimpqs.min()
-    ax.set_ylim((vmin,40))
+    ax.set_ylim((VESC,40))
+
+    ax.set_xlabel(r"${\theta_{\rm apex}^{\rm geo}}^\circ$",fontsize=14)
+    ax.set_ylabel(r"$v_{\rm imp}$ (km/s)",fontsize=14)
     fig.savefig(FIGDIR+"fireball-apex-velocity.png")
 
     exit(0)
@@ -1196,9 +1205,30 @@ def distributionFireballs(qload=0):
     ax.hist(vimps,10)
     fig.savefig(FIGDIR+"fireballs-velocities.png")
 
+def apexAngleChelyabinskTunguska():
+
+    #Tunguska
+    out=System("./whereisapex.exe '06/30/1908 00:14:00 UTC' 60.917 101.95")
+    cecl=float(out.split("\n")[2])
+    capx=float(out.split("\n")[3])
+    qapex=np.arccos(capx)*RAD
+    print "Direction with respect to apex Tunguska event:",qapex
+
+    #Chelyabinsk
+    out=System("./whereisapex.exe '02/15/2013 03:02:34' 54.4 63.5")
+    cecl=float(out.split("\n")[2])
+    capx=float(out.split("\n")[3])
+    qapex=np.arccos(capx)*RAD
+    print "Direction with respect to apex Chelyabinsk event:",qapex
+
+def testParticle():
+    system("make && python throwaray.py 54.4 63.5 8e+04 17.664618 104.975030 -2.045864e+01 '02/15/2013 3:20:34 UTC' -0.5")
+    system("cp scratch/ray-elements.png scratch/ray-orbit.png "+FIGDIR)
+
 #############################################################
 #EXECUTE
 #############################################################
 #distanceTunguskaChelyabisnk()
 #plotGeographicPositions()
 
+experimen2(elements)
