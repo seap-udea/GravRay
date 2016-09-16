@@ -1,7 +1,7 @@
 from gravray import *
 from scipy import signal as sig
 from scipy.optimize import curve_fit
-from os import system
+from os import system,path
 import csv
 from spiceypy import wrapper as spy
 
@@ -1011,18 +1011,6 @@ def experimen2(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Antartica_apex',title='Antartica (average speed distribution)')
     #"""
 
-def mapProbability(el):
-
-    #AVERAGE VELOCITY MAP DATA
-    #grtid="1EF483"
-    #system("python mapatsource.py data/grt-20130215032034-%s 0"%grtid)
-    #system("cp data/grt-20130215032034-%s/probability-map-contour.png %s/probability-map-contour-average.png"%(grtid,FIGDIR))
-
-    #APEX DEPENDENT MAP DATA
-    grtid="2B353A"
-    system("python mapatsource.py data/grt-20130215032034-%s 0"%grtid)
-    system("cp data/grt-20130215032034-%s/probability-map-contour.png %s/probability-map-contour-apex.png"%(grtid,FIGDIR))
-
 def genFireballsFile():
     #READ FIREBALL DATA
     spy.furnsh("kernels.txt")
@@ -1225,10 +1213,71 @@ def testParticle():
     system("make && python throwaray.py 54.4 63.5 8e+04 17.664618 104.975030 -2.045864e+01 '02/15/2013 3:20:34 UTC' -0.5")
     system("cp scratch/ray-elements.png scratch/ray-orbit.png "+FIGDIR)
 
+def mapProbability():
+
+    #CHELYABINSK MAP
+    """
+    date="20130215032034"
+    print "Mapping %s..."%date 
+    grtid="2B353A"
+    qlat=54.4
+    qlon=63.5
+    if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
+    else:qmatrix=1
+    cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
+    print "Excuting:",cmd
+    system(cmd)
+    system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
+    #"""
+
+    #PRE CHELYABINSK MAP
+    """
+    date="20130214212034"
+    print "Mapping %s..."%date 
+    grtid="9D35F9"
+    qlat=54.4
+    qlon=63.5
+    if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
+    else:qmatrix=1
+    cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
+    print "Excuting:",cmd
+    system(cmd)
+    system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
+    #"""
+
+    #TUNGUSKA MAP
+    #"""
+    date="19080630001400"
+    print "Mapping %s..."%date 
+    grtid="732A04"
+    qlat=60.917
+    qlon=101.95
+    if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
+    else:qmatrix=1
+    cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
+    print "Excuting:",cmd
+    system(cmd)
+    system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
+    #"""
+    
+    #1963 EVENT
+    """
+    date="19630803164500"
+    print "Mapping %s..."%date 
+    grtid="C535BA"
+    qlat=-51.0
+    qlon=+24.0
+    if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
+    else:qmatrix=1
+    cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
+    print "Excuting:",cmd
+    system(cmd)
+    system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
+    #"""
+
 #############################################################
 #EXECUTE
 #############################################################
 #distanceTunguskaChelyabisnk()
 #plotGeographicPositions()
-
-experimen2(elements)
+#experimen2(elements)

@@ -42,10 +42,21 @@ int main(int argc,char* argv[])
   if(t>=ETINI && t<=ETEND){
     tref=t;
   }else{
-    if(t<ETINI) tref=ETINI;
-    else tref=ETEND;
+    SpiceChar UTC[100];
+    SpiceDouble dt;
+    deltet_c(t,"et",&dt);
+    et2utc_c(t+dt,"ISOC",2,100,UTC);
+    if(t<ETINI){
+      UTC[0]='1';UTC[1]='9';UTC[2]='6';UTC[3]='3';
+      str2et_c(UTC,&tref);
+      fprintf(stdout,"ETEND = %.10e, t = %.10e, tref = %.10e\n",ETINI,t,tref);
+    }
+    else{
+      UTC[0]='2';UTC[1]='0';UTC[2]='3';UTC[3]='2';
+      str2et_c(UTC,&tref);
+      fprintf(stdout,"ETEND = %.10e, t = %.10e, tref = %.10e\n",ETEND,t,tref);
+    }
   }
-  fprintf(stdout,"ETINI = %.10e, t = %.10e, tref = %.10e\n",ETINI,t,tref);
 
   ////////////////////////////////////////////////////
   //GET OBSERVER POSITION IN TIME

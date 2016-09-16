@@ -4,14 +4,22 @@ from gravray import *
 #INPUTS
 #############################################################
 #Ensamble directory
-edir=argv[1]
+iarg=1
+edir=argv[iarg];iarg+=1
 inidata=np.loadtxt("%s/locals.dat"%edir)
 Ninitial=len(inidata)
 
 #Calculate matrix?
 qmat=1
-try:qmat=int(argv[2])
+try:qmat=int(argv[iarg]);iarg+=1
 except:pass
+
+qspecial=0
+try:
+    qspecial=1
+    qlat=float(argv[iarg]);iarg+=1
+    qlon=float(argv[iarg]);iarg+=1
+except:pass    
 
 #############################################################
 #LOAD PROBABILITIES
@@ -182,8 +190,18 @@ map.contour(cLN,cLT,colat,levels=[0],colors=['k'],linewidths=[3])
 map.contour(aLN,aLT,coapex,levels=[0,0.999,-0.999],colors=['k','r','b'],linestyles=['--','-','-'],linewidths=[2])
 plt.tight_layout()
 
-x,y=map(64.5,53.4)
-ax.plot(x,y,'ko',ms=10)
+#==============================
+#SPECIAL LOCATION POINT
+#==============================
+if qspecial:
+    print "Plotting special location: (%f,%f)"%(qlat,qlon)
+    x,y=map(qlon,qlat)
+    ax.plot(x,y,'ko',ms=10)
+    
+    alphas=np.array([arcDistance([qlon*DEG,qlat*DEG],[lon*DEG,lat*DEG])*RAD for lon,lat in zip(lonms,lats)])
+    n=alphas.argsort()[0]
+    Pspecial=Ptots[n]
+    print "Probability of special location:",Pspecial
 
 #==============================
 #DECORATION

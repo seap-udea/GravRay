@@ -49,10 +49,11 @@ http://naif.jpl.nasa.gov/pub/naif/
   frame directions is availanle
  */
 
-// 01/21/1962 00:00:00.000 UTC
-#define ETINI -1.197460759e+09
 // 01/01/2000 00:00:00.000 UTC
 //#define ETINI -4.313581609e+04
+
+// 01/21/1962 00:00:00.000 UTC
+#define ETINI -1.197460759e+09
 // 07/17/2037 00:00:00.000 UTC
 #define ETEND 1.184673668e+09
 
@@ -694,18 +695,30 @@ int EoM(double t,double y[],double dydt[],void *params)
 int initObserver(SpiceDouble t,struct ObserverStruct* observer)
 {
   SpiceDouble rho,vcirc,vrot[3];
-  SpiceDouble lt,tref;
+  SpiceDouble lt;
   
   observer->t=t;
   
   //CHECK DATES
+  SpiceDouble tref;
   if(t>=ETINI && t<=ETEND){
     tref=t;
   }else{
-    if(t<ETINI) tref=ETINI;
-    else tref=ETEND;
+    SpiceChar UTC[100];
+    SpiceDouble dt;
+    deltet_c(t,"et",&dt);
+    et2utc_c(t+dt,"ISOC",2,100,UTC);
+    if(t<ETINI){
+      UTC[0]='1';UTC[1]='9';UTC[2]='6';UTC[3]='3';
+      str2et_c(UTC,&tref);
+      fprintf(stdout,"ETINI = %.10e, t = %.10e, tref = %.10e\n",ETINI,t,tref);
+    }
+    else{
+      UTC[0]='2';UTC[1]='0';UTC[2]='3';UTC[3]='2';
+      str2et_c(UTC,&tref);
+      fprintf(stdout,"ETEND = %.10e, t = %.10e, tref = %.10e\n",ETEND,t,tref);
+    }
   }
-  fprintf(stdout,"ETINI = %.10e, t = %.10e, tref = %.10e\n",ETINI,t,tref);
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
   pxform_c("ITRF93",ECJ2000,tref,observer->MEJ);
@@ -900,4 +913,54 @@ int argsError(char* pname,char* msg="Bad options.")
     fprintf(stderr,msg);
     system(cmd);
     exit(1);
+}
+
+char *str_replace(char *orig, char *rep, char *with) 
+{
+  /*
+    Source:
+    http://stackoverflow.com/questions/779875/what-is-the-function-to-replace-string-in-c
+    You must free the result if result is non-NULL.
+  */
+  char *result; // the return string
+  char *ins;    // the next insert point
+  char *tmp;    // varies
+  int len_rep;  // length of rep
+  int len_with; // length of with
+  int len_front; // distance between rep and end of last rep
+  int count;    // number of replacements
+
+  if (!orig)
+    return NULL;
+  if (!rep)
+    rep = "";
+  len_rep = strlen(rep);
+  if (!with)
+    with = "";
+  len_with = strlen(with);
+
+  ins = orig;
+  for (count = 0; tmp = strstr(ins, rep); ++count) {
+    ins = tmp + len_rep;
+  }
+
+  // first time through the loop, all the variable are set correctly
+  // from here on,
+  //    tmp points to the end of the result string
+  //    ins points to the next occurrence of rep in orig
+  //    orig points to the remainder of orig after "end of rep"
+  tmp = result = (char*) malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+
+  if (!result)
+    return NULL;
+
+  while (count--) {
+    ins = strstr(orig, rep);
+    len_front = ins - orig;
+    tmp = strncpy(tmp, orig, len_front) + len_front;
+    tmp = strcpy(tmp, with) + len_with;
+    orig += len_front + len_rep; // move to next "end of rep"
+  }
+  strcpy(tmp, orig);
+  return result;
 }
