@@ -722,6 +722,13 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
   pxform_c("ITRF93",ECJ2000,tref,observer->MEJ);
+  /*
+  printf("%e,%e,%e\n%e,%e,%e\n%e,%e,%e\n",
+	 observer->MEJ[0][1],observer->MEJ[0][2],observer->MEJ[0][3],
+	 observer->MEJ[1][1],observer->MEJ[1][2],observer->MEJ[1][3],
+	 observer->MEJ[2][1],observer->MEJ[2][2],observer->MEJ[2][3]);
+  exit(0);
+  */
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
   pxform_c("ECLIPJ2000","EARTHTRUEEPOCH",tref,observer->MEE);
@@ -729,7 +736,7 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   //LOCATE OBSERVER 
   georec_c(D2R(observer->lon),D2R(observer->lat),observer->alt/1000.0,
 	   REARTH,FEARTH,observer->posearth);
-  
+
   //TOPOCENTRIC CONVERSION MATRICES
   horgeo(observer->lat,observer->lon,observer->hm,observer->hi);
 

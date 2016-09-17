@@ -1275,6 +1275,87 @@ def mapProbability():
     system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
     #"""
 
+def probabilityFireballs():
+
+    rundir="scratch/runs/"
+    data=np.loadtxt("util/data/fireballs.data")
+    lats=data[:,2]
+    lons=data[:,3]
+    datetime=data[:,0]
+    ets=data[:,1]
+    Es=data[:,10]
+    vimps=data[:,5]
+
+    cond=(lats!=123456789)*(lons!=123456789)
+
+    lats=lats[cond]
+    lons=lons[cond]
+    datetime=datetime[cond]
+    ets=ets[cond]
+    Es=Es[cond]
+    vimps=vimps[cond]
+    
+    nfire=len(lats)
+
+    print "%d fireballs to analyse"%nfire
+
+    nruns=3
+    ngroup=nfire/nruns
+
+    fs=[]
+    for j in xrange(nruns):
+        k=j+1
+        fs+=[open(rundir+"run-%d.sh"%k,"w")]
+
+    run=0
+    j=0
+    flog=open(rundir+"runs.log","w")
+    for i in xrange(nfire):
+        j+=1
+        if (i%ngroup)==0 and run<nruns:
+            run+=1
+            j=1
+
+        lat=lats[i]
+        lon=lons[i]
+        E=Es[i]
+        if E==123456789:E=-1
+        vimp=vimps[i]
+        if vimp==123456789:vimp=-1
+
+        date="%.0f"%datetime[i]
+        Y=date[:4];x=4
+        M=date[x:x+2];x+=2
+        D=date[x:x+2];x+=2
+        h=date[x:x+2];x+=2
+        m=date[x:x+2];x+=2
+        s=date[x:x+2];x+=2
+        datestr="%s/%s/%s %s:%s:%s UTC"%(M,D,Y,h,m,s)
+
+        QVEL=1
+        NAME="Lat. %.4f, Lon. %.4f, vimp = %.2f, E = %.2f, Date %s"%(lat,lon,vimp,E,datestr)
+        makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
+        md5str=MD5STR(makestr,len=6)
+        odir="data/grt-%s-%s"%(date,md5str)
+        system("mkdir -p %s"%odir)
+
+        fgeo=open(rundir+"geo.%d"%i,"w")
+        fgeo.write("-1 -1 %.1f %.1f\n"%(lon,lat))
+        fgeo.close()
+
+        cmd="""echo;echo;echo '%s';echo 'Run %d/%d...';echo '%s';echo;echo
+python makeagravray.py '%s' rad %s/geo.%d locals.dat %d '%s' > %s/grt.log
+echo '%s' >> %s/runs.completed
+"""%("*"*50,j,ngroup,"*"*50,datestr,rundir,i,QVEL,NAME,odir,date,rundir)
+        
+        fs[run-1].write(cmd+"\n")
+        
+        flog.write("%d %d %s\n"%(run,i,odir))
+        #break
+
+    for f in fs:f.close()
+    flog.close()
+
 #############################################################
 #EXECUTE
 #############################################################

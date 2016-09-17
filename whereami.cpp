@@ -65,6 +65,13 @@ int main(int argc,char* argv[])
   SpiceDouble M_ITRF93_J2000[3][3];
   SpiceDouble observerITRF93[6],observerJ2000[6],observerSSBJ2000[6];
   pxform_c("ITRF93",ECJ2000,tref,M_ITRF93_J2000);
+  pxform_c("EARTHTRUEEPOCH",ECJ2000,tref,M_ITRF93_J2000);
+  /*
+  printf("%e,%e,%e\n%e,%e,%e\n%e,%e,%e\n",
+	 M_ITRF93_J2000[0][0],M_ITRF93_J2000[0][0],M_ITRF93_J2000[0][0],
+	 M_ITRF93_J2000[1][0],M_ITRF93_J2000[1][0],M_ITRF93_J2000[1][0],
+	 M_ITRF93_J2000[2][0],M_ITRF93_J2000[2][0],M_ITRF93_J2000[2][0]);
+  */
 
   //OBSERVER POSITION W.R.T. EARTH CENTER IN ITRF93
   georec_c(D2R(lon),D2R(lat),alt/1000.0,REARTH,FEARTH,observerITRF93);
