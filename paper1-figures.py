@@ -1123,19 +1123,26 @@ def distributionFireballs(qload=0):
             #if i<390:continue
             cmd="./whereisapex.exe ET %.9e %.6e %.6e > /dev/null"%(ets[i],lats[i],lons[i])
             out=System(cmd)
-            rproj=float(out.split("\n")[2])
-            vproj=float(out.split("\n")[3])
-            projs+=[[rproj,vproj]]
+            latapex=float(out.split("\n")[6])
+            lonapex=float(out.split("\n")[7])
+            projs+=[[ets[i],lats[i],lons[i],latapex,lonapex]]
+            """
+            print "Command:",cmd
+            print "Lat.apex, Lon.apex:",latapex,lonapex
+            exit(0)
+            """
 
         projs=np.array(projs)
         projs=np.savetxt("util/data/fireball-apex.data",projs)
 
+    # APEX LATITUDE DISTRIBUTION
     print "Loading apex distributions..."
     projs=np.loadtxt("util/data/fireball-apex.data")
-    vprojs=np.arccos(projs[:,1])*RAD
-    print "Range of apex directions:",len(vprojs),vprojs.min(),vprojs.max()
+    latapexs=projs[:,3]
+    colatapexs=90.0-latapexs
+    print "Range of apex directions:",len(colatapexs),colatapexs.min(),colatapexs.max()
 
-    h,q=np.histogram(vprojs,15,normed=1)
+    h,q=np.histogram(colatapexs,15,normed=1)
     qm=(q[:-1]+q[1:])/2
 
     fig=plt.figure()
@@ -1144,18 +1151,72 @@ def distributionFireballs(qload=0):
     hc=h
     qc=qm
 
-    hc=h/np.cos(np.pi/2-qm*DEG)
+    hc=h/np.cos((90-qm)*DEG)
     qc=90-qm
     
-    bins,n=histOutline(hc,qc)
+    bins,n=histOutline(hc,qm)
     ax.plot(bins,n)
-    ax.set_xlim((-90,90))
-    fig.savefig(FIGDIR+"fireball-apex-distribution.png")
+    ax.set_xlim((0,180))
+    fig.savefig(FIGDIR+"fireball-latapex-distribution.png")
+
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    # APEX CUMULATIVE LATITUDE DISTRIBUTION
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    Fcum=cumDistrib(qm,h)
+    Fcum[-1,1]=1.0
+
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(Fcum[:,0],Fcum[:,1],label=r'$N(<\theta_{\rm apex})$, Towards Antapex')
+    ax.plot(180-Fcum[:,0],1-Fcum[:,1],label=r'$N(<180^\circ-\theta_{\rm apex})$, Towards Apex')
+    ax.set_xlim((0,180))
+    ax.legend(loc='lower rigth',fontsize=10)
+    fig.savefig(FIGDIR+"fireball-latapex-cum-distribution.png")
+
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    # APEX LONGITUDE DISTRIBUTION
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    print "Loading apex distributions..."
+    projs=np.loadtxt("util/data/fireball-apex.data")
+    lonapexs=projs[:,4]
+    print "Range of apex longitudes:",len(lonapexs),lonapexs.min(),lonapexs.max()
+
+    h,q=np.histogram(lonapexs,30,normed=1)
+    qm=(q[:-1]+q[1:])/2
+
+    fig=plt.figure()
+    ax=fig.gca()
+    bins,n=histOutline(h,q)
+    ax.plot(bins,n)
+    ax.set_xlim((-180,180))
+    fig.savefig(FIGDIR+"fireball-lonapex-distribution.png")
+
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    # MAP OF FIREBALLS AS A FUNCTION OF APEX DIRECTION
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #"""
+    fig=plt.figure()
+    ax=fig.gca()
+    proj='cyl'
+    proj='moll'
+    proj='vandg'
+    proj='sinu'
+    map=drawMap(proj=proj,proj_opts=dict(lon_0=0,ax=ax),
+                pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
+                pars_opts=dict(labels=[0,1,0,0],fontsize=8),
+                mers_opts=dict(labels=[0,0,0,1],fontsize=8))
+    ms=5
+    plotMap(map,lonapexs,latapexs,lw=0,
+            marker='o',color='r',ms=ms,mec='none')
+
+    fig.tight_layout()
+    fig.savefig(FIGDIR+"fireballs-apex-map.png")
+    #"""
     
     # IMPACT VELOCITY AS A FUNCTION OF TETAPEX
     fig=plt.figure()
     ax=fig.gca()
-    ax.plot(vprojs,vimpqs,'ko')
+    ax.plot(colatapexs,vimpqs,'ko')
 
     vmax=vimpqs[vimpqs<123456789].max()
     vmin=vimpqs.min()
@@ -1167,7 +1228,9 @@ def distributionFireballs(qload=0):
 
     exit(0)
 
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     # MAP OF IMPACTS
+    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     fig=plt.figure()
     ax=fig.gca()
     proj='moll'
@@ -1344,7 +1407,7 @@ def probabilityFireballs():
         fgeo.close()
 
         cmd="""echo;echo;echo '%s';echo 'Run %d/%d...';echo '%s';echo;echo
-python makeagravray.py '%s' rad %s/geo.%d locals.dat %d '%s' > %s/grt.log
+python makeagravray.py '%s' deg %s/geo.%d locals.dat %d '%s' > %s/grt.log
 echo '%s' >> %s/runs.completed
 """%("*"*50,j,ngroup,"*"*50,datestr,rundir,i,QVEL,NAME,odir,date,rundir)
         
@@ -1355,6 +1418,40 @@ echo '%s' >> %s/runs.completed
 
     for f in fs:f.close()
     flog.close()
+
+def runProbabilityFireballs():
+
+    rundir="scratch/runs/"
+    data=np.loadtxt("util/data/fireballs.data")
+    lats=data[:,2]
+    lons=data[:,3]
+    datetime=data[:,0]
+    ets=data[:,1]
+    Es=data[:,10]
+    vimps=data[:,5]
+
+    cond=(lats!=123456789)*(lons!=123456789)
+
+    lats=lats[cond]
+    lons=lons[cond]
+    datetime=datetime[cond]
+    ets=ets[cond]
+    Es=Es[cond]
+    vimps=vimps[cond]
+
+    f=open("scratch/runs/runs.log")
+    open("scratch/fireball-probabilities.dat","w")
+    for line in f:
+        run,i,odir=line.strip("\n").split()
+        print odir
+        """
+        i=int(i)
+        # Read probability
+        probs=np.loadtxt("%s/geographic.prob"%odir)
+        print probs
+        print i,odir,datetime[i],probs
+        break
+        """
 
 #############################################################
 #EXECUTE
