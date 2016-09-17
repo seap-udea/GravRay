@@ -1443,7 +1443,9 @@ def runProbabilityFireballs():
     open("scratch/fireball-probabilities.dat","w")
     for line in f:
         run,i,odir=line.strip("\n").split()
-        print odir
+        cmd="rm -r %s"%odir
+        print cmd
+        system(cmd)
         """
         i=int(i)
         # Read probability
