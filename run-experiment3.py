@@ -8,7 +8,7 @@ from sys import argv
 nsim=int(argv[1])
 
 if nsim==1:
-    sim='QVEL=1;NAME="Whole World Tunguska (N=540 locals)";site="Whole world"'
+    sim='QVEL=0;NAME="Whole World Tunguska (N=540 locals)";site="Whole world"'
     exec(sim)
     makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
     md5str=MD5STR(makestr,len=6)

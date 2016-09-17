@@ -82,29 +82,29 @@ int main(int argc,char* argv[])
     nvel=i;
     if(feof(fi)) break;
 
-    qapex=-1;
-    if(nvel>1 && qvel){
-      //==================================================
-      //DETERMINE DIRECTION WITH RESPECT TO APEX
-      //==================================================
-      cA=cos(D2R(Az));sA=sin(D2R(Az));
-      ch=cos(D2R(h));sh=sin(D2R(h));
+    //==================================================
+    //DETERMINE DIRECTION WITH RESPECT TO APEX
+    //==================================================
+    cA=cos(D2R(Az));sA=sin(D2R(Az));
+    ch=cos(D2R(h));sh=sin(D2R(h));
 
-      //DIRECTION OF IMPACT RESPECT TO OBSERVER REFERENCE FRAME
-      if(Az==0 && h==0){vpack_c(1,0,0,vloc);}
-      else{vpack_c(ch*cA,-ch*sA,sh,vloc);}
+    //DIRECTION OF IMPACT RESPECT TO OBSERVER REFERENCE FRAME
+    if(Az==0 && h==0){vpack_c(1,0,0,vloc);}
+    else{vpack_c(ch*cA,-ch*sA,sh,vloc);}
 
-      //DIRECTION OF IMPACT W.R.T. TO ITR93
-      mxv_c(observer.hi,vloc,uvimpact);
+    //DIRECTION OF IMPACT W.R.T. TO ITR93
+    mxv_c(observer.hi,vloc,uvimpact);
       
-      //DIRECTION OF IMPACT W.R.T. TO ECLIPJ2000
-      mxv_c(observer.MEJ,uvimpact,uvimpactEJ2000);
+    //DIRECTION OF IMPACT W.R.T. TO ECLIPJ2000
+    mxv_c(observer.MEJ,uvimpact,uvimpactEJ2000);
 
-      //COSINE QAPEX
-      vproj=vdot_c(uvimpactEJ2000,uvearth);
+    //COSINE QAPEX
+    vproj=vdot_c(uvimpactEJ2000,uvearth);
 
-      //QAPEX
-      qapex=R2D(acos(vproj));
+    //QAPEX
+    qapex=R2D(acos(vproj));
+
+    if(nvel>1 && qvel){
       dapex=180.0/(nvel-1);
       iapex=floor(qapex/dapex)+1;
       v=vels[iapex];
