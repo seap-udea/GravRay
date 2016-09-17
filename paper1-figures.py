@@ -1362,7 +1362,7 @@ def probabilityFireballs():
 
     print "%d fireballs to analyse"%nfire
 
-    nruns=3
+    nruns=4
     ngroup=nfire/nruns
 
     fs=[]
