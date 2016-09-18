@@ -14,6 +14,8 @@ int main(int argc,char* argv[])
   SpiceChar date[100];
   SpiceDouble t,tjd,ltmp,dt;
   SpiceDouble lat,lon;
+  //Default values. Velocity is large to avoid Earth rotation correction
+  SpiceDouble h=90.0,Az=0,vimp=-1e4;
   int qmatrix=1;
 
   ////////////////////////////////////////////////////
@@ -26,7 +28,7 @@ int main(int argc,char* argv[])
       //==============================
       //GET EPHEMERIS TIME
       //==============================
-      if(argc==5)
+      if(argc>=5)
 	t=atof(argv[iarg++]);
       else argsError(argv[0],"No ET provided\n");
     }else{
@@ -41,6 +43,11 @@ int main(int argc,char* argv[])
     }
     lat=atof(argv[iarg++]);
     lon=atof(argv[iarg++]);
+    if(argc>4){
+      h=atof(argv[iarg++]);
+      Az=atof(argv[iarg++]);
+      vimp=atof(argv[iarg++]);
+    }
   }else
     argsError(argv[0]);
 
@@ -57,6 +64,8 @@ int main(int argc,char* argv[])
   SpiceDouble rproj,vproj,aproj;
   int nlat,nlon;
   int i,j;
+  double xapex,yapex,rhoapex;
+  double latecl,latapex,lonapex;
 
   spkezr_c("EARTH",t,ECJ2000,"NONE",SSB,earth,&ltmp);
 
@@ -70,14 +79,15 @@ int main(int argc,char* argv[])
   //CROSS PRODUCT OF THE ECLIPTIC AND NORMAL TO ECLIPTIC VECTORS
   ucrss_c(uvearth,normal,uantisun);
   vproj=vdot_c(urearth,uantisun);
+  /*
   printf("Antisun: %s\n",vec2str(uantisun));
   printf("rearth: %s\n",vec2str(urearth));
   printf("Difference: %e\n",R2D(acos(vproj)));
+  */
 
   ////////////////////////////////////////////////////
-  //CREATING A GRID OF OBSERVERS
+  //OBSERVER
   ////////////////////////////////////////////////////
-
   observer.lat=lat;
   observer.lon=lon;
   observer.alt=alt;
@@ -86,12 +96,15 @@ int main(int argc,char* argv[])
   //............................................................
   //COMPUTING ECLIPJ2000 POSITION AND VELOCITY OF OBSERVER
   //............................................................
-  observerVelocity(&observer,0,0,0);//Zero means a rest observer
+  observerVelocity(&observer,h,Az,vimp);//Zero means a rest observer
   
   //UNIT VECTORS RESPECT EARTH CENTER OF THE OBSERVER
   unorm_c(observer.posj2000,urobserver,&ltmp);
   unorm_c(observer.posj2000+3,uvobserver,&ltmp);
   
+  ////////////////////////////////////////////////////
+  //GEOGRAPHICAL APEX DIRECTION
+  ////////////////////////////////////////////////////
   //............................................................
   //COSINE ECLIPTIC CO-LATITUDE
   //............................................................
@@ -120,21 +133,66 @@ int main(int argc,char* argv[])
    */
   fprintf(stdout,"Ecliptic projection: %e\n",rproj);
   fprintf(stdout,"Apex projection: %e\n",vproj);
+  fprintf(stdout,"Antisun projection: %e\n",aproj);
 
   //............................................................
-  //SPHERICAL COORDINATES OF APEX
+  //SPHERICAL COORDINATES WITH RESPECT TO APEX
   //............................................................
-  double xapex,yapex,rhoapex;
-  double latecl,latapex,lonapex;
   latecl=90.0-R2D(acos(rproj));
   latapex=90.0-R2D(acos(vproj));
   lonapex=R2D(atan2(aproj,rproj));
+
+  fprintf(stdout,"Apex coordinates: lat=%f, lon=%f\n",latapex,lonapex);
+
+  ////////////////////////////////////////////////////
+  //VELOCITY APEX DIRECTION
+  ////////////////////////////////////////////////////
+  double vlatecl,vlatapex,vlonapex,vrproj,vvproj,vaproj;
+
+  //............................................................
+  //COSINE ECLIPTIC CO-LATITUDE
+  //............................................................
+  vrproj=vdot_c(uvobserver,normal);
+  /*
+    This is also the cosine of the angle of the point with respect to
+    apex based x-axis.
+   */
+
+  //............................................................
+  //COSINE OF APEX CO-LATITUDE
+  //............................................................
+  vvproj=vdot_c(uvobserver,uvearth);
+  /*
+    This is also the cosine of the angle of the point with respect to
+    apex based z-axis.
+   */
+
+  //............................................................
+  //COSINE OF ANTISUN COLATITUDE
+  //............................................................
+  vaproj=vdot_c(uvobserver,uantisun);
+  /*
+    This is also the cosine of the angle of the point with respect to
+    apex based y-axis.
+   */
+  fprintf(stdout,"Velocity Ecliptic projection: %e\n",vrproj);
+  fprintf(stdout,"Velocity Apex projection: %e\n",vvproj);
+  fprintf(stdout,"Velocity Antisun projection: %e\n",vaproj);
+
+  //............................................................
+  //SPHERICAL COORDINATES WITH RESPECT TO APEX
+  //............................................................
+  vlatecl=90.0-R2D(acos(vrproj));
+  vlatapex=90.0-R2D(acos(vvproj));
+  vlonapex=R2D(atan2(vaproj,vrproj));
+
+  fprintf(stdout,"Valocity apex coordinates: lat=%f, lon=%f\n",vlatapex,vlonapex);
 
   ////////////////////////////////////////////////////
   //PLAIN OUTPUT
   ////////////////////////////////////////////////////
   fprintf(stdout,"--PLAIN--\n");
-  fprintf(stderr,"TDB,COSECL,COSAPEX,COSASUN,LATECL,LATAPEX,LONAPEX\n");
+  fprintf(stderr,"TDB,COSECL,COSAPEX,COSASUN,LATECL,LATAPEX,LONAPEX,VCOSECL,VCOSAPEX,VCOSASUN,VLATECL,VLATAPEX,VLONAPEX\n");
   fprintf(stderr,"%.9e\n",t);
   fprintf(stderr,"%.9e\n",rproj);
   fprintf(stderr,"%.9e\n",vproj);
@@ -142,6 +200,12 @@ int main(int argc,char* argv[])
   fprintf(stderr,"%.9e\n",latecl);
   fprintf(stderr,"%.9e\n",latapex);
   fprintf(stderr,"%.9e\n",lonapex);
+  fprintf(stderr,"%.9e\n",vrproj);
+  fprintf(stderr,"%.9e\n",vvproj);
+  fprintf(stderr,"%.9e\n",vaproj);
+  fprintf(stderr,"%.9e\n",vlatecl);
+  fprintf(stderr,"%.9e\n",vlatapex);
+  fprintf(stderr,"%.9e\n",vlonapex);
 
   /*
     Apex Reference System

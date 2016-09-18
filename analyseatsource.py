@@ -158,13 +158,15 @@ for n in xrange(Nphys):
             if verb:raw_input()
             density+=p
             n+=1
-        Pn=flux*density/wmax
+        Pu=density/wmax
+        Pn=flux*Pu
     else:
+        Pu=0
         Pn=0
 
     if verb:print TAB,"Probability contribution: ",Pn
     Ptot+=Pn/normal
-    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e\n"%(q,e,i,ntarg,qc,ec,ic,Pn/normal))
+    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e %.5e %.2f\n"%(q,e,i,ntarg,qc,ec,ic,Pn/normal,Pu/normal,qx))
 
     """
     print ntarg,density,Pn

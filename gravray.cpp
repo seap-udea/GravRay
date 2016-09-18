@@ -798,7 +798,7 @@ int observerVelocity(struct ObserverStruct *observer,
   //************************************************************
   //COMPUTING DIRECTION OF INCOMING VELOCITY IN ECLIPJ2000
   /*
-    It takes into account Earth rotation effect on velocity
+    It does not take into account Earth rotation effect on velocity
    */
   //************************************************************
   SpiceDouble uv[3],nuv;

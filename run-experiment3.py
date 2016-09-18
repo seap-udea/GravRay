@@ -19,7 +19,7 @@ if nsim==1:
     system(cmd)
 
 if nsim==2:
-    sim='QVEL=1;NAME="Whole World before Chelyabinsk (N=540 locals)";site="Whole world"'
+    sim='QVEL=0;NAME="Whole World before Chelyabinsk (N=540 locals)";site="Whole world"'
     exec(sim)
     makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
     md5str=MD5STR(makestr,len=6)
@@ -30,7 +30,7 @@ if nsim==2:
     system(cmd)
 
 if nsim==3:
-    sim='QVEL=1;NAME="Whole World Africa Event (N=540 locals)";site="Whole world"'
+    sim='QVEL=0;NAME="Whole World Africa Event (N=540 locals)";site="Whole world"'
     exec(sim)
     makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
     md5str=MD5STR(makestr,len=6)
@@ -40,3 +40,13 @@ if nsim==3:
     print "Running:",cmd
     system(cmd)
 
+if nsim==4:
+    sim='QVEL=0;NAME="Whole World Chelyabinsk (N=540 locals)";site="Whole world"'
+    exec(sim)
+    makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
+    md5str=MD5STR(makestr,len=6)
+    odir="data/grt-20130214212034-%s"%md5str
+    system("mkdir -p %s"%odir)
+    cmd="python makeagravray.py '02/15/2013 03:20:34 UTC' rad util/data/directions-r7.00e+00.data locals.dat %d '%s' > %s/grt.log"%(QVEL,NAME,odir)
+    print "Running:",cmd
+    system(cmd)

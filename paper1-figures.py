@@ -1312,7 +1312,8 @@ def mapProbability():
     #"""
     date="19080630001400"
     print "Mapping %s..."%date 
-    grtid="732A04"
+    #grtid="732A04" #Using apex dependent velocities
+    grtid="1BB07B" #Using average velocities
     qlat=60.917
     qlon=101.95
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
@@ -1440,20 +1441,97 @@ def runProbabilityFireballs():
     vimps=vimps[cond]
 
     f=open("scratch/runs/runs.log")
-    open("scratch/fireball-probabilities.dat","w")
+    fp=open("scratch/fireball-probabilities.dat","w")
     for line in f:
         run,i,odir=line.strip("\n").split()
+        i=int(i)
+        """
         cmd="rm -r %s"%odir
         print cmd
         system(cmd)
         """
-        i=int(i)
         # Read probability
         probs=np.loadtxt("%s/geographic.prob"%odir)
-        print probs
-        print i,odir,datetime[i],probs
+        fp.write("%d %.2f %.2f %.4f\n"%(i,probs[0],probs[1],probs[2]))
+    fp.close()
+
+    probs=np.loadtxt("scratch/fireball-probabilities.dat")
+
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.hist(probs[:,3],30)
+    fig.savefig(FIGDIR+"fireball-probability-distribution.png")
+
+def testProbability():
+    
+    from scipy import stats
+
+    x=np.random.normal(loc=0,scale=1,size=1000)
+    y=stats.norm.pdf(x)
+    
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.hist(x,30,normed=1)
+    ax.plot(x,y,'o',ms=0.5)
+    fig.savefig(FIGDIR+"probability-test.png")
+
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.hist(y,30)
+    fig.savefig(FIGDIR+"probability-pdf-test.png")
+
+def visualizeProcess(el):
+
+    """
+    Location of the antapex: lat. 19.5, lon. -141.4
+    """
+
+    #INPUT INFO
+    date="02/15/2013 03:20:34 UTC"
+    lat=+21.8
+    lon=-157.0
+
+    #HAWAII
+    odir="data/grt-20130215032034-ED2863/"
+
+    #READ DATA
+    sites=np.loadtxt(odir+"locals.dat")
+
+    for site in sites:
+
+        #Info about direction
+        h,A,v0,v1,v2,v3,end=site
+        print "Direction:",site
+
+        #1-Direction in the sky
+        proj='moll'
+        fig=plt.figure();ax=fig.gca()
+        map_dir=drawMap(proj=proj,proj_opts=dict(lon_0=180,ax=ax),
+                        pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
+                        pars_opts=dict(labels=[1,1,0,0],fontsize=8),
+                        mers_opts=dict(labels=[0,0,0,1],fontsize=8))
+        plotMap(map_dir,A,h,lw=0,
+                marker='o',color='r',ms=4,mec='none')
+        #plt.show()
+        
+        #2-Apex direction
+        cmd="./whereisapex.exe '%s' %f %f > /dev/null"%(date,lat,lon)
+        out=out2dict(System(cmd))
+        "Geographic Lat. apex = ",out["LATAPEX"]
+
+        #4-Flux
+
+        #3-Velocity
+
+        #4-Integration
+
+        #5-Position in configuration space
+
+        #6-Density
+
+        #7-Probability
+
         break
-        """
 
 #############################################################
 #EXECUTE

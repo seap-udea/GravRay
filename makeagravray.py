@@ -69,19 +69,6 @@ try:
 except:h=8e4
 
 #############################################################
-#PARAMETERS
-#############################################################
-#SET 1 IF YOU WANT THAT VELOCITY BE DEPENDENT OF QAPEX
-
-#NAME OF THE ANALYSIS
-#QVEL=0;NAME="Chalyabinsk apex dependent velocities (N=540 locals)"
-#QVEL=1;NAME="Chalyabinsk average velocities (N=540 locals)"
-#QVEL=0;NAME="Hawaii average velocities (N=540 locals)"
-#QVEL=1;NAME="Hawaii apex dependent velocities (N=540 locals)"
-#QVEL=0;NAME="Madagascar average velocities (N=540 locals)"
-#QVEL=1;NAME="Madagascar apex dependent velocities (N=540 locals)"
-
-#############################################################
 #PROCESS INPUTS
 #############################################################
 
