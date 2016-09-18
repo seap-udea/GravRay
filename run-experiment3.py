@@ -58,6 +58,40 @@ if nsim==5:
     md5str=MD5STR(makestr,len=6)
     odir="data/grt-20130214212034-%s"%md5str
     system("mkdir -p %s"%odir)
-    cmd="python makeagravray.py '02/15/2013 03:20:34 UTC' rad util/data/directions-r5.00e+00.data util/data/locals-r1.00e+01-v50.data %d '%s' > %s/grt.log"%(QVEL,NAME,odir)
+    cmd="python makeagravray.py '02/15/2013 03:20:34 UTC' rad geographic.big.1 util/data/locals-r1.00e+01-v50.data %d '%s' > %s/grt.log"%(QVEL,NAME,odir)
     print "Running:",cmd
     system(cmd)
+
+if nsim==6:
+    sim='QVEL=1;NAME="Whole World Chelyabinsk (High resolution)";site="Whole world"'
+    exec(sim)
+    makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
+    md5str=MD5STR(makestr,len=6)
+    odir="data/grt-20130214212034-%s"%md5str
+    system("mkdir -p %s"%odir)
+    cmd="python makeagravray.py '02/15/2013 03:20:34 UTC' rad geographic.big.2 util/data/locals-r1.00e+01-v50.data %d '%s' > %s/grt.log"%(QVEL,NAME,odir)
+    print "Running:",cmd
+    system(cmd)
+
+if nsim==7:
+    sim='QVEL=1;NAME="Whole World Chelyabinsk (High resolution)";site="Whole world"'
+    exec(sim)
+    makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
+    md5str=MD5STR(makestr,len=6)
+    odir="data/grt-20130214212034-%s"%md5str
+    system("mkdir -p %s"%odir)
+    cmd="python makeagravray.py '02/15/2013 03:20:34 UTC' rad geographic.big.3 util/data/locals-r1.00e+01-v50.data %d '%s' > %s/grt.log"%(QVEL,NAME,odir)
+    print "Running:",cmd
+    system(cmd)
+
+if nsim==8:
+    sim='QVEL=1;NAME="Whole World Chelyabinsk (High resolution)";site="Whole world"'
+    exec(sim)
+    makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
+    md5str=MD5STR(makestr,len=6)
+    odir="data/grt-20130214212034-%s"%md5str
+    system("mkdir -p %s"%odir)
+    cmd="python makeagravray.py '02/15/2013 03:20:34 UTC' rad geographic.big.4 util/data/locals-r1.00e+01-v50.data %d '%s' > %s/grt.log"%(QVEL,NAME,odir)
+    print "Running:",cmd
+    system(cmd)
+
