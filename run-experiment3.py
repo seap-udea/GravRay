@@ -52,7 +52,7 @@ if nsim==4:
     system(cmd)
 
 if nsim==5:
-    sim='QVEL=0;NAME="Whole World Chelyabinsk (High resolution)";site="Whole world"'
+    sim='QVEL=1;NAME="Whole World Chelyabinsk (High resolution)";site="Whole world"'
     exec(sim)
     makestr="QVEL=%d & NAME=%s"%(QVEL,NAME)
     md5str=MD5STR(makestr,len=6)

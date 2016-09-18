@@ -8,7 +8,7 @@ from sys import stderr,stdout
 #############################################################
 usage="""Make a GRT analysis of a whole geopgraphic region.
 
-python makeagravray.py <date> <deg|rad> <file.geopos> <file.locals> <sname> <qvel> [<altitude>]
+python makeagravray.py <date> <deg|rad> <file.geopos> <file.locals> <qvel> <sname> [<altitude>]
 
 Where:
 
@@ -127,7 +127,9 @@ except:
 
 timeIt(stream=stderr)
 print "Analysing %d points..."%npoints
-f=open(outdir+"/geographic.prob","w")
+
+ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+f=open(outdir+"/geographic-%s.prob"%ranstr,"w")
 for i in xrange(npoints):
 
     lat=lats[i]
