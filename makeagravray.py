@@ -128,7 +128,9 @@ except:
 timeIt(stream=stderr)
 print "Analysing %d points..."%npoints
 
-ranstr=''.join(np.random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+import string
+import random
+ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 f=open(outdir+"/geographic-%s.prob"%ranstr,"w")
 for i in xrange(npoints):
 
