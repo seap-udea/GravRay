@@ -139,7 +139,6 @@ for i in xrange(npoints):
     print>>stderr,"*"*80,"\nCalculating elements for location %d/%d: lat = %e, lon = %e...\n"%(i,npoints-1,lat,lon),"*"*80
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
-    print t,lat,lon,h,inifile,QVEL,outdir,outfile
     cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,QVEL,outdir,outfile)
     print "Executing:",cmd
     system(cmd)

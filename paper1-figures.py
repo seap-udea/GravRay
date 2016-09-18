@@ -814,7 +814,6 @@ def showDistrib(el):
     fig.savefig(FIGDIR+"NEODistribution.png")
 
 def pointMap(el,fname,sname,title=None):
-
     """
     Run this with option 2 in command line
     """
@@ -1282,7 +1281,8 @@ def mapProbability():
     """
     date="20130215032034"
     print "Mapping %s..."%date 
-    grtid="2B353A"
+    #grtid="2B353A" #APEX
+    grtid="3CAA5C" #AVERAGE
     qlat=54.4
     qlon=63.5
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
@@ -1297,7 +1297,8 @@ def mapProbability():
     """
     date="20130214212034"
     print "Mapping %s..."%date 
-    grtid="9D35F9"
+    #grtid="9D35F9" #APEX
+    grtid="C7BF6A" #AVERAGE
     qlat=54.4
     qlon=63.5
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
@@ -1312,8 +1313,8 @@ def mapProbability():
     #"""
     date="19080630001400"
     print "Mapping %s..."%date 
-    #grtid="732A04" #Using apex dependent velocities
-    grtid="1BB07B" #Using average velocities
+    #grtid="732A04" #APEX
+    grtid="1BB07B" #AVERAGE
     qlat=60.917
     qlon=101.95
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
@@ -1328,7 +1329,8 @@ def mapProbability():
     """
     date="19630803164500"
     print "Mapping %s..."%date 
-    grtid="C535BA"
+    #grtid="C535BA" #APEX
+    grtid="A14D18" #AVERAGE
     qlat=-51.0
     qlon=+24.0
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
@@ -1480,6 +1482,69 @@ def testProbability():
     ax.hist(y,30)
     fig.savefig(FIGDIR+"probability-pdf-test.png")
 
+def plotConfigurationSpace(el):
+        #LOAD NEOS DATA
+    qes=el[:,0];qmin=qes.min();qmax=qes.max()
+    ees=el[:,1];emin=ees.min();emax=ees.max()
+    ies=np.log10(el[:,2]);imin=ies.min();imax=ies.max()
+    aes=qes/(1-ees**2);amin=aes.min();amax=aes.max()
+    qlow=qmin;qup=qmax
+    elow=emin;eup=emax
+    ilow=imin*0;iup=imax
+
+    #CONFIGURATION SPACE
+    cmap='rainbow'
+    interpolation='nearest'
+    bins=30
+    factor=1.0
+    pprop=dict(ms=8,mec='none')
+    iprop=dict(ms=15,mec='k',color='w')
+    fig=plt.figure(figsize=(18,7))
+    fsize=18
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # q vs. e
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(qes[condi],ees[condi],bins=bins,normed=True)
+    axae=fig.add_subplot(131)
+    scale=(qup-qlow)/(eup-elow)
+    img=axae.imshow(H.transpose(),origin='lower',
+                    interpolation=interpolation,
+                    extent=(qmin,qmax,emin,emax),aspect=scale/factor,cmap=cmap)
+    axae.set_xlabel("$q$ (AU)",fontsize=fsize)
+    axae.set_ylabel("$e$",fontsize=fsize)
+    axae.set_xlim((qlow,qup))
+    axae.set_ylim((elow,eup))
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # q vs. i
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(qes[condi],ies[condi],bins=bins,normed=True)
+    axai=fig.add_subplot(132)
+    scale=(qup-qlow)/(iup-ilow)
+    img=axai.imshow(H.transpose(),origin='lower',
+                    interpolation=interpolation,
+                    extent=(qmin,qmax,imin,imax),aspect=scale/factor,cmap=cmap)
+    axai.set_xlabel("$q$ (AU)",fontsize=fsize)
+    axai.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
+    axai.set_xlim((qlow,qup))
+    axai.set_ylim((ilow,iup))
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    # e vs. i
+    # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    condi=np.abs(qes)>=0
+    H,xe,ye=np.histogram2d(ees[condi],ies[condi],bins=bins,normed=True)
+    axei=fig.add_subplot(133)
+    scale=(eup-elow)/(iup-ilow)
+    img=axei.imshow(H.transpose(),origin='lower',
+                    interpolation=interpolation,
+                    extent=(emin,emax,imin,imax),aspect=scale/factor,cmap=cmap)
+    axei.set_xlabel("$e$",fontsize=fsize)
+    axei.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
+    axei.set_xlim((elow,eup))
+    axei.set_ylim((ilow,iup))
+    return axae,axai,axei
+
 def visualizeProcess(el):
 
     """
@@ -1488,50 +1553,162 @@ def visualizeProcess(el):
 
     #INPUT INFO
     date="02/15/2013 03:20:34 UTC"
-    lat=+21.8
-    lon=-157.0
+    out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
+    t=float(out.split("\n")[4])
+    alt=8e4
 
     #HAWAII
-    odir="data/grt-20130215032034-ED2863/"
+    odir="data/grt-20130215032034-ED2863/";lat=+21.8;lon=-157.0
+    #CHELYABINSK
+    #odir="data/grt-20130215032034-FA0C86/";lat=+54.4;lon=+63.5
+    #MADAGASCAR
+    #odir="data/grt-20130215032034-21A94B/";lat=-18.9;lon=+47.5
+
+    #PARAMETERS
+    dmax=0.1
+    sigma=wNormalization(dmax)
+    wmax=sigma*wFunction(0,dmax)
+    normal=2000.0
+    fparam=(0.9721768,6.84870896,2.40674371)
 
     #READ DATA
     sites=np.loadtxt(odir+"locals.dat")
 
+    k=0
+    hold=0
+    caz=0
+    qps=[];eps=[];ips=[]
     for site in sites:
+        plt.close("all")
 
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         #Info about direction
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         h,A,v0,v1,v2,v3,end=site
-        print "Direction:",site
 
+        if h==hold:
+            if caz==3:continue
+        else:
+            if caz==3:caz=0
+        hold=h
+        caz+=1
+
+        print "*"*80,"\nSite %d (caz = %d)\n"%(k,caz),"*"*80
+
+        print "Direction:",site
+        print "Zenith angle:",90-h
+        f=open("tmp/locals.data","w")
+        f.write("#\n");
+
+        #Test
+        #h=18.0;A=105.0;v0=v1=v2=v3=20.0;
+        f.write("%-+20.4e%-+20.4e%-+20.4e%-+20.4e%-+20.4e%-+20.4e%-+20d\n"%(h,A,v0,v1,v2,v3,end))
+        f.close()
+
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         #1-Direction in the sky
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        """
         proj='moll'
         fig=plt.figure();ax=fig.gca()
         map_dir=drawMap(proj=proj,proj_opts=dict(lon_0=180,ax=ax),
                         pars=[-45,0,45],mers=[0,45,90,135,180,225,270,315],
                         pars_opts=dict(labels=[1,1,0,0],fontsize=8),
-                        mers_opts=dict(labels=[0,0,0,1],fontsize=8))
+                        mers_opts=dict(labels=[0,0,0,0],fontsize=8))
         plotMap(map_dir,A,h,lw=0,
                 marker='o',color='r',ms=4,mec='none')
-        #plt.show()
+        plt.show()
+        """
         
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         #2-Apex direction
-        cmd="./whereisapex.exe '%s' %f %f > /dev/null"%(date,lat,lon)
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        cmd="./whereisapex.exe '%s' %f %f 90.0 0.0 20.0 > /dev/null"%(date,lat,lon)
+        print "Executing:",cmd
         out=out2dict(System(cmd))
-        "Geographic Lat. apex = ",out["LATAPEX"]
+        print "Geographic Lat. apex = ",90-float(out["LATAPEX"])
+        print "Velocity (20 km/s) Lat. apex = ",90-float(out["LATAPEX"])
 
-        #4-Flux
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        #3-Integration
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        QVEL=1
+        inifile="tmp/locals.data"
+        outfile="tmp/rays.data"
+        cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s"%(t,lat,lon,alt,inifile,QVEL,outfile)
+        print "Executing:",cmd
+        system(cmd)
+        ray=np.loadtxt(outfile)
+        try:
+            h,Az,vimp,xobs,yobs,zobs,vxobs,vyobs,vzobs,q,e,i,Omega,omega,M,qapex=ray
+        except:
+            continue
 
-        #3-Velocity
+        print "Orbital elements:",q,e,i
+        print "Direction with respect to apex:",qapex
+        flux=theoFlux_DoubleTrigCos(qapex,*fparam)
+        print "Flux of objects in that direction:",flux
+        
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        #4-Density
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        verb=0
+        distform=drummondDistance(q,e,i)
+        result=np.array(mysqlSelect("%s, Perihelion_dist, e, i"%distform,
+                                    "NEOS",
+                                    "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
+        ntarg=result.shape[0]
+        print "Number of close objects:",ntarg
 
-        #4-Integration
-
-        #5-Position in configuration space
-
-        #6-Density
+        density=0
+        if ntarg>0:
+            n=0
+            for target in result:
+                d2,qt,et,it=target
+                d=d2**0.5
+                p=sigma*wFunction(d,dmax)
+                density+=p
+                if n<0:print q,qt,e,et,i,it,d,p
+                n+=1
+            print "Density:",density
+        else:
+            density=0
 
         #7-Probability
+        Pu=density/wmax
+        Pn=flux*Pu
 
-        break
+        print "Probability without flux correction:",Pu
+        print "Probability with flux correction:",Pn
+
+        cmd="python throwaray.py %f %f %f %f %f -%f '%s' -0.50 100 1"%(lat,lon,alt,h,Az,vimp,date)
+        print "Executing:",cmd
+        system(cmd)
+
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        #5-Position in configuration & physical space
+        #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        #GENERATE DENSITY MAP
+        axae,axai,axei=plotConfigurationSpace(el)
+
+        axae.plot(q,e,'ko',ms=10)
+        axai.plot(q,np.log10(i),'ko',ms=10)
+        axei.plot(e,np.log10(i),'ko',ms=10)
+
+        axae.plot(qps,eps,'kv',ms=5)
+        axai.plot(qps,ips,'kv',ms=5)
+        axei.plot(eps,ips,'kv',ms=5)
+
+        qps+=[q];eps+=[e];ips+=[np.log10(i)]
+
+        axae.text(0.9*q,0.9*e,"%.1f,%.1f,%.1f,%.1f"%(qapex,flux,Pu,Pn),fontsize=8,ha='right')
+
+        plt.show()
+
+        #raw_input()
+        #if k>5:break
+        #break
+        k+=1
 
 #############################################################
 #EXECUTE

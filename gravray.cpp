@@ -719,6 +719,8 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
       fprintf(stdout,"ETEND = %.10e, t = %.10e, tref = %.10e\n",ETEND,t,tref);
     }
   }
+  //DEBUGGING
+  //printf("t = %e, tref = %e\n",t,tref);
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
   pxform_c("ITRF93",ECJ2000,tref,observer->MEJ);
@@ -737,6 +739,9 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   georec_c(D2R(observer->lon),D2R(observer->lat),observer->alt/1000.0,
 	   REARTH,FEARTH,observer->posearth);
 
+  //DEBUGGING
+  //printf("Observer = %s\n",vec2str(observer->posearth));
+
   //TOPOCENTRIC CONVERSION MATRICES
   horgeo(observer->lat,observer->lon,observer->hm,observer->hi);
 
@@ -751,9 +756,15 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   spkezr_c(EARTH_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",
 	   observer->earth,&lt);
 
+  //DEBUGGING
+  //printf("Earth ECJ2000 = %s\n",vec2str(observer->earth,"%.17e "));
+
   //POSITION WITH RESPECT TO SSB IN ECLIPJ2000
   mxv_c(observer->MEJ,observer->posearth,observer->posj2000);
   vadd_c(observer->earth,observer->posj2000,observer->posabs);
+
+  //DEBUGGING
+  //printf("Observer ECJ2000 = %s\n",vec2str(observer->posabs,"%.17e "));
 
   //POSITION WITH RESPECT TO SSB IN ECLIPEPOCH
   //This is not working

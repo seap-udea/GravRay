@@ -5,7 +5,7 @@ from gravray import *
 #############################################################
 usage="""Launch an object into orbit.
 
-python throwaray.py <lat> <lon> <alt> <elev> <azim> <vimp> <date> <tspan> [npoints]
+python throwaray.py <lat> <lon> <alt> <elev> <azim> <vimp> <date> <tspan> [npoints <qplot>]
 
 Where:
 
@@ -16,6 +16,7 @@ Where:
    <date>: date in format MM/DD/CCYY HH:MM:SS.dcm UTC-L
    <tspan>: integration time (in years)
    <npoints>: sampling points
+   <qplot>: do you want to show plot?
 
 Return:
 
@@ -50,8 +51,13 @@ except:
     print usage
     exit(1)
 
+qplot=0
 try:
     npoints=int(argv[9])
+    try:
+        qplot=int(argv[9])
+    except:
+        qplot=0
 except:npoints=100
 
 t=0
@@ -59,13 +65,16 @@ t=0
 #DETERMINE INITIAL PARTICLE POSITION AND VELOCITY
 #############################################################
 print "Determining initial position..."
-out=System("./whereami.exe %.17e %.17e %.17e %.17e %.17e %.17e '%s' > /tmp/out.log"%\
+cmd="./whereami.exe %.17e %.17e %.17e %.17e %.17e %.17e '%s' > /tmp/out.log"%\
            (lat,lon,alt,
             elev,azim,vimp,
-            date))
+            date)
+print "Executing:",cmd
+out=System(cmd)
 props=out2dict(out)
 print TAB,"TDB = %.9e"%props["TDB"]
 timeIt()
+print props
 
 #############################################################
 #INTEGRATE ORBIT
@@ -145,6 +154,7 @@ data[:,1:7]=np.array([data[i,1:7]/STATECONV for i in xrange(data.shape[0])])
 ext=0
 if ext==0:
     ext=0.8*max(np.abs(data[:,1:4].min()),data[:,1:4].max())
+ext=1
 
 for objid in objects:
     if 'ts' in objid:continue
@@ -169,6 +179,8 @@ ax.set_zlim(-ext,ext)
 ax.set_xlabel('x (AU)')
 ax.set_ylabel('y (AU)')
 ax.set_zlabel('z (AU)')
-fig3d.savefig("scratch/ray-orbit.png")
+
+if qplot:plt.show()
+else:fig3d.savefig("scratch/ray-orbit.png")
 
 timeIt()

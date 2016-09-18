@@ -65,7 +65,6 @@ int main(int argc,char* argv[])
   SpiceDouble M_ITRF93_J2000[3][3];
   SpiceDouble observerITRF93[6],observerJ2000[6],observerSSBJ2000[6];
   pxform_c("ITRF93",ECJ2000,tref,M_ITRF93_J2000);
-  pxform_c("EARTHTRUEEPOCH",ECJ2000,tref,M_ITRF93_J2000);
   /*
   printf("%e,%e,%e\n%e,%e,%e\n%e,%e,%e\n",
 	 M_ITRF93_J2000[0][0],M_ITRF93_J2000[0][0],M_ITRF93_J2000[0][0],
