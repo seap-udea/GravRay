@@ -387,14 +387,27 @@ def zappalaDistance(a,e,sini,O,o,num=0):
     """
     ka=5./4
     ke=ki=2
+
+    #ORIGINAL ZAPPALA
+#     kw=kO=1e-4
+#     distform="""\
+# 1/SQRT((a+%.17e)/2)*(\
+# %.17e*POW((a-%.17e)/((a+%.17e)/2),2)+\
+# %.17e*POW(e-%.17e,2)+\
+# %.17e*POW(sini-%.17e,2)+\
+# %.17e*POW(Node-%.17e,2)+\
+# %.17e*POW(Peri-%.17e,2)\
+# )"""%(a,ka,a,a,ke,e,ki,sini,kO,O,kw,o)
+
+    #MODIFIED ZAPPALA
     kw=kO=1e-4
     distform="""\
 1/SQRT((a+%.17e)/2)*(\
 %.17e*POW((a-%.17e)/((a+%.17e)/2),2)+\
 %.17e*POW(e-%.17e,2)+\
 %.17e*POW(sini-%.17e,2)+\
-%.17e*POW(Node-%.17e,2)+\
-%.17e*POW(Peri-%.17e,2)\
+%.17e*POW(ABS((Node-%.17e+180)MOD(360)-180),2)+\
+%.17e*POW(ABS((Peri-%.17e+180)MOD(360)-180),2)\
 )"""%(a,ka,a,a,ke,e,ki,sini,kO,O,kw,o)
 
     return distform

@@ -24,7 +24,8 @@ except:pass
 #############################################################
 #LOAD PROBABILITIES
 #############################################################
-de=np.loadtxt("%s/geographic.prob"%edir)
+geofile=System("ls %s/geographic*.prob"%edir)
+de=np.loadtxt(geofile)
 
 #############################################################
 #READ OBSERVER MATRICES
@@ -177,6 +178,7 @@ colormap="rainbow"
 #colormap="RdYlGn"
 cmap=cm.get_cmap(colormap)
 levels=np.linspace(Pmin,Pmax,1000)
+#levels=np.linspace(Pmin,0.8,1000)
 c=map.contourf(LN,LT,Pmatrix,levels=levels,alpha=1.0,lw=0,cmap=cmap)
 
 #==============================

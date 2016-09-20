@@ -73,6 +73,7 @@ qes=data[:,9]
 ees=data[:,10]
 ies=data[:,11]
 qxs=data[:,15]
+aes=qes/(1-ees)
 
 #NEW-INCLUDING NODE AND PERIHELION
 Omegas=data[:,12]
@@ -80,11 +81,12 @@ omegas=data[:,13]
 
 Nhyp=len(ees[ees>=1])
 Nret=len(ies[ies>=180])
-cond=(ees<1)*(ies<180)
+cond=(ees<1)*(ies<180)*(aes<40)
 
 qes=qes[cond]
 ees=ees[cond]
 ies=ies[cond]
+aes=aes[cond]
 qxs=qxs[cond]
 
 #NEW-INCLUDING NODE AND PERIHELION
@@ -97,8 +99,6 @@ print "Filter:"
 print TAB,"Number of hyperbolic orbits:",Nhyp
 print TAB,"Number of retrograde orbits:",Nret
 print TAB,"Number of bound, prograde orbits:",Nphys
-
-aes=qes/(1-ees)
 
 #############################################################
 #NUMERICAL PARAMTERES
@@ -167,6 +167,11 @@ for n in xrange(Nphys):
                                 "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
+    """
+    if ntarg>1000:
+        print "Elements:",a,e,np.sin(i*DEG),Omega,omega
+        raw_input()
+    """
 
     if verb:print TAB,"Number of targets:",ntarg
     

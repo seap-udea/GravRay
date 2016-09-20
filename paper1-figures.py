@@ -1310,7 +1310,7 @@ def testParticle():
 def mapProbability():
 
     #CHELYABINSK MAP
-    #"""
+    """
     date="20130215032034"
     print "Mapping %s..."%date 
     #grtid="2B353A" #APEX
@@ -1326,7 +1326,7 @@ def mapProbability():
     #"""
 
     #PRE CHELYABINSK MAP
-    #"""
+    """
     date="20130214212034"
     print "Mapping %s..."%date 
     #grtid="9D35F9" #APEX
@@ -1358,7 +1358,7 @@ def mapProbability():
     #"""
     
     #1963 EVENT
-    #"""
+    """
     date="19630803164500"
     print "Mapping %s..."%date 
     #grtid="C535BA" #APEX
@@ -1796,6 +1796,22 @@ def testUniformOmega(el):
     ax.legend(loc='lower right')
     fig.tight_layout()
     fig.savefig(FIGDIR+"OrientationDistribution.png")
+
+def distAngles():
+    def deltaAngle(t1,t2):
+        d=np.abs(np.mod(t1-t2+180,360)-180)
+        return d
+
+    t1=90.0
+    ds=[]
+    ts=np.linspace(0,360,1000)
+    for t2 in ts:
+        ds+=[deltaAngle(t1,t2)]
+        
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(ts,ds)
+    fig.savefig(FIGDIR+"AngleDistance.png")
 
 #############################################################
 #EXECUTE
