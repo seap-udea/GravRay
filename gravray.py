@@ -379,6 +379,26 @@ def drummondDistance(q,e,i):
     distform="POW((Perihelion_dist-%.17e)/(Perihelion_dist+%.17e),2)+POW((e-%.17e)/(e+%.17e),2)+POW((i-%.17e)/180.,2)"%(q,q,e,e,i)
     return distform
 
+def zappalaDistance(a,e,sini,O,o,num=0):
+    """
+    Zappala (1990), Nervorny & Vokrouhlicky (2006)
+    am=(a+at)/2
+    d2c=1/np.sqrt(am)*(ka*((at-a)/am)**2+ke*(et-e)**2+ki*(sinit-np.sin(i*DEG))**2+kO*(Omega-Ot)**2+kw*(omega-ot)**2)
+    """
+    ka=5./4
+    ke=ki=2
+    kw=kO=1e-4
+    distform="""\
+1/SQRT((a+%.17e)/2)*(\
+%.17e*POW((a-%.17e)/((a+%.17e)/2),2)+\
+%.17e*POW(e-%.17e,2)+\
+%.17e*POW(sini-%.17e,2)+\
+%.17e*POW(Node-%.17e,2)+\
+%.17e*POW(Peri-%.17e,2)\
+)"""%(a,ka,a,a,ke,e,ki,sini,kO,O,kw,o)
+
+    return distform
+
 def theoFlux_DoubleTrigCos(q,f,a,b):
     if q<=90:
         fv=f*np.cos(np.pi/2-q*DEG)**a

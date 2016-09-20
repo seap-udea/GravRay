@@ -83,7 +83,7 @@ if qload==1:
 
 elif qload==2:
     print "Getting elements for all NEAs..."
-    props="Perihelion_dist, e, i"
+    props="Perihelion_dist, e, i, sin(i*PI()/180), a, Node, Peri"
     condition="where NEO_flag and e>0 and e<1 and Perihelion_dist<=1"
     listdict=mysqlSelect(props,
                          condition=condition)
@@ -944,6 +944,38 @@ def allPoints(el):
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_2.18000e+01__lon_-1.57000e+02.data'%grtid,'Hawaii')
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_-7.78500e+01__lon_1.66400e+02.data'%grtid,'Antartica')
 
+def analyzeProbability():
+
+    #"""
+    #HAWAII
+    loc="lat_2.18000e+01__lon_-1.57000e+02"
+    grtid="ED2863" #APEX
+    date="20130215032034"
+    cmd="python analyseatsource.py data/grt-%s-%s/locals.dat data/grt-%s-%s/rays-%s.data"%(date,grtid,date,grtid,loc)
+    print "Executing:",cmd
+    system(cmd)
+    #"""
+
+    #"""
+    #MADAGASCAR
+    loc="lat_-1.89000e+01__lon_4.75000e+01"
+    grtid="21A94B" #APEX
+    date="20130215032034"
+    cmd="python analyseatsource.py data/grt-%s-%s/locals.dat data/grt-%s-%s/rays-%s.data"%(date,grtid,date,grtid,loc)
+    print "Executing:",cmd
+    system(cmd)
+    #"""
+
+    #"""
+    #CHELYABINSK
+    loc="lat_5.44000e+01__lon_6.35000e+01"
+    grtid="FA0C86" #APEX 
+    date="20130215032034"
+    cmd="python analyseatsource.py data/grt-%s-%s/locals.dat data/grt-%s-%s/rays-%s.data"%(date,grtid,date,grtid,loc)
+    print "Executing:",cmd
+    system(cmd)
+    #"""
+
 def experimen2(el):
 
     """
@@ -1278,7 +1310,7 @@ def testParticle():
 def mapProbability():
 
     #CHELYABINSK MAP
-    """
+    #"""
     date="20130215032034"
     print "Mapping %s..."%date 
     #grtid="2B353A" #APEX
@@ -1294,7 +1326,7 @@ def mapProbability():
     #"""
 
     #PRE CHELYABINSK MAP
-    """
+    #"""
     date="20130214212034"
     print "Mapping %s..."%date 
     #grtid="9D35F9" #APEX
@@ -1326,7 +1358,7 @@ def mapProbability():
     #"""
     
     #1963 EVENT
-    """
+    #"""
     date="19630803164500"
     print "Mapping %s..."%date 
     #grtid="C535BA" #APEX
@@ -1483,14 +1515,15 @@ def testProbability():
     fig.savefig(FIGDIR+"probability-pdf-test.png")
 
 def plotConfigurationSpace(el):
-        #LOAD NEOS DATA
+    #LOAD NEOS DATA
     qes=el[:,0];qmin=qes.min();qmax=qes.max()
     ees=el[:,1];emin=ees.min();emax=ees.max()
     ies=np.log10(el[:,2]);imin=ies.min();imax=ies.max()
-    aes=qes/(1-ees**2);amin=aes.min();amax=aes.max()
+    ies=el[:,3];imin=ies.min();imax=ies.max()
+    aes=el[:,4];amin=aes.min();amax=aes.max()
     qlow=qmin;qup=qmax
     elow=emin;eup=emax
-    ilow=imin*0;iup=imax
+    ilow=imin*0;iup=imax*0+0.5
 
     #CONFIGURATION SPACE
     cmap='rainbow'
@@ -1540,7 +1573,7 @@ def plotConfigurationSpace(el):
                     interpolation=interpolation,
                     extent=(emin,emax,imin,imax),aspect=scale/factor,cmap=cmap)
     axei.set_xlabel("$e$",fontsize=fsize)
-    axei.set_ylabel("$\log(i^\circ)$",fontsize=fsize)
+    axei.set_ylabel("$\sin(i^\circ)$",fontsize=fsize)
     axei.set_xlim((elow,eup))
     axei.set_ylim((ilow,iup))
     return axae,axai,axei
@@ -1565,7 +1598,8 @@ def visualizeProcess(el):
     #odir="data/grt-20130215032034-21A94B/";lat=-18.9;lon=+47.5
 
     #PARAMETERS
-    dmax=0.1
+    #dmax=0.1
+    dmax=0.15
     sigma=wNormalization(dmax)
     wmax=sigma*wFunction(0,dmax)
     normal=2000.0
@@ -1644,7 +1678,8 @@ def visualizeProcess(el):
         except:
             continue
 
-        print "Orbital elements:",q,e,i
+        a=q/(1-e)
+        print "Orbital elements:",q,a,e,i,Omega,omega
         print "Direction with respect to apex:",qapex
         flux=theoFlux_DoubleTrigCos(qapex,*fparam)
         print "Flux of objects in that direction:",flux
@@ -1653,22 +1688,37 @@ def visualizeProcess(el):
         #4-Density
         #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         verb=0
-        distform=drummondDistance(q,e,i)
-        result=np.array(mysqlSelect("%s, Perihelion_dist, e, i"%distform,
+        #distform=drummondDistance(q,e,i)
+        distform=zappalaDistance(a,e,np.sin(i*DEG),Omega,omega)
+        result=np.array(mysqlSelect("%s, Perihelion_dist, e, i, sini, a, Node, Peri"%distform,
                                     "NEOS",
                                     "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
         ntarg=result.shape[0]
         print "Number of close objects:",ntarg
+        """
+        for target in result:
+            d2,qt,et,it,sinit,at,Ot,ot=target
+            d=d2**0.5
+            print "q=%.3f,%.3f"%(q,qt),"e=%.3f,%.3f"%(e,et),"i=%.3f,%.3f"%(i,it),"sini=%.3f,%.3f"%(np.sin(i*DEG),sinit),"a=%.3f,%.3f"%(a,at),"O = %.3f,%.3f"%(Omega,Ot),"o = %.3f,%.3f"%(omega,ot),"d = %.3f"%d
+            ka=5./4
+            ke=ki=2
+            kw=kO=1e-4
+            am=(a+at)/2
+            d2c=1/np.sqrt(am)*(ka*((at-a)/am)**2+ke*(et-e)**2+ki*(sinit-np.sin(i*DEG))**2+kO*(Omega-Ot)**2+kw*(omega-ot)**2)
+            dc=np.sqrt(d2c)
+            print d2c,dc
+        return
+        """
 
         density=0
         if ntarg>0:
             n=0
             for target in result:
-                d2,qt,et,it=target
+                d2,qt,et,it,sinit,at,Ot,ot=target
                 d=d2**0.5
                 p=sigma*wFunction(d,dmax)
+                print "q=%.3f,%.3f"%(q,qt),"e=%.3f,%.3f"%(e,et),"i=%.3f,%.3f"%(i,it),"sini=%.3f,%.3f"%(np.sin(i*DEG),sinit),"a=%.3f,%.3f"%(a,at),"O = %.3f,%.3f"%(Omega,Ot),"o = %.3f,%.3f"%(omega,ot),"d = %.3f"%d,"p=",p
                 density+=p
-                if n<0:print q,qt,e,et,i,it,d,p
                 n+=1
             print "Density:",density
         else:
@@ -1681,19 +1731,22 @@ def visualizeProcess(el):
         print "Probability without flux correction:",Pu
         print "Probability with flux correction:",Pn
 
+        """
         cmd="python throwaray.py %f %f %f %f %f -%f '%s' -0.50 100 1"%(lat,lon,alt,h,Az,vimp,date)
         print "Executing:",cmd
         system(cmd)
+        """
 
         #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         #5-Position in configuration & physical space
         #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         #GENERATE DENSITY MAP
+        funi=lambda i:np.sin(i*np.pi/180)
         axae,axai,axei=plotConfigurationSpace(el)
 
         axae.plot(q,e,'ko',ms=10)
-        axai.plot(q,np.log10(i),'ko',ms=10)
-        axei.plot(e,np.log10(i),'ko',ms=10)
+        axai.plot(q,funi(i),'ko',ms=10)
+        axei.plot(e,funi(i),'ko',ms=10)
 
         axae.plot(qps,eps,'kv',ms=5)
         axai.plot(qps,ips,'kv',ms=5)
@@ -1709,6 +1762,40 @@ def visualizeProcess(el):
         #if k>5:break
         #break
         k+=1
+
+def testUniformOmega(el):
+    qes=el[:,0];
+    ees=el[:,1];
+    ies=np.log10(el[:,2]);
+    aes=qes/(1-ees**2);
+    Omegas=el[:,3]
+    omegas=el[:,4]
+
+    #"""
+    #cond=(qes<=0.7)*(qes>0.6)
+    cond=(qes>0.8)*(ees<0.6)*(ees>0.4)*(ies>0.5)*(ies<1)
+    Omegas=Omegas[cond]
+    omegas=omegas[cond]
+    #"""
+    nobs=len(Omegas)
+
+    hO,O=np.histogram(Omegas,50,normed=1)
+    ho,o=np.histogram(omegas,50,normed=1)
+    
+    fig=plt.figure()
+    ax=fig.gca()
+    bins,n=histOutline(hO,O)
+    ax.plot(bins,n,label=r'$\Omega$ Distribution')
+    bins,n=histOutline(ho,o)
+    ax.plot(bins,n/2,label=r'$\omega$ Distribution')
+    ax.set_xlim((0,360))
+    ax.set_title('%d EC-NEOs (Sept.2016)'%nobs,position=(0.5,1.02))
+    ax.set_xlabel('Angle ($^\circ$)')
+    ax.set_ylabel('Frequency')
+    ax.set_yticks([])
+    ax.legend(loc='lower right')
+    fig.tight_layout()
+    fig.savefig(FIGDIR+"OrientationDistribution.png")
 
 #############################################################
 #EXECUTE

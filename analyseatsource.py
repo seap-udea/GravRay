@@ -74,6 +74,10 @@ ees=data[:,10]
 ies=data[:,11]
 qxs=data[:,15]
 
+#NEW-INCLUDING NODE AND PERIHELION
+Omegas=data[:,12]
+omegas=data[:,13]
+
 Nhyp=len(ees[ees>=1])
 Nret=len(ies[ies>=180])
 cond=(ees<1)*(ies<180)
@@ -82,6 +86,10 @@ qes=qes[cond]
 ees=ees[cond]
 ies=ies[cond]
 qxs=qxs[cond]
+
+#NEW-INCLUDING NODE AND PERIHELION
+Omegas=Omegas[cond]
+omegas=omegas[cond]
 
 Nphys=ees.shape[0]
 
@@ -100,7 +108,9 @@ verb=0
 adv=0
 
 #Maximum weighted euclidean distance in configuration space
-dmax=0.1
+#dmax=0.1
+#NEW
+dmax=0.15
 
 #Weighting function normalization
 sigma=wNormalization(dmax)
@@ -109,7 +119,8 @@ sigma=wNormalization(dmax)
 wmax=sigma*wFunction(0,dmax)
 
 #Normalization of number density
-normal=2000.0
+#normal=2000.0
+normal=1.0 #NEW 
 
 #Flux function parameters
 #Obtained with paper1-figures, apexVelocityDistribution()
@@ -127,6 +138,12 @@ for n in xrange(Nphys):
     q=qes[n]
     e=ees[n]
     i=ies[n]
+
+    #NEW
+    Omega=Omegas[n]
+    omega=omegas[n]
+    a=aes[n]
+
     qx=qxs[n]
     flux=theoFlux_DoubleTrigCos(qx,*fparam)
 
@@ -135,43 +152,52 @@ for n in xrange(Nphys):
     if (n%(Nphys/10))==0 and adv:
         print "Direction %d:"%n,q,e,i
         
-    distform=drummondDistance(q,e,i)
+    #distform=drummondDistance(q,e,i)
+    #NEW
+    distform=zappalaDistance(a,e,np.sin(i*DEG),Omega,omega)
 
+    """
     result=np.array(mysqlSelect("%s, Perihelion_dist, e, i"%distform,
+                                "NEOS",
+                                "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
+    """
+    #NEW
+    result=np.array(mysqlSelect("%s, Perihelion_dist, e, i, sini, a, Node, Peri"%distform,
                                 "NEOS",
                                 "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
 
     if verb:print TAB,"Number of targets:",ntarg
-    d2c,qc,ec,ic=0,0,0,0
+    
+    d2,qt,et,it,sinit,at,Ot,ot=0,0,0,0,0,0,0,0
+
     density=0
     if ntarg>0:
-        d2c,qc,ec,ic=result[0,:]
         n=0
+
+        #NEW
+        d2,qt,et,it,sinit,at,Ot,ot=result[0,:]
+
         for target in result:
-            d2,q,e,i=target
-            if verb:print TAB,"Target %d:"%n,q,e,i,", Distance:",d2
+            #d2,q,e,i=target
+            #NEW
+            d2,qt,et,it,sinit,at,Ot,ot=target
             d=d2**0.5
             p=sigma*wFunction(d,dmax)
-            if verb:print TAB,"Target: d = %.2e, p = %.6e"%(d,p)
-            if verb:raw_input()
+            if verb:print "q=%.3f,%.3f"%(q,qt),"e=%.3f,%.3f"%(e,et),"i=%.3f,%.3f"%(i,it),"sini=%.3f,%.3f"%(np.sin(i*DEG),sinit),"a=%.3f,%.3f"%(a,at),"O = %.3f,%.3f"%(Omega,Ot),"o = %.3f,%.3f"%(omega,ot),"d = %.3f"%d,"p=",p
             density+=p
             n+=1
-        Pu=density/wmax
-        Pn=flux*Pu
+        if verb:print "Density:",density
     else:
-        Pu=0
-        Pn=0
+        density=0
+
+    Pu=density/wmax
+    Pn=flux*Pu
 
     if verb:print TAB,"Probability contribution: ",Pn
     Ptot+=Pn/normal
-    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e %.5e %.2f\n"%(q,e,i,ntarg,qc,ec,ic,Pn/normal,Pu/normal,qx))
-
-    """
-    print ntarg,density,Pn
-    raw_input()
-    """
+    fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e %.5e %.2f %.3e %.3e %.3e\n"%(q,e,i,ntarg,qt,et,it,Pn/normal,Pu/normal,qx,at,Ot,ot))
 
     if verb:raw_input()
     if n>100e2:break
