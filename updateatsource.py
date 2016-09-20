@@ -1,36 +1,27 @@
 from gravray import *
+from os import path,system
+from sys import stderr,stdout
 
 #############################################################
 #USAGE
 #############################################################
-usage="""Perform analysis of asymptotic orbits of test particles.
+usage="""Update impact probabilities using a different model
 
-python analyseatsource.py <file.locals> <file.elements>
+python analyseatsource.py <grt.dir>
 
 Where:
 
-   <file.locals>: file with initial conditions (azimuth, elevation,
-                  velocities).
-
-   <file.elements>: file with resulting elements after analysis with
-                    throwrays.exe
+   <grt.dir>: directory with the complete grt analysis.
 
 Output:
 
-   <file.elements>.prob: file containing the probability associated to
-                         each ray.  Columns:
+   Ray files with probabilities <rays>.data.prob
 
-      #1:q       2:e        3:i        4:ntarg  5:qclose  6:eclose  7:iclose  8:probability
-      +7.935e-01 +3.545e-01 +1.039e+01    634   6.277e-01 2.484e-01 6.888e+00 +9.10427e-03
-   
-   where ntarg is the number of objects in the database with values of
-   the orbital elements close to that of the test particle;
-   qclose,eclose,iclose are the elements of the closest object in the
-   database to the test particle; probability is the "normalized"
-   probability for this point.
+   geographic.prob
 
 Example:
    
+  python updateatsource.py data/grt-20130215032034-3CAA5C
 
 """
 
@@ -39,21 +30,49 @@ Example:
 #############################################################
 try:
     iarg=1
-    inifile=argv[iarg];iarg+=1
-    elements=argv[iarg];iarg+=1
+    grtdir=argv[iarg];iarg+=1
 except:
     print usage
     exit(1)
 
-print "*"*80,"\nAnalyzing data in '%s'\n"%elements,"*"*80
+if not path.isdir(grtdir):
+    print "Directory '%s' does not exist."%grtdir
+    print 
+    print usage
+    exit(1)
+
+print "*"*80,"\nUpdating probabilities in '%s'\n"%grtdir,"*"*80
 
 #############################################################
-#CONSTANTS AND NUMERICAL PARAMETERS
+#GET ALL RAY FILES
 #############################################################
+rays=System("ls -m %s/rays-*.data"%grtdir).split(",\n")
+inifile="%s/locals.dat"%grtdir
+Ninitial=len(inifile)
 
-#############################################################
-#GET DATA FROM FILE
-#############################################################
+f=open(grtdir+"/geographic.prob.test","w")
+for ray in rays:
+
+    #GET LATITUDE AND LONGITUDE
+    
+    exit(0)
+
+    #RE ANALYZE PROBABILITY
+    cmd="python analyseatsource.py %s %s"%(inifile,ray)
+    system(cmd)
+
+    #COMPUTE PROBABILITY FOR THIS DIRECTION
+    data=np.loadtxt("%s.prob"%ray)
+    p=data[:,7]
+    Ptot=p.sum()/(1.0*Ninitial)
+    
+    #SHOW TOTAL
+    print>>stderr,"Total probability:",Ptot
+    f.write("%-+15.6f%-+15.6f%-+15.6f\n"%(lat,lon,Ptot))
+    break
+
+exit(0)
+
 initials=np.loadtxt(inifile)
 Ninitial=len(initials)
 
