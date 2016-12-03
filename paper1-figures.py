@@ -90,6 +90,16 @@ elif qload==2:
     elements=listdict2matrix(listdict,keys=props.split(", "))
     print len(elements)," objects discovered..."
 
+elif qload==3:
+    print "Getting elements for all NEAs..."
+    props="Perihelion_dist, e, i, sini, a, Node, Peri"
+    condition=""
+    listdict=mysqlSelect(props,
+                         table="NEOS",
+                         condition=condition)
+    elements=listdict2matrix(listdict,keys=props.split(", "))
+    print len(elements)," objects discovered..."
+    
 #############################################################
 #FUNCTIONS
 #############################################################
@@ -153,6 +163,11 @@ def distanceTunguskaChelyabisnk():
     #Fraction of the sphere
     fsphere=sangle/(4*PI)
     print "Fraction of the sphere: %.6f"%fsphere
+
+    lamb2013=Ncum(0.1)
+    Dt=1/lamb2013
+    print "Rate larger than 1 m (Brown+2013):",lamb2013
+    print "Average time between impactes:",Dt
 
     #Rate of impacts
     lamb2013=Ncum(500)
@@ -709,12 +724,13 @@ def readECSS2008():
     np.savetxt("util/data/ECSS.data",data)
 
 def plotKernel():
-    h=0.1
+    h=0.15
     sigma=wNormalization(h)
     fig=plt.figure()
     ax=fig.gca()
     ds=np.linspace(0,5*h,100)
     ws=np.array([sigma*wFunction(d,h) for d in ds])
+    print sigma*wFunction(0,h)
     ax.plot(ds,ws)
     figfile=FIGDIR+"WeightingShoenberg.png"
     print "Plotting ",figfile
@@ -732,7 +748,7 @@ def showDistrib(el):
     qes=el[:,0];qmin=qes.min();qmax=qes.max()
     ees=el[:,1];emin=ees.min();emax=ees.max()
     ies=np.log10(el[:,2]);imin=ies.min();imax=ies.max()
-    aes=qes/(1-ees**2);amin=aes.min();amax=aes.max()
+    aes=qes/(1-ees);amin=aes.min();amax=aes.max()
 
     #INTERVALS
     qlow=qmin;qup=qmax
@@ -813,7 +829,287 @@ def showDistrib(el):
     fig.tight_layout()
     fig.savefig(FIGDIR+"NEODistribution.png")
 
+def showAllDistrib(el):
+
+    #==================================================
+    #DATA FOR NEAS
+    #==================================================    
+    i=0
+    print "Properties read:"
+    for p in 'q','e','i','sini','a','O','w':
+        cmd=p+'es=el[:,'+str(i)+'];'+p+'min='+p+'low='+p+'es.min();'+p+'max='+p+'up='+p+'es.max();'
+        print TAB,cmd
+        exec(cmd)
+        i+=1
+
+    #==================================================
+    #CALCULATE DENSITY
+    #==================================================    
+    bins=40
+
+    #==================================================
+    #PARAMETERS
+    #==================================================    
+    #cmap='gray'
+    #interpolation='hanning'
+    interpolation='nearest'
+    cmap='rainbow'
+    cmap='jet'
+
+    factor=1.0
+    fsize=18
+
+    #==================================================
+    #CONDITIONS
+    #==================================================    
+    combinations=dict(
+
+        qe=dict(
+            p1='q',t1='$q$ (AU)',
+            p2='e',t2='$e$',
+            tcond="condi=ees>-1"
+        ),
+
+        siniq=dict(
+            p1='sini',t1='$\sin(i)$',
+            p2='q',t2='$q$ (AU)',
+            tcond="condi=(ees>-1)*(pes1<=0.3)"
+        ),
+
+        qO=dict(
+            p1='q',t1='$q$ (AU)',
+            p2='O',t2='$\Omega$',
+            tcond="condi=ees>-1.0"
+        ),
+        
+        qw=dict(
+            p1='q',t1='$q$ (AU)',
+            p2='w',t2='$\omega$',
+            tcond="condi=ees>-1.0"
+        ),
+
+        esini=dict(
+            p1='e',t1='$e$',
+            p2='sini',t2='$\sin(i)$',
+            tcond="condi=(ees>-1)*(pes2<=0.3)"
+        ),
+
+        eO=dict(
+            p1='e',t1='$e$',
+            p2='O',t2='$\Omega$',
+            tcond="condi=(ees>-1)"
+        ),
+
+        ew=dict(
+            p1='e',t1='$e$',
+            p2='w',t2='$\omega$',
+            tcond="condi=(ees>-1)"
+        ),
+        
+        siniO=dict(
+            p1='sini',t1='$\sin(i)$',
+            p2='O',t2='$\Omega$',
+            tcond="condi=(pes1<=0.3)"
+        ),
+
+        siniw=dict(
+            p1='sini',t1='$\sin(i)$',
+            p2='w',t2='$\omega$',
+            tcond="condi=(pes1<=0.3)"
+        ),
+
+        Ow=dict(
+            p1='O',t1='$\Omega$',
+            p2='w',t2='$\omega$',
+            tcond="condi=ees>-1.0"
+        )
+    )   
+
+    #==================================================
+    #CONDITIONS
+    #==================================================    
+    for key in combinations.keys():
+        combination=combinations[key]
+        p1=combination['p1'];t1=combination['t1']
+        p2=combination['p2'];t2=combination['t2']
+        tcond=combination['tcond']
+
+        cmd='pes1='+p1+'es;p1up='+p1+'up;p1low='+p1+'low';exec(cmd)
+        cmd='pes2='+p2+'es;p2up='+p2+'up;p2low='+p2+'low';exec(cmd)
+        exec(tcond)
+        pes1=pes1[condi]
+        pes2=pes2[condi]
+
+        fig=plt.figure(figsize=(6,6))
+
+        print "Objects satisfying criteria: ",len(pes1)
+
+        p1max=pes1.max();p1min=pes1.min()
+        p2max=pes2.max();p2min=pes2.min()
+
+        H,xe,ye=np.histogram2d(pes1,pes2,bins=bins,normed=True)
+        ax=fig.add_axes([0.15,0.15,0.8,0.8])
+        scale=(p1max-p1min)/(p2max-p2min)
+        img=ax.imshow(H.transpose(),origin='lower',
+                      interpolation=interpolation,
+                      extent=(p1min,p1max,p2min,p2max),aspect=scale/factor,cmap=cmap)
+        ax.set_xlabel(t1,fontsize=1.1*fsize)
+        ax.set_ylabel(t2,fontsize=1.1*fsize)
+        ax.set_xlim((p1min,p1max))
+        ax.set_ylim((p2min,p2max))
+        ax.set_xticklabels(ax.get_xticks(),fontsize=0.6*fsize)
+        ax.set_yticklabels(ax.get_yticks(),fontsize=0.6*fsize)
+        figfile=FIGDIR+"Distribution-"+p1+p2+".png"
+        print "Generating "+figfile+"..."
+        #fig.tight_layout()
+        fig.savefig(figfile)
+
 def pointMap(el,fname,sname,title=None):
+
+    #==================================================
+    #DATA FOR NEAS
+    #==================================================    
+    i=0
+    print "Properties read:"
+    for p in 'q','e','i','sini','a','O','w':
+        cmd=p+'es=el[:,'+str(i)+'];'+p+'min='+p+'low='+p+'es.min();'+p+'max='+p+'up='+p+'es.max();'
+        print TAB,cmd
+        exec(cmd)
+        i+=1
+    
+    #==================================================
+    #DATA FOR SITE
+    #==================================================    
+    data=np.loadtxt(fname)
+    qdata=data[:,9]
+    edata=data[:,10]
+    sinidata=np.sin(data[:,11]*DEG)
+    Odata=data[:,12]
+    wdata=data[:,13]
+    adata=qdata/(1-edata)
+    
+    cond=edata<1
+
+    qdata=qdata[cond]
+    edata=edata[cond]
+    sinidata=sinidata[cond]
+    Odata=Odata[cond]
+    wdata=wdata[cond]
+    adata=adata[cond]
+
+    #==================================================
+    #LOCATION OF THE CHELYABINSK IMPACT
+    #==================================================    
+    qimp=0.75
+    eimp=0.6
+    siniimp=np.sin(6.0*DEG)
+    Oimp=326.442
+    wimp=108.3
+    
+    #==================================================
+    #CALCULATE DENSITY
+    #==================================================    
+    bins=40
+    print "Showing Source Distribution for site '%s'..."%sname
+
+    #==================================================
+    #PARAMETERS
+    #==================================================    
+    interpolation='nearest'
+    cmap='rainbow'
+
+    factor=1.0
+    pprop=dict(ms=8,mec='none')
+    iprop=dict(ms=15,mec='k',color='w')
+
+    #==================================================
+    #COMBINATIONS
+    #==================================================    
+    fig=plt.figure(figsize=(18,5))
+    fsize=18
+    combinations=[
+        #qe
+        dict(
+            p1='q',t1='$q$ (AU)',
+            p2='e',t2='$e$',
+            tcond="condi=ees>-1"
+        ),
+        #esini
+        dict(
+            p1='e',t1='$e$',
+            p2='sini',t2='$\sin(i)$',
+            tcond="condi=(ees>-1)*(pes2<=0.3)"
+        ),
+        #siniq
+        dict(
+            p1='q',t1='$q$ (AU)',
+            p2='sini',t2='$\sin(i)$',
+            tcond="condi=(ees>-1)*(pes2<=0.3)"
+        ),
+        #qw
+        dict(
+            p1='q',t1='$q$ (AU)',
+            p2='w',t2='$\omega$',
+            tcond="condi=ees>-1.0"
+        )
+    ]
+    #==================================================
+    #PLOT
+    #==================================================    
+    i=1
+    #for key in combinations.keys():
+    for combination in combinations:
+        ax=fig.add_subplot('14'+str(i))
+
+        p1=combination['p1'];t1=combination['t1']
+        p2=combination['p2'];t2=combination['t2']
+        tcond=combination['tcond']
+
+        cmd='pes1='+p1+'es;p1up='+p1+'up;p1low='+p1+'low';exec(cmd)
+        cmd='pes2='+p2+'es;p2up='+p2+'up;p2low='+p2+'low';exec(cmd)
+        exec(tcond)
+        pes1=pes1[condi]
+        pes2=pes2[condi]
+
+        print "Objects satisfying criteria: ",len(pes1)
+
+        p1max=pes1.max();p1min=pes1.min()
+        p2max=pes2.max();p2min=pes2.min()
+
+        #READ DATA
+        cmd='pd1='+p1+'data';exec(cmd)
+        cmd='pd2='+p2+'data';exec(cmd)
+
+        cmd='pimp1='+p1+'imp';exec(cmd)
+        cmd='pimp2='+p2+'imp';exec(cmd)
+
+        H,xe,ye=np.histogram2d(pes1,pes2,bins=bins,normed=True)
+        scale=(p1max-p1min)/(p2max-p2min)
+        img=ax.imshow(H.transpose(),origin='lower',
+                      interpolation=interpolation,
+                      extent=(p1min,p1max,p2min,p2max),aspect=scale/factor,cmap=cmap)
+        #PLOT POINTS
+        ax.plot(pd1,pd2,'ko',**pprop)
+        ax.plot([pimp1],[pimp2],'kv',**iprop)
+        
+        #DECORATION
+        ax.set_xlabel(t1,fontsize=1.1*fsize)
+        ax.set_ylabel(t2,fontsize=1.1*fsize)
+        ax.set_xlim((p1min,p1max))
+        ax.set_ylim((p2min,p2max))
+        ax.set_xticklabels(ax.get_xticks(),fontsize=0.6*fsize)
+        ax.set_yticklabels(ax.get_yticks(),fontsize=0.6*fsize)
+
+        i+=1
+
+    ax=fig.add_axes([0.0,0.9,1.0,0.1])
+    plt.axis('off')
+    ax.text(0.5,0.5,"Point Distribution for site %s"%title,
+            transform=ax.transAxes,fontsize=20,ha='center',va='center')
+    fig.tight_layout()
+    fig.savefig(FIGDIR+"pointMap-%s.png"%sname)
+
+def pointMap_Deprecated(el,fname,sname,title=None):
     """
     Run this with option 2 in command line
     """
@@ -936,6 +1232,7 @@ def pointMap(el,fname,sname,title=None):
 def allPoints(el):
     """
     Generate point distributions:
+    DEPRECATED
     """
     #grtid="078645" #120 test particles
     grtid="9104FD" #271 test particles
@@ -949,7 +1246,8 @@ def analyzeProbability():
     #"""
     #HAWAII
     loc="lat_2.18000e+01__lon_-1.57000e+02"
-    grtid="ED2863" #APEX
+    #grtid="ED2863" #APEX
+    grtid="2BAF32" #AVERAGE
     date="20130215032034"
     cmd="python analyseatsource.py data/grt-%s-%s/locals.dat data/grt-%s-%s/rays-%s.data"%(date,grtid,date,grtid,loc)
     print "Executing:",cmd
@@ -959,7 +1257,8 @@ def analyzeProbability():
     #"""
     #MADAGASCAR
     loc="lat_-1.89000e+01__lon_4.75000e+01"
-    grtid="21A94B" #APEX
+    #grtid="21A94B" #APEX
+    grtid="0F13D5" #AVERAGE
     date="20130215032034"
     cmd="python analyseatsource.py data/grt-%s-%s/locals.dat data/grt-%s-%s/rays-%s.data"%(date,grtid,date,grtid,loc)
     print "Executing:",cmd
@@ -969,53 +1268,50 @@ def analyzeProbability():
     #"""
     #CHELYABINSK
     loc="lat_5.44000e+01__lon_6.35000e+01"
-    grtid="FA0C86" #APEX 
+    #grtid="FA0C86" #APEX 
+    grtid="19C993" #AVERAGE
     date="20130215032034"
     cmd="python analyseatsource.py data/grt-%s-%s/locals.dat data/grt-%s-%s/rays-%s.data"%(date,grtid,date,grtid,loc)
     print "Executing:",cmd
     system(cmd)
     #"""
 
-def experimen2(el):
+def experiment2(el):
 
-    """
-    Run this with option 2 in command line
-    """
-
-    grtid="7F5C81" 
-    loc="lat_-1.50000e+01__lon_1.35000e+02"
-    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
-    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Australia_apex',title='Australia (apex speed distribution)')
-
-    data=np.loadtxt("data/grt-20130215032034-%s/rays-%s.data"%(grtid,loc))
-    qapex=np.unique(data[:,15])
-    print qapex
-    print np.percentile(qapex,[0,25,50,90])
-
-    grtid="7368BB" 
-    loc="lat_1.50000e+01__lon_-4.50000e+01"
-    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
-    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Atlantic_apex',title='Atlantic (apex speed distribution)')
-
-    data=np.loadtxt("data/grt-20130215032034-%s/rays-%s.data"%(grtid,loc))
-    qapex=np.unique(data[:,15])
-    print qapex
-    print np.percentile(qapex,[0,25,50,90])
-
-    """
+    #"""
+    loc="lat_5.44000e+01__lon_6.35000e+01"
+    date="20130215032034"
     grtid="19C993" 
-    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
-    pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_average',title='Chelyabinsk (average speed distribution)')
+    print "Probability:",np.loadtxt("data/grt-%s-%s/geographic.prob"%(date,grtid))
+    pointMap(el,'data/grt-%s-%s/rays-%s.data'%(date,grtid,loc),
+             'Chelyabinsk_average_angles',title='Chelyabinsk')
+    #"""
+
+    #"""
+    loc="lat_2.18000e+01__lon_-1.57000e+02"
+    date="20130215032034"
+    grtid="2BAF32"
+    print "Probability:",np.loadtxt("data/grt-%s-%s/geographic.prob"%(date,grtid))
+    pointMap(el,'data/grt-%s-%s/rays-%s.data'%(date,grtid,loc),
+             'Hawaii_average_angles',title='Hawaii')
+    #"""
+
+    #"""
+    loc="lat_-1.89000e+01__lon_4.75000e+01"
+    date="20130215032034"
+    grtid="0F13D5"
+    print "Probability:",np.loadtxt("data/grt-%s-%s/geographic.prob"%(date,grtid))
+    pointMap(el,'data/grt-%s-%s/rays-%s.data'%(date,grtid,loc),
+             'Madagascar_average_angles',title='Madasgacar')
+    #"""
+
+    """
     grtid="FA0C86" 
     print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk_apex',title='Chelyabinsk (apex dependent speed distribution)')
     #"""
 
     """
-    loc="lat_2.18000e+01__lon_-1.57000e+02"
-    grtid="2BAF32" #
-    print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
-    pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_average',title='Hawaii (average speed distribution)')
     grtid="ED2863" #
     print "Probability:",np.loadtxt("data/grt-20130215032034-%s/geographic.prob"%grtid)
     pointMap(el,'data/grt-20130215032034-%s/rays-%s.data'%(grtid,loc),'Hawaii_apex',title='Hawaii (apex dependent speed distribution)')
@@ -1303,6 +1599,13 @@ def apexAngleChelyabinskTunguska():
     qapex=np.arccos(capx)*RAD
     print "Direction with respect to apex Chelyabinsk event:",qapex
 
+    #1963 impact
+    out=System("./whereisapex.exe '08/03/1963 16:45:00 UTC' -51.0 +24.0")
+    cecl=float(out.split("\n")[2])
+    capx=float(out.split("\n")[3])
+    qapex=np.arccos(capx)*RAD
+    print "Direction with respect to apex 1963 event:",qapex
+
 def testParticle():
     system("make && python throwaray.py 54.4 63.5 8e+04 17.664618 104.975030 -2.045864e+01 '02/15/2013 3:20:34 UTC' -0.5")
     system("cp scratch/ray-elements.png scratch/ray-orbit.png "+FIGDIR)
@@ -1310,7 +1613,7 @@ def testParticle():
 def mapProbability():
 
     #CHELYABINSK MAP
-    """
+    #"""
     date="20130215032034"
     print "Mapping %s..."%date 
     #grtid="2B353A" #APEX
@@ -1322,6 +1625,7 @@ def mapProbability():
     cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
     print "Excuting:",cmd
     system(cmd)
+    system("cp data/grt-%s-%s/probability-map-discrete.png %s/probability-map-discrete-%s.png"%(date,grtid,FIGDIR,date))
     system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
     #"""
 
@@ -1358,7 +1662,7 @@ def mapProbability():
     #"""
     
     #1963 EVENT
-    """
+    #"""
     date="19630803164500"
     print "Mapping %s..."%date 
     #grtid="C535BA" #APEX

@@ -109,11 +109,13 @@ fig.savefig("%s/probability-latitudes.png"%edir)
 #############################################################
 print "Plotting impact probability map (discrete)"
 plt.close("all")
+
+fig=plt.figure(figsize=(8,5))
 proj='robin'
 map=drawMap(proj=proj,proj_opts=dict(lon_0=0),
             pars=[-45,-30,-15,0,15,30,45],mers=[0,45,90,135,180,225,270,315],
-            pars_opts=dict(labels=[1,1,0,0],fontsize=8),
-            mers_opts=dict(labels=[0,0,0,1],fontsize=8),
+            pars_opts=dict(labels=[0,0,0,0],fontsize=8),
+            mers_opts=dict(labels=[0,0,0,0],fontsize=8),
             coasts=True
         )
 ax=plt.gca()
@@ -128,6 +130,15 @@ for i in xrange(npoints):
     color=cmap(Pnorm)
     x,y=map(lon,lat)
     plt.plot(x,y,'o',color=color,mec='k')
+
+if qspecial:
+    print "Plotting special location: (%f,%f)"%(qlat,qlon)
+    x,y=map(qlon,qlat)
+    ax.plot(x,y,'k*',ms=10)
+
+date=edir.split("/")[1].split("-")[1]
+ax.set_title("Impact probabilities at %s"%date,position=(0.5,1.05))
+
 fig.tight_layout()
 plt.savefig("%s/probability-map-discrete.png"%edir)
 
@@ -178,7 +189,7 @@ colormap="rainbow"
 #colormap="RdYlGn"
 cmap=cm.get_cmap(colormap)
 levels=np.linspace(Pmin,Pmax,1000)
-#levels=np.linspace(Pmin,0.8,1000)
+#levels=np.linspace(0.3,0.7,1000)
 c=map.contourf(LN,LT,Pmatrix,levels=levels,alpha=1.0,lw=0,cmap=cmap)
 
 #==============================
@@ -198,7 +209,7 @@ plt.tight_layout()
 if qspecial:
     print "Plotting special location: (%f,%f)"%(qlat,qlon)
     x,y=map(qlon,qlat)
-    ax.plot(x,y,'ko',ms=10)
+    ax.plot(x,y,'k*',ms=10)
     
     alphas=np.array([arcDistance([qlon*DEG,qlat*DEG],[lon*DEG,lat*DEG])*RAD for lon,lat in zip(lonms,lats)])
     n=alphas.argsort()[0]
@@ -209,11 +220,13 @@ if qspecial:
 #DECORATION
 #==============================
 date=edir.split("/")[1].split("-")[1]
-ax.set_title("%s"%date,position=(0.5,1.1))
+ax.set_title("Impact probabilities at %s"%date,position=(0.5,1.05))
 cax=plt.axes([0.05,0.1,0.9,0.05])
 cbar=plt.colorbar(c,drawedges=False,cax=cax,orientation='horizontal',
                   format='%.2f')
 cbar.ax.tick_params(labelsize=8)
+#cbar.ax.axvline(Pspecial,lw=3,color='k')
+cbar.ax.plot((Pspecial-Pmin)/(Pmax-Pmin),0.5,'k*',ms=10)
 cbar.ax.set_title("Normalized probability",fontsize=14,position=(0.5,-1.5))
 
 #fig.tight_layout()
