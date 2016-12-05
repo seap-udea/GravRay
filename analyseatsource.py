@@ -149,7 +149,9 @@ for n in xrange(Nphys):
 
     if verb:print "Test particle:",q,e,i
 
-    if (n%(Nphys/10))==0 and adv:
+    nfreq=(Nphys/10)
+    if nfreq==0:nfreq=1
+    if (n%nfreq)==0 and adv:
         print "Direction %d:"%n,q,e,i
         
     #distform=drummondDistance(q,e,i)
@@ -161,6 +163,7 @@ for n in xrange(Nphys):
                                 "NEOS",
                                 "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
     """
+
     #NEW
     result=np.array(mysqlSelect("%s, Perihelion_dist, e, i, sini, a, Node, Peri"%distform,
                                 "NEOS",

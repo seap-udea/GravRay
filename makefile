@@ -1,5 +1,6 @@
 include compiler.in
 
+BRANCH=$(shell bash .getbranch)
 PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenarioof.exe throwrays.exe whereonearth.exe whereisapex.exe
 
 all:$(PROGRAMS)
@@ -29,14 +30,18 @@ clean:cleancrap cleanexe
 %.o:%.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
+branch:
+	@echo "Branch: $(BRANCH)"
+
 commit:
-	@echo "Commiting..."
-	@-git commit -am "Commit"
-	@-git push origin master
+	@echo "Commiting changes to branch $(BRANCH)..."
+	@-git commit -am "Commit" 
+	@-git push origin $(BRANCH)
 
 pull:
+	@echo "Getting the lattest changes from branch $(BRANCH)..."
 	@-git reset --hard HEAD
-	@-git pull
+	@-git pull origin $(BRANCH)
 
 edit:
 	emacs -nw *.cpp tests/*.sh tests/*.py makefile *.py README.md

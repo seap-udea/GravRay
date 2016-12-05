@@ -152,7 +152,9 @@ for i in xrange(npoints):
     #CALCULATE PROBABILITIES
     #==================================================
     print "Calculating probabilities for this site"
-    system("python analyseatsource.py %s/locals.dat %s/%s"%(outdir,outdir,outfile))
+    cmd="python analyseatsource.py %s/locals.dat %s/%s"%(outdir,outdir,outfile)
+    print cmd
+    system(cmd)
     timeIt(stream=stderr)
 
     #==================================================
