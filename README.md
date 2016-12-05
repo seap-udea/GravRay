@@ -13,8 +13,8 @@ the Solar, Earth and Planetary Physics Group of the University of
 The method was originally intended for studying the spatial
 distribution of meteoroid and asteroid impacts on the Earth.  However
 it can be adapted to other general purposes (impacts on other Solar
-System bodies - the Moon, Mars, Jupiter, Saturn's Rings, etc., minor
-bodies entrance to earth sphere of influence).
+System bodies - the Moon, Mars, Jupiter, Saturn's Rings, entrance of
+small bodies to Earth' sphere of influence).
 
 If you use or modify this package please cite:
 
@@ -22,6 +22,39 @@ If you use or modify this package please cite:
    determination of the geogpraphical probability distibution of
    meteoroid impacts, Planetary and Space Science, under submission
    (2016).
+
+Quickstart
+----------
+
+What can I do to see some results right now?
+
+If you have already downloaded and installed the package (see below
+"Get the package" and "Basic Configuration") and in order to perform
+your first GRT analysis, you should start by obtaining suitable
+initial conditions.
+
+There are three type of initial conditions: locations, directions and
+velocities.
+
+- Locations.  
+- Directions.
+- Velocities.
+
+The package comes with template files of the three:
+``locations.dat.temp``, ``directions.dat.temp`` and
+``velocities.dat.temp``.
+
+Files containing random directions (locations and directions) comes
+with 4 columns: ux, uy (projection of direction in the "unit" square)
+and phi, theta (longitudinal and latitudinal directions). Angles can
+be in radians or in degrees.
+
+Other direction files are available at
+``util/data/directions-<theta_min>.data``, where ``<theta_min>`` is
+the minimum angular separation among the random directions.
+
+
+
 
 Get the package
 ---------------
@@ -55,9 +88,9 @@ Once cloned you need to perform the following basic actions (just once):
        cp compile.in.temp compile.in
    ```
 
-2. Set your system architecture.  Edit ``compiler`` file and uncomment
-   your architecture (32 or 64 bits).  GravRay used precompiled
-   versions of two of its main dependencies, namely CSPICE and GSL.
+2. Set your system architecture uncommenting your architecture (32 or
+   64 bits).  GravRay used precompiled versions of two of its main
+   dependencies, namely CSPICE and GSL.
 
 3. "Unpack" large kernels.  Large CSPICE kernels (those having more
    than 100 Mb) need to be splitted for distribution with git.  Before
@@ -79,11 +112,10 @@ Once cloned you need to perform the following basic actions (just once):
 The MPC Database
 ----------------
 
-Before using some modules of the package will also need a copy of the
-Minor Planet Center database.
-
-We have independently prepared a MySQL easy to install version of the
-database that can be downloaded also from our github repository.
+Before using some modules of the package, you will also need a copy of
+the Minor Planet Center database. We have independently prepared a
+MySQL easy to install version of the database that can be downloaded
+also from our github repository.
 
 For downloading and installing the database go to the ``util`` directory
 and run:
