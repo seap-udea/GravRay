@@ -79,14 +79,17 @@ except:h=8e4
 #############################################################
 #INPUTS ANALYSIS
 #############################################################
+System("make")
 
+#############################################################
+#INPUTS ANALYSIS
+#############################################################
 #DATE ANALYSIS
 parts=date.split(" ")
 dparts=parts[0].split("/")
 tparts=parts[1].split(":")
 tstring="%04d%02d%02d%02d%02d%02d"%(int(dparts[2]),int(dparts[0]),int(dparts[1]),
                                     int(tparts[0]),int(tparts[1]),int(tparts[2]))
-System("make whattimeisit.exe")
 out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
 t=float(out.split("\n")[4])
 
@@ -115,14 +118,13 @@ datos=np.loadtxt(inifile)
 Ninitial=len(datos)
 napex=datos.shape[1]-2
 
-exit(0)
-
 #############################################################
 #GENERATE OBSERVERS MATRICES (ECLIPTIC AND APEX POSITION)
 #############################################################
-cmd="make && ./whereonearth.exe '%s'"%date
-system(cmd)
+system("./whereonearth.exe '%s'"%date)
 system("cp -r scratch/observers-matrices.dat %s/"%outdir)
+
+exit(0)
 
 #############################################################
 #MAKE ANALYSIS
