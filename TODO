@@ -1,1 +1,18 @@
+Gravitational Ray Tracing
+=========================
 
+To Do
+=====
+
+- Use the Metropolis-Hasting algorithm to generate more points in the
+  configuration space (see
+  eg. https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm).
+  Since the problem is multidimensional think about implementing the
+  Gibbs sampling algorithm (https://en.wikipedia.org/wiki/Gibbs_sampling).
+
+  Example: calculate the density at all NEOs.  Find the largest one.
+  Generate a new set of orbital elements following gaussians or Gibbs
+  sampling.  Test the density at the new point.  Continue.
+
+  Remember to wait until the 1,000 object generated to draw the new
+  sample (burn-in period).

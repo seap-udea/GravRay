@@ -79,7 +79,7 @@ try:
 except:h=8e4
 
 #############################################################
-#INPUTS ANALYSIS
+#PREPARE
 #############################################################
 System("make")
 
@@ -122,8 +122,9 @@ napex=datos.shape[1]-1
 #############################################################
 #GENERATE OBSERVERS MATRICES (ECLIPTIC AND APEX POSITION)
 #############################################################
-System("./whereonearth.exe '%s'"%date)
-System("cp -r scratch/observers-matrices.dat %s/"%outdir)
+if not path.isfile("%s/observers-matrices.dat"%outdir):
+    System("./whereonearth.exe '%s'"%date)
+    System("cp -r scratch/observers-matrices.dat %s/"%outdir)
 
 #############################################################
 #GENERATE INITIAL CONDITIONS
