@@ -53,8 +53,25 @@ Other direction files are available at
 ``util/data/directions-<theta_min>.data``, where ``<theta_min>`` is
 the minimum angular separation among the random directions.
 
+Files containing velocities have also several columns.  In the
+simplest case the first column correspond to each value of the
+velocity.  In a more complex case each column correspond to a velocity
+calculated for a different direction with respect to apex. In all
+cases, the last column is -1.
 
+Once you have proper initial conditions, you may run a GRT analysis:
 
+```
+   python makeagravray.py <date> <deg|rad> <locations_file> <deg|rad> <directions_file> <velocities_file> <sname> [<altitude>]
+```
+
+Example:
+
+```
+   python makeagravray.py "02/15/2013 3:20:34 UTC" deg locations.dat.temp rad directions.dat.temp velocities.dat.temp "Test" 80000
+```
+
+Once the analysis is complete you will have a new directory generated at ``<theta_min>``
 
 Get the package
 ---------------
