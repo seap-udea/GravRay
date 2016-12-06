@@ -77,7 +77,18 @@ depending on the parameters used.
 
 Within the results directory you will find:
 
-- 
+- Elements of the asymptotic orbit for each ray at each geographic
+  location (files ``rays-lat_<lat>-lon_<lon>.data``).
+
+- Probability calculated for each individual ray (files
+  ``rays-lat_<lat>-lon_<lon>.data.prob``.
+
+- List of probabilities for all sites.
+
+Making a probability map
+------------------------
+
+
 
 Get the package
 ---------------

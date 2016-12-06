@@ -5,32 +5,33 @@ from gravray import *
 #############################################################
 usage="""Perform analysis of asymptotic orbits of test particles.
 
-python analyseatsource.py <file.locals> <file.elements>
+   python analyseatsource.py <file_initials> <file_elements>
 
 Where:
 
-   <file.locals>: file with initial conditions (azimuth, elevation,
-                  velocities).
+   <file_initials>: file with initial conditions (azimuth, elevation,
+                    velocities).
 
-   <file.elements>: file with resulting elements after analysis with
+   <file_elements>: file with resulting elements after analysis with
                     throwrays.exe
 
 Output:
 
-   <file.elements>.prob: file containing the probability associated to
+   <file_elements>.prob: file containing the probability associated to
                          each ray.  Columns:
 
       #1:q       2:e        3:i        4:ntarg  5:qclose  6:eclose  7:iclose  8:probability
       +7.935e-01 +3.545e-01 +1.039e+01    634   6.277e-01 2.484e-01 6.888e+00 +9.10427e-03
    
    where ntarg is the number of objects in the database with values of
-   the orbital elements close to that of the test particle;
+   the orbital elements close to test particle;
    qclose,eclose,iclose are the elements of the closest object in the
-   database to the test particle; probability is the "normalized"
+   database; probability is the "normalized"
    probability for this point.
 
 Example:
    
+   python analyseatsource.py initials.dat rays.dat
 
 """
 
@@ -110,16 +111,15 @@ adv=0
 #Maximum weighted euclidean distance in configuration space
 #dmax=0.1
 #NEW
-dmax=0.15
+dmax=0.20
 
 #Weighting function normalization
 sigma=wNormalization(dmax)
 
-#Maximim value of the smoothing kernel
+#Maximum value of the smoothing kernel
 wmax=sigma*wFunction(0,dmax)
 
 #Normalization of number density
-#normal=2000.0
 normal=1.0 #NEW 
 
 #Flux function parameters
@@ -145,7 +145,8 @@ for n in xrange(Nphys):
     a=aes[n]
 
     qx=qxs[n]
-    flux=theoFlux_DoubleTrigCos(qx,*fparam)
+    #flux=theoFlux_DoubleTrigCos(qx,*fparam)
+    flux=1
 
     if verb:print "Test particle:",q,e,i
 
@@ -155,26 +156,12 @@ for n in xrange(Nphys):
         print "Direction %d:"%n,q,e,i
         
     #distform=drummondDistance(q,e,i)
-    #NEW
     distform=zappalaDistance(a,e,np.sin(i*DEG),Omega,omega)
-
-    """
-    result=np.array(mysqlSelect("%s, Perihelion_dist, e, i"%distform,
-                                "NEOS",
-                                "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
-    """
-
-    #NEW
     result=np.array(mysqlSelect("%s, Perihelion_dist, e, i, sini, a, Node, Peri"%distform,
                                 "NEOS",
-                                "where %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
+                                "where H<20 and %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
-    """
-    if ntarg>1000:
-        print "Elements:",a,e,np.sin(i*DEG),Omega,omega
-        raw_input()
-    """
 
     if verb:print TAB,"Number of targets:",ntarg
     
@@ -188,8 +175,6 @@ for n in xrange(Nphys):
         d2,qt,et,it,sinit,at,Ot,ot=result[0,:]
 
         for target in result:
-            #d2,q,e,i=target
-            #NEW
             d2,qt,et,it,sinit,at,Ot,ot=target
             d=d2**0.5
             p=sigma*wFunction(d,dmax)
@@ -205,6 +190,7 @@ for n in xrange(Nphys):
 
     if verb:print TAB,"Probability contribution: ",Pn
     Ptot+=Pn/normal
+
     fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e %.5e %.2f %.3e %.3e %.3e\n"%(q,e,i,ntarg,qt,et,it,Pn/normal,Pu/normal,qx,at,Ot,ot))
 
     if verb:raw_input()

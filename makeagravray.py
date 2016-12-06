@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from gravray import *
-from os import system
+from os import system,path
 from sys import stderr,stdout
 import string
 import random
@@ -117,7 +117,6 @@ UNITRAD=UNITS[degdir]
 
 #DETERMINE NUMBER OF QAPEX
 datos=np.loadtxt(velfile)
-Ninitial=len(datos)
 napex=datos.shape[1]-1
 
 #############################################################
@@ -153,7 +152,8 @@ for direction in datadir[:,2:]:
         f.write("%-+20d\n"%(-1))
         n+=1
 
-print "%d rays initial conditions prepared..."%n
+Ninitial=n
+print "%d rays prepared..."%n
 
 #############################################################
 #MAKE ANALYSIS
@@ -172,8 +172,9 @@ timeIt(stream=stderr)
 print "Analysing %d locations..."%npoints
 
 ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
-f=open(outdir+"/geographic-%s.prob"%ranstr,"w")
 
+#f=open(outdir+"/geographic-%s.prob"%ranstr,"w")
+f=open(outdir+"/probability.prob","w")
 for i in xrange(npoints):
 
     lat=lats[i]
@@ -185,17 +186,18 @@ for i in xrange(npoints):
     print>>stderr,"*"*80,"\nCalculating elements for location %d/%d: lat = %e, lon = %e...\n"%(i+1,npoints,lat,lon),"*"*80
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
-    cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,qvel,outdir,outfile)
-    System(cmd)
-    timeIt(stream=stderr)
-    exit(0)
+    if not path.isfile("%s/%s"%(outdir,outfile)):
+        cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,qvel,outdir,outfile)
+        System(cmd)
+        timeIt(stream=stderr)
+    else:
+        print "Already calculated"
 
     #==================================================
     #CALCULATE PROBABILITIES
     #==================================================
     print "Calculating probabilities for this site"
     cmd="python analyseatsource.py %s %s/%s"%(inifile,outdir,outfile)
-    print cmd
     system(cmd)
     timeIt(stream=stderr)
 
@@ -207,5 +209,5 @@ for i in xrange(npoints):
     Ptot=p.sum()/(1.0*Ninitial)
     print>>stderr,"Total probability:",Ptot
     f.write("%-+15.6f%-+15.6f%-+15.6f\n"%(lat,lon,Ptot))
-
+    
 f.close()
