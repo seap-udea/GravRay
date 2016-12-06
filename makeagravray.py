@@ -2,6 +2,8 @@
 from gravray import *
 from os import system
 from sys import stderr,stdout
+import string
+import random
 
 #############################################################
 #USAGE
@@ -61,7 +63,7 @@ try:
     locfile=argv[iarg];iarg+=1
 
     degdir=argv[iarg];iarg+=1
-    inifile=argv[iarg];iarg+=1
+    dirfile=argv[iarg];iarg+=1
 
     qvel=int(argv[iarg]);iarg+=1
     velfile=argv[iarg];iarg+=1
@@ -73,7 +75,7 @@ except:
 
 #ALTITUDE
 try:
-    h=argv[iarg];iarg+=1
+    h=float(argv[iarg]);iarg+=1
 except:h=8e4
 
 #############################################################
@@ -103,7 +105,7 @@ System("mkdir -p %s"%outdir)
 f=open(outdir+"/.config","w")
 f.write("%s\n%s\n%s\n"%(md5str,tstring,makestr))
 System("cp %s %s/locations.dat"%(locfile,outdir))
-System("cp %s %s/directions.dat"%(inifile,outdir))
+System("cp %s %s/directions.dat"%(dirfile,outdir))
 System("cp %s %s/velocities.dat"%(velfile,outdir))
 f.close()
 print>>stderr,"Running analysis at %s..."%outdir
@@ -114,23 +116,49 @@ UNITLOC=UNITS[degloc]
 UNITRAD=UNITS[degdir]
 
 #DETERMINE NUMBER OF QAPEX
-datos=np.loadtxt(inifile)
+datos=np.loadtxt(velfile)
 Ninitial=len(datos)
-napex=datos.shape[1]-2
+napex=datos.shape[1]-1
 
 #############################################################
 #GENERATE OBSERVERS MATRICES (ECLIPTIC AND APEX POSITION)
 #############################################################
-system("./whereonearth.exe '%s'"%date)
-system("cp -r scratch/observers-matrices.dat %s/"%outdir)
+System("./whereonearth.exe '%s'"%date)
+System("cp -r scratch/observers-matrices.dat %s/"%outdir)
 
-exit(0)
+#############################################################
+#GENERATE INITIAL CONDITIONS
+#############################################################
+inifile="%s/initials.dat"%(outdir)
+f=open(inifile,"w")
+vels=np.loadtxt(velfile)
+datadir=np.loadtxt(dirfile)
+bs=datadir[:,3]
+ndirs=datadir[bs>0].shape[0]
+
+n=0
+Azs=[]
+Els=[]
+nvel=len(vels[:,0])
+for direction in datadir[:,2:]:
+    l=np.mod(direction[0]*RAD,360)
+    b=direction[1]*RAD
+    if b<0:continue
+    Azs+=[l]
+    Els+=[b]
+    for i in xrange(nvel):
+        f.write("%-+20.4e%-+20.4e"%(b,l))
+        for j in xrange(napex):
+            f.write("%-+20.4e"%(vels[i,j]))
+        f.write("%-+20d\n"%(-1))
+        n+=1
+
+print "%d rays initial conditions prepared..."%n
 
 #############################################################
 #MAKE ANALYSIS
 #############################################################
-#GEOGRAPHIC POSITIONS
-data=np.loadtxt(geofile)
+data=np.loadtxt(locfile)
 try:
     lons=data[:,2]*UNITLOC
     lats=data[:,3]*UNITLOC
@@ -141,12 +169,11 @@ except:
     npoints=1
 
 timeIt(stream=stderr)
-print "Analysing %d points..."%npoints
+print "Analysing %d locations..."%npoints
 
-import string
-import random
 ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 f=open(outdir+"/geographic-%s.prob"%ranstr,"w")
+
 for i in xrange(npoints):
 
     lat=lats[i]
@@ -155,19 +182,19 @@ for i in xrange(npoints):
     #==================================================
     #THROW RAYS FROM THIS PLACE
     #==================================================
-    print>>stderr,"*"*80,"\nCalculating elements for location %d/%d: lat = %e, lon = %e...\n"%(i,npoints-1,lat,lon),"*"*80
+    print>>stderr,"*"*80,"\nCalculating elements for location %d/%d: lat = %e, lon = %e...\n"%(i+1,npoints,lat,lon),"*"*80
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
     cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,qvel,outdir,outfile)
-    print "Executing:",cmd
-    system(cmd)
+    System(cmd)
     timeIt(stream=stderr)
+    exit(0)
 
     #==================================================
     #CALCULATE PROBABILITIES
     #==================================================
     print "Calculating probabilities for this site"
-    cmd="python analyseatsource.py %s/locals.dat %s/%s"%(outdir,outdir,outfile)
+    cmd="python analyseatsource.py %s %s/%s"%(inifile,outdir,outfile)
     print cmd
     system(cmd)
     timeIt(stream=stderr)

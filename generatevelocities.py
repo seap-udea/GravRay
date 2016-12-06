@@ -91,6 +91,7 @@ print "Number of velocities:",nvel
 #CREATE HEADER
 f=open("velocities.dat","w")
 c=1
+f.write("#")
 for i in xrange(napex):
     s="%d:v(qapex=%s)"%(c,qapexs[i])
     f.write("%-20s"%s)
