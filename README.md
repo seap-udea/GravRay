@@ -143,6 +143,12 @@ Once cloned you need to perform the following basic actions (just once):
 
    If everything compiles as expected you're ready to use the package.
 
+5. Big simulations results are stored in a directory called
+   ```data```.  The directory must be created or linked before
+   starting to run the simulations.  In computer clusters it is
+   recommended that the data directory points to a shared storage
+   space.
+
 The MPC Database
 ----------------
 
