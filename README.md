@@ -71,7 +71,13 @@ Example:
    python makeagravray.py "02/15/2013 3:20:34 UTC" deg locations.dat.temp rad directions.dat.temp velocities.dat.temp "Test" 80000
 ```
 
-Once the analysis is complete you will have a new directory generated at ``<theta_min>``
+Once the analysis is complete you will have the results stored in a
+directory ``data/grt-<date>-<grtid>``.  The ``<grtid>`` is unique
+depending on the parameters used.
+
+Within the results directory you will find:
+
+- 
 
 Get the package
 ---------------

@@ -23,12 +23,7 @@ Return:
 
   Files:
 
-     locals.dat: output file cointaining the initial conditions of
-                 the simulation (a matrix with Az, h and velocities).
-
-  Figures: all figures are generated at the scratch directory.
-     
-     initial-directions.png: 3d map of the initial directions.
+     velocities.dat: matrix with velocities
 
 Example:
 
