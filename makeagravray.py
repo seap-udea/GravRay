@@ -10,7 +10,7 @@ import random
 #############################################################
 usage="""Make a GRT analysis of a whole geographic region.
 
-   python makeagravray.py <date> <deg|rad> <locations_file> <deg|rad> <directions_file> <qvel> <velocities_file> <sname> [<altitude>]
+   python makeagravray.py <date> <deg|rad> <locations_file> <deg|rad> <directions_file> <qvel> <velocities_file> <sname> <altitude> [<runid>]
 
 Where:
 
@@ -34,6 +34,8 @@ Where:
 
    <altitude>: altitude where the rays start in meters (default:
                80,000 m)
+
+   <runid>: Run identifier.
 
 Output:
 
@@ -69,14 +71,15 @@ try:
     velfile=argv[iarg];iarg+=1
 
     name=argv[iarg];iarg+=1
+
+    h=float(argv[iarg]);iarg+=1
 except:
     print usage
     exit(1)
 
 #ALTITUDE
-try:
-    h=float(argv[iarg]);iarg+=1
-except:h=8e4
+try:runid=argv[iarg];iarg+=1
+except:runid=None
 
 #############################################################
 #PREPARE
@@ -96,7 +99,9 @@ out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
 t=float(out.split("\n")[4])
 
 #MAKE STRING
-makestr="qvel=%d & name=%s"%(qvel,name)
+dirmd5=System("md5sum %s"%dirfile)
+velmd5=System("md5sum %s"%velfile)
+makestr="qvel=%d & name=%s & dirmd5=%s & velmd5=%s"%(qvel,name,dirmd5,velmd5)
 md5str=MD5STR(makestr,len=6)
 
 #OUTPUT DIRECTORY
@@ -174,8 +179,9 @@ print "Analysing %d locations..."%npoints
 
 ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-#f=open(outdir+"/geographic-%s.prob"%ranstr,"w")
-f=open(outdir+"/probability.prob","w")
+if runid is None:f=open(outdir+"/probability.prob","w")
+else:f=open(outdir+"/probability-%s.prob"%runid,"w")
+
 for i in xrange(npoints):
 
     lat=lats[i]
