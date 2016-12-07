@@ -166,7 +166,8 @@ for direction in datadir[:,2:]:
             f.write("%-+20.4e"%(vels[i,j]))
         f.write("%-+20d\n"%(-1))
         n+=1
-
+f.close()
+system("cp %s %s/initials.dat"%(inifile,outdir))
 Ninitial=n
 print "%d rays prepared..."%n
 
