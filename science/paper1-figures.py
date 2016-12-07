@@ -362,10 +362,12 @@ def allPoints(el):
 def mapProbability():
 
     #CHELYABINSK MAP
-    #"""
+    """
     date="20130215032034"
-    print "Mapping %s..."%date 
-    grtid="3CAA5C"
+    grtid="900A63"
+
+    print "Mapping %s-%s..."%(date,grtid)
+
     qlat=54.4
     qlon=63.5
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
@@ -380,8 +382,9 @@ def mapProbability():
     #TUNGUSKA MAP
     """
     date="19080630001400"
+    grtid="FC09C2" 
+
     print "Mapping %s..."%date 
-    grtid="1BB07B" 
     qlat=60.917
     qlon=101.95
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0
@@ -393,10 +396,11 @@ def mapProbability():
     #"""
     
     #1963 EVENT
-    """
+    #"""
     date="19630803164500"
+    grtid="EE2BA7" 
+
     print "Mapping %s..."%date 
-    grtid="A14D18" 
     qlat=-51.0
     qlon=+24.0
     if path.isfile("data/grt-%s-%s/Pmatrix.data"%(date,grtid)):qmatrix=0

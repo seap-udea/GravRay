@@ -82,9 +82,10 @@ out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
 t=float(out.split("\n")[4])
 
 #MAKE STRING
-dirmd5=System("md5sum %s"%dirfile)
-velmd5=System("md5sum %s"%velfile)
+dirmd5=System("md5sum %s |awk '{print $1}'"%dirfile)
+velmd5=System("md5sum %s |awk '{print $1}'"%velfile)
 makestr="qvel=%d & name=%s & dirmd5=%s & velmd5=%s"%(qvel,name,dirmd5,velmd5)
+
 md5str=MD5STR(makestr,len=6)
 
 #RUN STRING
@@ -101,29 +102,58 @@ System("cp %s %s/velocities.dat"%(velfile,outdir))
 f.close()
 
 #############################################################
+#DETERMINE SIZE OF RUN
+#############################################################
+data=np.loadtxt(locfile)
+nlocs=data.shape[0]
+data=np.loadtxt(dirfile)
+ndirs=data.shape[0]
+data=np.loadtxt(velfile)
+nvels=data.shape[0]
+
+print "Preparing parallel run %s in %d processors..."%(runstr,nprocs)
+print "\tNumber of locations: ",nlocs
+print "\tNumber of directions: ",ndirs
+print "\tNumber of vels: ",nvels
+print "Running time estimation:"
+print "\tNumber of initial conditions: ",ndirs*nvels
+tploc=(ndirs*nvels)/240.0*35./60
+print "\tTime per location (min): ",tploc
+print "\tTotal time (hours): ",tploc*nlocs/60.
+print "\tParallel time (hours): ",tploc*nlocs/60./nprocs
+raw_input("Press enter to continue?..")
+
+#############################################################
 #CREATE RUN
 #############################################################
-print "Preparing parallel run %s in %d processors..."%(runstr,nprocs)
-
 locdata=np.loadtxt(locfile)
 nlocs=locdata.shape[0]
-nperp=int(nlocs/nprocs)
+nperplow=int(np.floor(nlocs/(1.0*nprocs)))
+nperpup=int(np.ceil(nlocs/(1.0*nprocs)))
+nperp=nperplow
 
+iini=0
 for i in xrange(nprocs):
-    iini=i*nperp
-    iend=(i+1)*nperp
+    nproc=i+1
+    iend=iini+nperp
     if i==nprocs-1:iend=nlocs
     ndata=len(locdata[iini:iend,:])
-    print "\tPreparing %d locations for processor %d (i = %d - %d)..."%(ndata,i,iini,iend)
-    np.savetxt("%s/locations-%d.dat"%(outdir,i),locdata[iini:iend,:])
+    print "\tPreparing %d locations for processor %d (i = %d - %d)..."%(ndata,nproc,iini,iend)
+    np.savetxt("%s/locations-%d.dat"%(outdir,nproc),locdata[iini:iend,:])
+    iini+=nperp
+    if (i%2)==0:nperp=nperpup
+    else:nperp=nperplow
 
 #############################################################
 #CREATE PBS SCRIPT
 #############################################################
-options=""
-options+="\"%s\" rad %s/locations-${PBS_ARRAYID}.dat "%(date,outdir)
-options+=" ".join(argv[5:-2])
-options+=" \"%s\" %e ${PBS_ARRAYID}"%(name,h)
+options="\"%s\" %s %s/locations-${PBS_ARRAYID}.dat %s %s/directions.dat %d %s/velocities.dat \"%s\" %e ${PBS_ARRAYID}"%(\
+    date,
+    degloc,outdir,
+    degdir,outdir,
+    qvel,outdir,
+    name,h
+    )
 
 f=open("makeagravray.sh","w")
 f.write("""#PBS -S /bin/bash
@@ -134,3 +164,5 @@ cd $PBS_O_WORKDIR
 python makeagravray.py %s
 """%(runstr,nprocs,options))
 f.close()
+
+System("cp makeagravray.sh %s"%outdir)

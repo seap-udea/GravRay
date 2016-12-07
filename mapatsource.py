@@ -6,7 +6,7 @@ from gravray import *
 #Ensamble directory
 iarg=1
 edir=argv[iarg];iarg+=1
-inidata=np.loadtxt("%s/locals.dat"%edir)
+inidata=np.loadtxt("%s/initials.dat"%edir)
 Ninitial=len(inidata)
 
 #Calculate matrix?
@@ -24,7 +24,7 @@ except:pass
 #############################################################
 #LOAD PROBABILITIES
 #############################################################
-geofile=System("ls %s/geographic*.prob"%edir)
+geofile=System("ls %s/probability.prob"%edir)
 de=np.loadtxt(geofile)
 
 #############################################################
@@ -200,7 +200,7 @@ map.contour(cLN,cLT,colat,levels=[0],colors=['k'],linewidths=[3])
 #==============================
 #CONTOUR OF COAPEX
 #==============================
-map.contour(aLN,aLT,coapex,levels=[0,0.999,-0.999],colors=['k','r','b'],linestyles=['--','-','-'],linewidths=[2])
+map.contour(aLN,aLT,coapex,levels=[-0.999,0,0.999],colors=['k','r','b'],linestyles=['--','-','-'],linewidths=[2])
 plt.tight_layout()
 
 #==============================

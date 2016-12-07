@@ -99,9 +99,10 @@ out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
 t=float(out.split("\n")[4])
 
 #MAKE STRING
-dirmd5=System("md5sum %s"%dirfile)
-velmd5=System("md5sum %s"%velfile)
+dirmd5=System("md5sum %s |awk '{print $1}'"%dirfile)
+velmd5=System("md5sum %s |awk '{print $1}'"%velfile)
 makestr="qvel=%d & name=%s & dirmd5=%s & velmd5=%s"%(qvel,name,dirmd5,velmd5)
+
 md5str=MD5STR(makestr,len=6)
 
 #OUTPUT DIRECTORY
@@ -193,12 +194,10 @@ for i in xrange(npoints):
     print>>stderr,"*"*80,"\nCalculating elements for location %d/%d: lat = %e, lon = %e...\n"%(i+1,npoints,lat,lon),"*"*80
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
-    if not path.isfile("%s/%s"%(outdir,outfile)):
-        cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,qvel,outdir,outfile)
-        System(cmd)
-        timeIt(stream=stderr)
-    else:
-        print "Already calculated"
+    #if not path.isfile("%s/%s"%(outdir,outfile)):
+    cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,qvel,outdir,outfile)
+    print "Executing: %s"%cmd
+    System(cmd)
 
     #==================================================
     #CALCULATE PROBABILITIES

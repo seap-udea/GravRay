@@ -88,7 +88,22 @@ Within the results directory you will find:
 Making a probability map
 ------------------------
 
+If you want to preoare a nice probability map you must first run a
+gravtitational ray tracing over many locations on Earth:
 
+```
+   python makeagravray.py "02/15/2013 3:20:34 UTC" rad util/data/directions-r7.00e+00.data rad util/data/directions-r2.00e+01.data 0 velocities.dat.temp "1963" 80000
+```
+
+The analysis may take up to an hour so you need to be patient.
+
+Once the analysis is complete you can create the maps:
+
+```
+   python mapatsource.py data/grt-19630803164500-EE2BA7 1 -51.0 +24.0
+```
+
+Done.
 
 Get the package
 ---------------
