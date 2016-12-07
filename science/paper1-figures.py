@@ -213,6 +213,7 @@ def pointMap(el,fname,sname,title=None):
     #==================================================
     #DATA FOR SITE
     #==================================================    
+    grtdir=System("dirname fname")
     data=np.loadtxt(fname)
     qdata=data[:,9]
     edata=data[:,10]
@@ -342,16 +343,24 @@ def pointMap(el,fname,sname,title=None):
     ax.text(0.5,0.5,"Point Distribution for site %s"%title,
             transform=ax.transAxes,fontsize=20,ha='center',va='center')
     fig.tight_layout()
-    fig.savefig(FIGDIR+"pointMap-%s.png"%sname)
+    #fig.savefig(FIGDIR+"pointMap-%s.png"%sname)
+    fig.savefig(grtdir+"/pointMap-%s.png"%sname)
 
 def allPoints(el):
     """
     Generate point distributions:
     """
+    
+    """
     grtid="AC42A0"
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk')
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_-1.89000e+01__lon_4.75000e+01.data'%grtid,'Madagascar')
     pointMap(el,'data/grt-20130215032034-%s/rays-lat_2.18000e+01__lon_-1.57000e+02.data'%grtid,'Hawaii')
+    """
+    grtid="A14C64"
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk')
+    grtid="00FED9"
+    pointMap(el,'data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid,'Chelyabinsk')
 
 def mapProbability():
 
@@ -413,7 +422,11 @@ def probabilityFireballs():
     #########################################
     #PROPERTIES
     #########################################
-    rundir="scratch/runs/"
+    # rundir="scratch/runs/run1/" # No flux correction
+    # rundir="scratch/runs/run2/" # Flux correction
+    # rundir="scratch/runs/run3/" # Flux correction & all NEAS
+    rundir="scratch/runs/run4/" # Flux correction & all NEAS & velocity distribution
+
     dirfile="util/data/directions-r2.00e+01.data"
     velfile="velocities.dat"
     System("cp %s %s/velocities.dat"%(velfile,rundir))
@@ -514,6 +527,56 @@ cd $PBS_O_WORKDIR
 
     for f in fs:f.close()
     flog.close()
+
+def fireballProbabilityHistogram():
+    """
+    Get the fireball probability histogram
+    """
+    # PROPERTIES
+    # rundir="scratch/runs/run1" # No flux
+    # rundir="scratch/runs/run2" # Flux
+    # rundir="scratch/runs/run3" # Flux all NEAs
+    rundir="scratch/runs/run4/" # Flux correction & all NEAS & velocity distribution
+
+    # PROBABILITY DISTRIBUTION
+    print "Probability distribution for %s:"%rundir
+
+    # GET ALL PROBABILITIES
+    ffile="%s/fireballs.prob"%rundir
+    if not path.isfile(ffile):
+        f=open("%s/runs.log"%rundir)
+        fp=open(ffile,"w")
+        for line in f:
+            if not '-' in line:continue
+            grtid=line.split()[2]
+            try:
+                p=System("cat data/grt-%s/probability.prob"%grtid)
+                prob=float(p.split()[2])
+            except:continue
+            fp.write("%e\n"%prob)
+        f.close()
+        fp.close()
+
+    # READ PROBABILITIES
+    ps=np.loadtxt(ffile)
+    pmax=ps.max()
+    ps=ps/pmax
+
+    # MAKE A HISTOGRAM
+    
+    h,p=np.histogram(ps)
+
+    print p
+    print h
+
+    print "Probability percentiles:",np.percentile(ps,[10,50,90])
+
+    """
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.hist(ps)
+    fig.savefig("%s/probabilities.png"%rundir)
+    """
 
 def velocityDistributionFromMoments(el,verbose=0):
 

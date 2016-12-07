@@ -145,8 +145,8 @@ for n in xrange(Nphys):
     a=aes[n]
 
     qx=qxs[n]
-    #flux=theoFlux_DoubleTrigCos(qx,*fparam)
-    flux=1
+    flux=theoFlux_DoubleTrigCos(qx,*fparam)
+    #flux=1
 
     if verb:print "Test particle:",q,e,i
 
