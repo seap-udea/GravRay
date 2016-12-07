@@ -97,6 +97,18 @@ gravtitational ray tracing over many locations on Earth:
 
 The analysis may take up to an hour so you need to be patient.
 
+If you are not so patient but you have a cluster with PBS you may run:
+
+```
+   python parallelgravray.py 100 "02/15/2013 3:20:34 UTC" rad util/data/directions-r7.00e+00.data rad util/data/directions-r2.00e+01.data 0 velocities.dat "1963" 80000
+```
+
+And launch the job ``makeagravray.sh`` in PBS:
+
+```
+   qsub makeagravray.sh
+```
+
 Once the analysis is complete you can create the maps:
 
 ```

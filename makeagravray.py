@@ -10,7 +10,7 @@ import random
 #############################################################
 usage="""Make a GRT analysis of a whole geographic region.
 
-   python makeagravray.py <date> <deg|rad> <locations_file> <deg|rad> <directions_file> <qvel> <velocities_file> <sname> <altitude> [<runid>]
+   python makeagravray.py <date> <deg|rad> <locations_file> <deg|rad> <directions_file> <qvel> <velocities_file> <sname> <altitude> [<runid> <qrepeat>]
 
 Where:
 
@@ -36,6 +36,9 @@ Where:
                80,000 m)
 
    <runid>: Run identifier.
+
+   <qrepeat>: 1 if you want to compute orbits despite a ray file is
+              present.  By deault 0.
 
 Output:
 
@@ -80,6 +83,10 @@ except:
 #ALTITUDE
 try:runid=argv[iarg];iarg+=1
 except:runid=None
+
+#ALTITUDE
+try:qrepeat=int(argv[iarg]);iarg+=1
+except:qrepeat=0
 
 #############################################################
 #PREPARE
@@ -194,8 +201,8 @@ for i in xrange(npoints):
     print>>stderr,"*"*80,"\nCalculating elements for location %d/%d: lat = %e, lon = %e...\n"%(i+1,npoints,lat,lon),"*"*80
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
-    #if not path.isfile("%s/%s"%(outdir,outfile)):
-    if True:
+    if not path.isfile("%s/%s"%(outdir,outfile)) or qrepeat:
+        # if True:
         cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,qvel,outdir,outfile)
         print "Executing: %s"%cmd
         System(cmd)
@@ -205,6 +212,7 @@ for i in xrange(npoints):
     #==================================================
     print "Calculating probabilities for this site"
     cmd="python analyseatsource.py %s %s/%s"%(inifile,outdir,outfile)
+    print "Executing:",cmd
     system(cmd)
     timeIt(stream=stderr)
 

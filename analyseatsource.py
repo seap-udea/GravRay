@@ -20,7 +20,7 @@ Output:
    <file_elements>.prob: file containing the probability associated to
                          each ray.  Columns:
 
-      #1:q       2:e        3:i        4:ntarg  5:qclose  6:eclose  7:iclose  8:probability
+      #1:q       2:e        3:i        4:ntarg  5:qclose  6:eclose  7:iclose  8:probability 9:scaled prob. 10:theta apex 11:a 12:Omega 13:omega
       +7.935e-01 +3.545e-01 +1.039e+01    634   6.277e-01 2.484e-01 6.888e+00 +9.10427e-03
    
    where ntarg is the number of objects in the database with values of
@@ -109,18 +109,15 @@ verb=0
 adv=0
 
 #Maximum weighted euclidean distance in configuration space
-#dmax=0.1
+#dmax=0.1;normal=1000.0
 #NEW
-dmax=0.20
+dmax=0.20;normal=1.0
 
 #Weighting function normalization
 sigma=wNormalization(dmax)
 
 #Maximum value of the smoothing kernel
 wmax=sigma*wFunction(0,dmax)
-
-#Normalization of number density
-normal=1.0 #NEW 
 
 #Flux function parameters
 #Obtained with paper1-figures, apexVelocityDistribution()
@@ -159,7 +156,7 @@ for n in xrange(Nphys):
     distform=zappalaDistance(a,e,np.sin(i*DEG),Omega,omega)
     result=np.array(mysqlSelect("%s, Perihelion_dist, e, i, sini, a, Node, Peri"%distform,
                                 "NEOS",
-                                "where H<20 and %s<%e order by %s"%(distform,(2*dmax)**2,distform),"array"))
+                                "where H<20 and %s<%e order by %s desc"%(distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
 
@@ -174,7 +171,7 @@ for n in xrange(Nphys):
         #NEW
         d2,qt,et,it,sinit,at,Ot,ot=result[0,:]
 
-        for target in result:
+        for target in result[:-1]:
             d2,qt,et,it,sinit,at,Ot,ot=target
             d=d2**0.5
             p=sigma*wFunction(d,dmax)

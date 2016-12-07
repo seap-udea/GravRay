@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from gravray import *
+from os import path
 
 #############################################################
 #USAGE
@@ -93,6 +94,7 @@ runstr="%s-%s"%(tstring,md5str)
 
 #OUTPUT DIRECTORY
 outdir="data/grt-%s-%s"%(tstring,md5str)
+if path.isdir("%s"%outdir):print "System('rm -rf %s'%outdir)"
 System("mkdir -p %s"%outdir)
 f=open(outdir+"/.config","w")
 f.write("%s\n%s\n%s\n"%(md5str,tstring,makestr))
@@ -128,6 +130,11 @@ raw_input("Press enter to continue?..")
 #############################################################
 locdata=np.loadtxt(locfile)
 nlocs=locdata.shape[0]
+
+nxp=nlocs/(1.0*nprocs)
+nprocs=int(nlocs/(int(nxp)+0.5))
+print "Optimal number of processors: ",nprocs
+
 nperplow=int(np.floor(nlocs/(1.0*nprocs)))
 nperpup=int(np.ceil(nlocs/(1.0*nprocs)))
 nperp=nperplow
@@ -145,9 +152,9 @@ for i in xrange(nprocs):
     else:nperp=nperplow
 
 #############################################################
-#CREATE PBS SCRIPT
+#Create PBS SCRIPT
 #############################################################
-options="\"%s\" %s %s/locations-${PBS_ARRAYID}.dat %s %s/directions.dat %d %s/velocities.dat \"%s\" %e ${PBS_ARRAYID}"%(\
+options="\"%s\" %s %s/locations-${PBS_ARRAYID}.dat %s %s/directions.dat %d %s/velocities.dat \"%s\" %e ${PBS_ARRAYID} 1"%(\
     date,
     degloc,outdir,
     degdir,outdir,
