@@ -419,3 +419,26 @@ def theoFlux_DoubleTrigCos(q,f,a,b):
         fv=f*np.cos(np.pi/2-q*DEG)**b
     return fv
 theoFlux_DoubleTrigCos=np.vectorize(theoFlux_DoubleTrigCos)
+
+def grtID(date,dirfile,qvel,velfile,name):
+
+    # DATE ANALYSIS
+    parts=date.split(" ")
+    dparts=parts[0].split("/")
+    tparts=parts[1].split(":")
+    tstring="%04d%02d%02d%02d%02d%02d"%(int(dparts[2]),int(dparts[0]),int(dparts[1]),
+                                        int(tparts[0]),int(tparts[1]),int(tparts[2]))
+    out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
+    t=float(out.split("\n")[4])
+    
+    # MAKE STRING
+    dirmd5=System("md5sum %s |awk '{print $1}'"%dirfile)
+    velmd5=System("md5sum %s |awk '{print $1}'"%velfile)
+    makestr="qvel=%d & name=%s & dirmd5=%s & velmd5=%s"%(qvel,name,dirmd5,velmd5)
+    
+    md5str=MD5STR(makestr,len=6)
+    
+    # RUN STRING
+    runstr="%s-%s"%(tstring,md5str)
+
+    return runstr

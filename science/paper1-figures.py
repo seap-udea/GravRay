@@ -411,6 +411,113 @@ def mapProbability():
     system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
     #"""
 
+def probabilityFireballs():
+
+    #########################################
+    #PROPERTIES
+    #########################################
+    rundir="scratch/runs/"
+    dirfile="util/data/directions-r2.00e+01.data"
+    velfile="velocities.dat"
+    System("cp %s %s/velocities.dat"%(velfile,rundir))
+    System("cp %s %s/directions.dat"%(dirfile,rundir))
+ 
+    #########################################
+    #FIREBALL DATABASE
+    #########################################
+    data=np.loadtxt("util/data/fireballs.data")
+    lats=data[:,2]
+    lons=data[:,3]
+    datetime=data[:,0]
+    ets=data[:,1]
+    Es=data[:,10]
+    vimps=data[:,5]
+
+    cond=(lats!=123456789)*(lons!=123456789)
+
+    lats=lats[cond]
+    lons=lons[cond]
+    datetime=datetime[cond]
+    ets=ets[cond]
+    Es=Es[cond]
+    vimps=vimps[cond]
+    
+    nfire=len(lats)
+
+    print "%d fireballs to analyse"%nfire
+
+    nruns=64
+    ngroup=nfire/nruns
+
+    fs=[]
+    for j in xrange(nruns):
+        k=j+1
+        fs+=[open(rundir+"run-%d.sh"%k,"w")]
+        logfile="log/fireball-%d.log"%j
+        fs[j].write("""#PBS -S /bin/bash
+#PBS -j oe
+#PBS -o %s
+cd $PBS_O_WORKDIR
+"""%logfile)
+
+    #########################################
+    #PREPARE RUNS
+    #########################################
+    run=0
+    j=0
+    flog=open(rundir+"runs.log","w")
+    for i in xrange(nfire):
+        j+=1
+        if (i%ngroup)==0 and run<nruns:
+            run+=1
+            j=1
+
+        lat=lats[i]
+        lon=lons[i]
+        E=Es[i]
+        if E==123456789:E=-1
+        vimp=vimps[i]
+        if vimp==123456789:vimp=-1
+
+        date="%.0f"%datetime[i]
+        Y=date[:4];x=4
+        M=date[x:x+2];x+=2
+        D=date[x:x+2];x+=2
+        h=date[x:x+2];x+=2
+        m=date[x:x+2];x+=2
+        s=date[x:x+2];x+=2
+        datestr="%s/%s/%s %s:%s:%s UTC"%(M,D,Y,h,m,s)
+
+        fgeo=open(rundir+"locations-%d.dat"%i,"w")
+        fgeo.write("-1 -1 %.1f %.1f\n"%(lon,lat))
+        fgeo.close()
+
+        qvel=0
+        h=8e4
+        name="Lat. %.4f, Lon. %.4f, vimp = %.2f, E = %.2f, Date %s"%(lat,lon,vimp,E,datestr)
+        degloc="deg"
+        degdir="rad"
+        options="\"%s\" %s %s/locations-%d.dat %s %s/directions.dat %d %s/velocities.dat \"%s\" %e"%(\
+            datestr,
+            degloc,rundir,
+            i,
+            degdir,rundir,
+            qvel,rundir,
+            name,h
+            )
+        
+        fs[run-1].write("python makeagravray.py %s\n"%options)
+
+        #DETERMINE GRT DIR
+        grtid=grtID(datestr,"%s/directions.dat"%rundir,qvel,"%s/velocities.dat"%rundir,name)
+
+        odir=i
+        flog.write("%d %d %s\n"%(run,i,grtid))
+        #break
+
+    for f in fs:f.close()
+    flog.close()
+
 exit(0)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
