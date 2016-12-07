@@ -94,7 +94,7 @@ runstr="%s-%s"%(tstring,md5str)
 
 #OUTPUT DIRECTORY
 outdir="data/grt-%s-%s"%(tstring,md5str)
-if path.isdir("%s"%outdir):print "System('rm -rf %s'%outdir)"
+if path.isfile("%s/.config"%outdir):print "System('rm -rf %s'%outdir)"
 System("mkdir -p %s"%outdir)
 f=open(outdir+"/.config","w")
 f.write("%s\n%s\n%s\n"%(md5str,tstring,makestr))
