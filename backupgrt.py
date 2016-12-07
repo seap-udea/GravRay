@@ -22,7 +22,7 @@ iarg=1
 depth=argv[iarg];iarg+=1
 
 try:
-    int(depth)
+    depth=int(depth)
 except:
     print usage
     exit(1)
@@ -33,7 +33,7 @@ except:
 system("rm scratch/results*.*")
 
 outdirs=",".join(argv[2:])
-print "Packing directories %s..."%outdirs
+print "Packing directories %s at depth %d..."%(outdirs,depth)
 
 for outdir in argv[2:]:
     print "\tPacking %s..."%outdir

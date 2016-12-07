@@ -94,7 +94,7 @@ runstr="%s-%s"%(tstring,md5str)
 
 #OUTPUT DIRECTORY
 outdir="data/grt-%s-%s"%(tstring,md5str)
-if path.isfile("%s/.config"%outdir):print "System('rm -rf %s'%outdir)"
+if path.isfile("%s/.config"%outdir):System('rm -rf %s'%outdir)
 System("mkdir -p %s"%outdir)
 f=open(outdir+"/.config","w")
 f.write("%s\n%s\n%s\n"%(md5str,tstring,makestr))
@@ -147,6 +147,7 @@ for i in xrange(nprocs):
     ndata=len(locdata[iini:iend,:])
     print "\tPreparing %d locations for processor %d (i = %d - %d)..."%(ndata,nproc,iini,iend)
     np.savetxt("%s/locations-%d.dat"%(outdir,nproc),locdata[iini:iend,:])
+    
     iini+=nperp
     if (i%2)==0:nperp=nperpup
     else:nperp=nperplow
@@ -168,8 +169,10 @@ f.write("""#PBS -S /bin/bash
 #PBS -o log/%s.log
 #PBS -t 1-%d
 cd $PBS_O_WORKDIR
+echo "Running on host " $(hostname)
 python makeagravray.py %s
 """%(runstr,nprocs,options))
 f.close()
 
 System("cp makeagravray.sh %s"%outdir)
+System("rm log/%s.log-*"%runstr)

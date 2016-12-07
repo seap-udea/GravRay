@@ -81,8 +81,9 @@ except:
     exit(1)
 
 #ALTITUDE
-try:runid=argv[iarg];iarg+=1
-except:runid=None
+try:
+    runid="%03d"%int(argv[iarg]);iarg+=1
+except:runid=""
 
 #ALTITUDE
 try:qrepeat=int(argv[iarg]);iarg+=1
@@ -142,7 +143,7 @@ if not path.isfile("%s/observers-matrices.dat"%outdir):
 #############################################################
 #GENERATE INITIAL CONDITIONS
 #############################################################
-inifile="%s/initials.dat"%(outdir)
+inifile="%s/initials%s.dat"%(outdir,runid)
 f=open(inifile,"w")
 vels=np.loadtxt(velfile)
 datadir=np.loadtxt(dirfile)
@@ -187,8 +188,7 @@ print "Analysing %d locations..."%npoints
 
 ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-if runid is None:f=open(outdir+"/probability.prob","w")
-else:f=open(outdir+"/probability-%s.prob"%runid,"w")
+f=open(outdir+"/probability%s.prob"%runid,"w")
 
 for i in xrange(npoints):
 
@@ -202,10 +202,10 @@ for i in xrange(npoints):
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
     if not path.isfile("%s/%s"%(outdir,outfile)) or qrepeat:
-        # if True:
-        cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,qvel,outdir,outfile)
+        cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s > /dev/null"%(t,lat,lon,h,inifile,
+                                                                           qvel,outdir,outfile)
         print "Executing: %s"%cmd
-        System(cmd)
+        system(cmd)
 
     #==================================================
     #CALCULATE PROBABILITIES
