@@ -25,13 +25,16 @@ VESC=11.1
 #READ DATA
 #############################################################
 qload=0
+Hmax=20
 try:qload=int(argv[1])
+except:pass
+try:Hmax=int(argv[2])
 except:pass
 
 if qload==1:
     print "Getting elements for closest NEAs..."
     props="Perihelion_dist, Aphelion_dist, e, i"
-    condition="where Perihelion_dist<=1 and Perihelion_dist>=(1-e)/(1+e) and (e>0 and e<1)"
+    condition="where H<=%e and Perihelion_dist<=1 and Perihelion_dist>=(1-e)/(1+e) and (e>0 and e<1)"%Hmax
     listdict=mysqlSelect(props,
                          condition=condition)
     elements=listdict2matrix(listdict,keys=props.split(", "))
@@ -39,17 +42,8 @@ if qload==1:
 
 elif qload==2:
     print "Getting elements for all NEAs..."
-    props="Perihelion_dist, e, i, sin(i*PI()/180), a, Node, Peri"
-    condition="where NEO_flag and e>0 and e<1 and Perihelion_dist<=1"
-    listdict=mysqlSelect(props,
-                         condition=condition)
-    elements=listdict2matrix(listdict,keys=props.split(", "))
-    print len(elements)," objects discovered..."
-
-elif qload==3:
-    print "Getting elements for all NEAs..."
     props="Perihelion_dist, e, i, sini, a, Node, Peri"
-    condition="where H<20"
+    condition="where H<%e"%Hmax
     listdict=mysqlSelect(props,
                          table="NEOS",
                          condition=condition)
