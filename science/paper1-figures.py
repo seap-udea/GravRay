@@ -412,6 +412,9 @@ def mapProbability():
     #"""
 
 def probabilityFireballs():
+    """
+    Prepare runs to calculate the probability of Fireball in NASA database
+    """
 
     #########################################
     #PROPERTIES
@@ -517,6 +520,220 @@ cd $PBS_O_WORKDIR
 
     for f in fs:f.close()
     flog.close()
+
+def velocityDistributionFromMoments(el,verbose=0):
+
+    from scipy.optimize import curve_fit
+
+    ###################################################
+    #OBSERVED FIREBALLS
+    ###################################################
+    nbodies=el.shape[0]
+
+    #Atmospheric entry height
+    H=80.0 #km
+
+    #OBRITAL VELOCITY
+    vorb=np.sqrt(6.67E-11*2E30/1.5E11)/1E3
+    print "Earth orbital velocity (km/s): ",vorb
+
+    #ESCAPE VELOCITY
+    vesc2=(2*5.98E24/2E30)*(1.5e8/(6.471e3+H))
+    vesc=np.sqrt(vesc2)*vorb
+    print "Earth escape velocity (v^2,v,v[km/s]): ",vesc2,np.sqrt(vesc2),vesc
+
+    #SUN ESCAPE VELOCITY
+    vescsun=np.sqrt((2*6.67e-11*2E30)/1.5e11)/1e3
+    print "Sun escape velocity (v[km/s]): ",vescsun
+
+    #SAMPLE PROPERTIES
+    allindexes=np.arange(nbodies)
+    nsamples=10
+    nsubsample=int(nbodies*0.8)
+    nbins=40
+    
+    #AVERAGES
+    hmeanimps=np.zeros(nbins)
+    hmeaninfinis=np.zeros(nbins)
+    hmeaninfsrcs=np.zeros(nbins)
+
+    #OBJECTS
+    fo=open(FIGDIR+"objects.data","w")
+    fo.write("%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s%-25s\n"%(\
+                                         '#1:q','2:Q','3:a','4:p','5:e','6:i','7:O','8:w','9:wpf',
+                                         '10:xdot','11:ydot','12:zdot','13:va*vorb',
+                                         '14:xdotrel','15:ydotrel','16:zdotrel','17:vinf*vorb',
+                                         '18:vimp*vorb',
+                                         '19:xapex','20:yapex','21:zapex','22:tapex'))
+
+    #SIMULATE
+    np.random.seed(4)
+    for n in xrange(nsamples):
+
+        indexes=np.random.choice(allindexes,nsubsample)
+
+        velimps=[]
+        velinfinis=[]
+        velinfsrcs=[]
+
+        for i in indexes:
+
+            #ORBITAL ELEMENTS
+            q=el[i,0]
+            Q=el[i,1]
+            e=el[i,2]
+            i=el[i,3]
+
+            #DERIVED PROPERTIES
+            a=q/(1-e)
+            p=q*(1+e)
+            hop=1/np.sqrt(p);
+
+            #ASCENDING OR DESCENDING NODE
+            O=0
+            if np.random.rand()>0.5:O=180*DEG
+            
+            #PERIHELIA ARGUMENT
+            if O==0:
+                w=np.arccos((p-1)/e)
+                wpf=0.0*DEG
+            else:
+                w=np.arccos((1-p)/e)
+                wpf=180*DEG
+
+            if verbose:
+                print "Mock asteroid:"
+                print "\t","q,Q,a,p,e,i = ",q,Q,a,p,e,i
+                print "\t","Omega = ",O*RAD
+                print "\t","omega = ",w*RAD
+
+            #ASTEROID VELOCITY (VIS VIVA)
+            r=1.0
+            va2=(2/r-1/a)
+            va=np.sqrt(va2)
+
+            #VELOCITY COMPONENTS
+            xdot=-hop*e*np.cos(O)*np.sin(w)
+            ydot=+hop*np.cos(O)*np.cos(i*DEG)*(np.cos(wpf)+e*np.cos(w))
+            zdot=+hop*np.sin(i*DEG)*(np.cos(wpf)+e*np.cos(w))
+            vadot2=xdot**2+ydot**2+zdot**2
+            
+            if verbose:
+                print "3-D Velocity:"
+                print "\t","xdot,ydot,zdot = ",xdot,ydot,zdot
+                print "\t","Speed (vis viva) = ",va2
+                print "\t","Speed (vector) = ",vadot2
+
+            #RELATIVE VELOCITY: vrel = vearth - vast
+            xdotrel=xdot-0
+            ydotrel=ydot-1
+            zdotrel=zdot-0
+            vinf2=xdotrel**2+ydotrel**2+zdotrel**2
+            vinf=np.sqrt(vinf2)
+
+            if verbose:
+                print "3-D Relative velocity:"
+                print "\t","xdotrel,ydotrel,zdotrel = ",xdotrel,ydotrel,zdotrel
+                print "\t","Relative speed (velocity at infinite) = ",vinf
+
+            #IMPACT VELOCITY
+            vimp2=vinf2+vesc2
+            vimp=np.sqrt(vimp2)
+            
+            if verbose:
+                print "Impact velocity:"
+                print "\t","vimp^2 = ",vimp2
+                print "\t","vimp = ",vimp
+                print "\t","vimp [km/s] = ",vimp*vorb
+
+            #APEX DIRECTION
+            xapex=+xdotrel
+            yapex=+zdotrel
+            zapex=-ydotrel
+            tapex=np.arccos(zapex/vinf)
+            fapex=np.arctan2(yapex,xapex)
+
+            if verbose:
+                print "Apex direction:"
+                print "\t","xapex,yapex,zapex = ",xapex,yapex,zapex
+                print "\t","Theta apex = ",tapex*RAD
+
+            fo.write("%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e%-+25.17e\n"%(
+                                         q,Q,a,p,e,i,O,w,wpf,
+                                         xdot,ydot,zdot,va*vorb,
+                                         xdotrel,ydotrel,zdotrel,vinf*vorb,
+                                         vimp*vorb,
+                                         xapex,yapex,zapex,tapex*RAD))
+            if verbose:
+                raw_input()
+                
+            # STORE VALUES
+            velinfsrcs+=[va*vorb]
+            velinfinis+=[vinf*vorb]
+            velimps+=[vimp*vorb]
+
+        velimps=np.array(velimps)
+        velinfsrcs=np.array(velinfsrcs)
+        velinfinis=np.array(velinfinis)
+
+        h,ximp=np.histogram(velimps,nbins,(vesc,4*vesc))
+        hmeanimps+=h
+
+        h,xinfini=np.histogram(velinfinis,nbins,(0,4*vesc))
+        hmeaninfinis+=h
+
+        h,xinfsrc=np.histogram(velinfsrcs,nbins,(0.5*vorb,vescsun))
+        hmeaninfsrcs+=h
+
+    fo.close()
+    hmeanimps/=1.0*nsamples
+    hmeaninfinis/=1.0*nsamples
+    hmeaninfsrcs/=1.0*nsamples
+
+    ###################################################
+    #MAIN PLOT
+    ###################################################
+    fig=plt.figure()
+    ax=fig.gca()
+
+    # INITIAL DISTRIBUTION
+    bins,n=histOutline(hmeaninfinis/nsubsample,xinfini)
+    ax.plot(bins,n,label='Initial velocities $v_\infty$')
+
+    # IMPACT DISTRIBUTION
+    bins,n=histOutline(hmeanimps/nsubsample,ximp)
+    ax.plot(bins,n,label=r'Impact velocities $v_{\rm imp}$')
+    
+    #THEORETICAL FIT
+    def theoVimp(v,p,a,vso):
+        pv=p*(v-vesc)*np.exp(-(v-vesc)**a/vso)
+        return pv
+    vs=np.concatenate(([vesc],(ximp[:-1]+ximp[1:])/2))
+    pvs=np.concatenate(([0],hmeanimps/nsubsample))
+
+    p=0.1;a=0.1;vso=1.0
+    fit=curve_fit(theoVimp,vs,pvs,(p,a,vso))
+    param=fit[0]
+    print param[2]**(1/param[1])
+    print "Fit result:",param
+    ax.plot(vs,theoVimp(vs,*param),'k',label=r'Continuous fit:$\alpha=0.88,\;\Delta v=3.04$ km/s')
+
+    #MEAN VALUE
+    vmean=((ximp[:-1]+ximp[1:])/2*hmeanimps/nsubsample).sum()
+    ax.axvline(vmean,color='k',ls='dashed')
+    ax.text(vmean+1,0.005,r"$<v_{\rm imp}>=%.1f$ km/s"%vmean)
+    
+    #==============================
+    #DECORATION
+    #==============================
+    ax.axvspan(0,vesc,color='k',alpha=0.2)
+    ax.set_xlabel(r"$v$ (km/s)",fontsize=14)
+    ax.set_ylabel(r"Frequency",fontsize=14)
+    ax.legend(loc="upper right",fontsize=10,frameon=False)
+    ax.set_xlim((0,42))
+    ax.set_ylim((0,0.09))
+
+    fig.savefig(FIGDIR+"VelocityDistributionFromMoments.png")
 
 exit(0)
 
