@@ -218,7 +218,6 @@ def pointMap(el,fname,sname,title=None):
     #==================================================
     #DATA FOR SITE
     #==================================================    
-    grtdir=System("dirname fname")
     data=np.loadtxt(fname)
     qdata=data[:,9]
     edata=data[:,10]
