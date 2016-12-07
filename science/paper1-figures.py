@@ -200,6 +200,11 @@ def showAllDistrib(el):
 def pointMap(el,fname,sname,title=None):
 
     #==================================================
+    #DIRECTORY OF DATA
+    #==================================================    
+    grtdir=System("dirname %s"%fname)
+
+    #==================================================
     #DATA FOR NEAS
     #==================================================    
     i=0
@@ -344,7 +349,9 @@ def pointMap(el,fname,sname,title=None):
             transform=ax.transAxes,fontsize=20,ha='center',va='center')
     fig.tight_layout()
     #fig.savefig(FIGDIR+"pointMap-%s.png"%sname)
-    fig.savefig(grtdir+"/pointMap-%s.png"%sname)
+    pfile=grtdir+"/pointMap-%s.png"%sname
+    print "Plot file: ",pfile
+    fig.savefig(pfile)
 
 def allPoints(el):
     """

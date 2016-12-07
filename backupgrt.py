@@ -7,7 +7,11 @@ from os import system
 #############################################################
 usage="""Make a GRT analysis of a whole geographic region.
 
-   python backupgrt.py <grt_directory>
+   python backupgrt.py <depth> <grt_directory>
+
+Where:
+
+   <depth>: 1 for only probability data, 2 for all data.
 
 """
 
@@ -15,8 +19,10 @@ usage="""Make a GRT analysis of a whole geographic region.
 #INPUT
 #############################################################
 iarg=1
+depth=argv[iarg];iarg+=1
+
 try:
-    outdirs=argv[iarg];iarg+=1
+    int(depth)
 except:
     print usage
     exit(1)
@@ -26,11 +32,14 @@ except:
 #############################################################
 system("rm scratch/results*.*")
 
-outdirs=",".join(argv[1:])
+outdirs=",".join(argv[2:])
 print "Packing directories %s..."%outdirs
 
-for outdir in argv[1:]:
+for outdir in argv[2:]:
     print "\tPacking %s..."%outdir
-    system("tar rf scratch/results.tar %s/{probability.prob,initials.dat,observers-matrices.dat}"%(outdir))
+    if depth==1:
+        system("tar rf scratch/results.tar %s/{probability.prob,initials.dat,observers-matrices.dat}"%(outdir))
+    else:
+        system("tar rf scratch/results.tar %s/"%(outdir))
 
 system("gzip scratch/results.tar")
