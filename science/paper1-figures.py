@@ -710,7 +710,7 @@ def velocityDistributionFromMoments(el,verbose=0):
     param=fit[0]
     print param[2]**(1/param[1])
     print "Fit result:",param
-    ax.plot(vs,theoVimp(vs,*param),'k',label=r'Continuous fit:$\alpha=0.88,\;\Delta v=3.04$ km/s')
+    ax.plot(vs,theoVimp(vs,*param),'k',label=r'Continuous fit:$\alpha=%.2f,\;\Delta v=%.2f$ km/s'%(param[1],param[2]))
 
     #MEAN VALUE
     vmean=((ximp[:-1]+ximp[1:])/2*hmeanimps/nsubsample).sum()
