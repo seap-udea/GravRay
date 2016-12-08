@@ -613,7 +613,7 @@ def velocityMoments():
     vmax=vimps.max()
 
     # LINEAR SYSTEM
-    n=8 # Number of points to reconstruct spline
+    n=6 # Number of points to reconstruct spline
     print "Size of linear system:",4*n
     N=4*n-1 #Last element of matrix
 
