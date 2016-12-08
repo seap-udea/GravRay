@@ -642,39 +642,39 @@ def velocityMoments():
 
     e=0
     # Eq. (28)
-    M[e,0]=1;#e+=1
-    print "M[%d,:]"%e,M[e,:];e+=1;
-    M[e,1]=1;#e+=1
-    print "M[%d,:]"%e,M[e,:];e+=1;
-    M[e,2]=1;#e+=1
-    print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,0]=1;e+=1 #
+    # print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,1]=1;e+=1 #
+    # print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,2]=1;e+=1 #
+    # print "M[%d,:]"%e,M[e,:];e+=1;
 
     # Eq. (30)
-    M[e,N-3:]=[1,x[n]-x[n-1],(x[n]-x[n-1])**2,(x[n]-x[n-1])**3];#e+=1
-    print "M[%d,:]"%e,M[e,:];e+=1;
-    M[e,N-3:]=[0,1,2*(x[n]-x[n-1]),3*(x[n]-x[n-1])**2];#e+=1
-    print "M[%d,:]"%e,M[e,:];e+=1;
-    M[e,N-3:]=[0,0,2,6*(x[n]-x[n-1])];#e+=1
-    print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,N-3:]=[1,x[n]-x[n-1],(x[n]-x[n-1])**2,(x[n]-x[n-1])**3];e+=1 #
+    # print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,N-3:]=[0,1,2*(x[n]-x[n-1]),3*(x[n]-x[n-1])**2];e+=1 #
+    # print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,N-3:]=[0,0,2,6*(x[n]-x[n-1])];e+=1 #
+    # print "M[%d,:]"%e,M[e,:];e+=1;
     
     # Eq. (31)
     for i in xrange(n-1):
-        M[e,4*i:4*i+5]=[1,(x[i+1]-x[i]),(x[i+1]-x[i])**2,(x[i+1]-x[i])**3,-1];#e+=1
-        print "M[%d,:]"%e,M[e,:];e+=1;
+        M[e,4*i:4*i+5]=[1,(x[i+1]-x[i]),(x[i+1]-x[i])**2,(x[i+1]-x[i])**3,-1];e+=1 #
+        # print "M[%d,:]"%e,M[e,:];e+=1;
 
     # Eq. (32)
     for i in xrange(n-1):
         M[e,4*i+1:4*i+1+3]=[1,2*(x[i+1]-x[i]),3*(x[i+1]-x[i])**2];
         M[e,4*(i+1)+1:4*(i+1)+1+1]=[-1]
-        #e+=1
-        print "M[%d,:]"%e,M[e,:];e+=1;
+        e+=1 #
+        # print "M[%d,:]"%e,M[e,:];e+=1;
 
     # Eq. (33)
     for i in xrange(n-1):
         M[e,4*i+2:4*i+2+2]=[2*(x[i+1]-x[i]),6*(x[i+1]-x[i])]
         M[e,4*(i+1)+2:4*(i+1)+2+1]=[-1]
-        #e+=1
-        print "M[%d,:]"%e,M[e,:];e+=1;
+        e+=1 #
+        # print "M[%d,:]"%e,M[e,:];e+=1;
         
     # MOMENTS
     for k in xrange(L):
@@ -690,11 +690,12 @@ def velocityMoments():
             M[e,m]=(I3-2*x[i]*I2+x[i]**2*I1);m+=1
             M[e,m]=(I4-3*x[i]*I3+3*x[i]**2*I2-x[i]**3*I1);m+=1
         b[e]=mu[k]
-        print "M[%d,:]"%e,M[e,:];e+=1;
-        #e+=1
+        # print "M[%d,:]"%e,M[e,:];e+=1;
+        e+=1 #
 
     # SOLVE
     s=np.linalg.solve(M,b)
+    print "Coefficients:",s
 
     # SPLINE FUNCTION
     vs=np.linspace(vmin,vmax,100)
