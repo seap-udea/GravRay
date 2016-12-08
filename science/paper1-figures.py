@@ -699,10 +699,12 @@ def velocityMoments():
 
     # SPLINE FUNCTION
     from scipy.interpolate import interp1d as interp
+    from scipy.integrate import quad as integrate
 
     vs=np.linspace(vmin,vmax,100)
     ps=np.array([fspline(v,x,s) for v in vs])
     pinterp=interp(vs,ps,kind='slinear')
+    print integrate(pinterp,vmin,vmax)
 
     fig=plt.figure()
     ax=fig.gca()
