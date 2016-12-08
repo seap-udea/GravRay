@@ -704,7 +704,16 @@ def velocityMoments():
     vs=np.linspace(vmin,vmax,100)
     ps=np.array([fspline(v,x,s) for v in vs])
     pinterp=interp(vs,ps,kind='slinear')
-    print integrate(pinterp,vmin,vmax)
+
+    func=lambda x:pinterp(x)
+    i,e=integrate(func,vmin,vmax)
+    print i
+    func=lambda x:x*pinterp(x)
+    i,e=integrate(func,vmin,vmax)
+    print i
+    func=lambda x:x**2*pinterp(x)
+    i,e=integrate(func,vmin,vmax)
+    print i
 
     fig=plt.figure()
     ax=fig.gca()
