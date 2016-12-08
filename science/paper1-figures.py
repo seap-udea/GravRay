@@ -645,7 +645,9 @@ def velocityMoments():
     # Eq. (28)
     M[e,0]=1;e+=1 #
     # print "M[%d,:]"%e,M[e,:];e+=1;
-    M[e,1]=1;e+=1 #
+    #M[e,1]=1;e+=1 #
+    # print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,2]=1;e+=1 #
     # print "M[%d,:]"%e,M[e,:];e+=1;
     M[e,2]=1;e+=1 #
     # print "M[%d,:]"%e,M[e,:];e+=1;
