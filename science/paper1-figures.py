@@ -426,7 +426,7 @@ def mapProbability():
     system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
     #"""
 
-def probabilityFireballs():
+def fireballsProbabilityScripts():
     """
     Prepare runs to calculate the probability of Fireball in NASA database
     """
@@ -543,17 +543,14 @@ def fireballProbabilityHistogram():
     Get the fireball probability histogram
     """
     # PROPERTIES
-    # rundir="scratch/runs/run1" # No flux
-    # rundir="scratch/runs/run2" # Flux
-    # rundir="scratch/runs/run3" # Flux all NEAs
-    rundir="scratch/runs/run4/" # Flux correction & all NEAS & velocity distribution
+    rundir="scratch/runs/run1" # Flux correction & unbiased 
 
     # PROBABILITY DISTRIBUTION
     print "Probability distribution for %s:"%rundir
 
     # GET ALL PROBABILITIES
     ffile="%s/fireballs.prob"%rundir
-    if not path.isfile(ffile):
+    if not path.isfile(ffile) or True:
         f=open("%s/runs.log"%rundir)
         fp=open(ffile,"w")
         for line in f:
@@ -971,6 +968,23 @@ def velocityDistributionEmpirical(el,verbose=0):
     ax.set_ylim((0,0.09))
 
     fig.savefig(FIGDIR+"VelocityDistributionFromMoments.png")
+
+def fluxFunction():
+
+    qxs=np.linspace(0,180,1000)
+
+    fparam=(0.9721768,6.84870896,2.40674371)
+    flux_fit=theoFlux_DoubleTrigCos(qxs,*fparam)
+
+    fparam=(1.0,10,10)
+    flux_theo=theoFlux_DoubleTrigCos(qxs,*fparam)
+
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(qxs,flux_fit,label='Fit')
+    ax.plot(qxs,flux_theo,label='Theoretical')
+    ax.legend()
+    fig.savefig(FIGDIR+"fluxFunction.png")
 
 exit(0)
 

@@ -122,7 +122,8 @@ wmax=sigma*wFunction(0,dmax)
 #Flux function parameters
 #Obtained with paper1-figures, apexVelocityDistribution()
 #fparam=(0.9721768,6.84870896,2.40674371)
-fparam=(1.0,7,7)
+#fparam=(1.0,7,7)
+fparam=(1.0,20,20)
 Hmax=20
 
 #############################################################
