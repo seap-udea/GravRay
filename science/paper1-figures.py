@@ -698,9 +698,11 @@ def velocityMoments():
     print "Coefficients:",s
 
     # SPLINE FUNCTION
+    from scipy.interpolate import interp1d as interp
+
     vs=np.linspace(vmin,vmax,100)
     ps=np.array([fspline(v,x,s) for v in vs])
-    print "Moments reconstructed:",ps.mean(),(ps**2).mean(),(ps**3).mean()
+    pinterp=interp(vs,ps,kind='slinear')
 
     fig=plt.figure()
     ax=fig.gca()
