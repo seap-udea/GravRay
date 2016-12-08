@@ -699,7 +699,9 @@ def velocityMoments():
 
     # SPLINE FUNCTION
     vs=np.linspace(vmin,vmax,100)
-    ps=[fspline(v,x,s) for v in vs]
+    ps=np.array([fspline(v,x,s) for v in vs])
+
+    print "Moments reconstructed:",ps.mean(),(ps**2).mean(),(ps**3).mean()
 
     fig=plt.figure()
     ax=fig.gca()
