@@ -613,7 +613,8 @@ def velocityMoments():
     vmax=vimps.max()
 
     # LINEAR SYSTEM
-    n=6 # Number of points to reconstruct spline
+    n=10 # Number of points to reconstruct spline
+
     print "Size of linear system:",4*n
     N=4*n-1 #Last element of matrix
 
@@ -695,12 +696,14 @@ def velocityMoments():
 
     # SOLVE
     s=np.linalg.solve(M,b)
-    print "Coefficients:",s
+    # print "Coefficients:",s
 
     # SPLINE FUNCTION
     from scipy.interpolate import interp1d as interp
     from scipy.integrate import quad as integrate
 
+    """
+    # TEST MOMENTS
     vs=np.linspace(vmin,vmax,100)
     ps=np.array([fspline(v,x,s) for v in vs])
     pinterp=interp(vs,ps,kind='slinear')
@@ -714,6 +717,7 @@ def velocityMoments():
     func=lambda x:x**2*pinterp(x)
     i,e=integrate(func,vmin,vmax)
     print i
+    """
 
     fig=plt.figure()
     ax=fig.gca()
