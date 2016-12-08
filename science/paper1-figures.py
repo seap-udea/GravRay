@@ -626,7 +626,7 @@ def velocityMoments():
     mu=np.zeros((L,1))
     for i in xrange(len(vimps)):
         q=qdata[i]
-        vimp=vimps[i]
+        vimp=vimps[i]/100.0
         prob=pprob[i]
         for k in xrange(L):
             mu[k]+=vimp**k*prob
