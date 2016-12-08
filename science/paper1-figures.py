@@ -466,8 +466,14 @@ def fireballsProbabilityScripts():
     nfire=len(lats)
 
     print "%d fireballs to analyse"%nfire
-    nruns=64
-    ngroup=nfire/nruns
+    nruns=128
+
+    ngroup=nfire/(1.0*nruns)
+    nruns=int(nfire/(int(ngroup)+0.5))
+
+    ngrouplow=int(np.floor(nfire/(1.0*nruns)))
+    ngroupup=int(np.ceil(nfire/(1.0*nruns)))
+    ngroup=ngrouplow
 
     fs=[]
     for j in xrange(nruns):
@@ -488,9 +494,14 @@ cd $PBS_O_WORKDIR
     flog=open(rundir+"runs.log","w")
     for i in xrange(nfire):
         j+=1
-        if (i%ngroup)==0 and run<nruns:
+        if (j%ngroup)==0 and run<nruns:
+            print "Total for run %d = %d"%(run,j)
             run+=1
+            if (run%2)==0:ngroup=ngroupup
+            else:ngroup=ngrouplow
             j=1
+
+        #print "Fireball %d run %d..."%(i,run)
 
         lat=lats[i]
         lon=lons[i]
@@ -508,8 +519,14 @@ cd $PBS_O_WORKDIR
         s=date[x:x+2];x+=2
         datestr="%s/%s/%s %s:%s:%s UTC"%(M,D,Y,h,m,s)
 
+        # DETERMINE LOCATION OF APEX AND ANTAPEX FOR FIREBALL DATE
+        out=System("./whereisapex.exe '%s' > /dev/null"%datestr)
+        coords=out2dict(out)
+
         fgeo=open(rundir+"locations-%d.dat"%i,"w")
         fgeo.write("-1 -1 %.1f %.1f\n"%(lon,lat))
+        fgeo.write("-1 -1 %.1f %.1f\n"%(coords["APEX(2)"][1],coords["APEX(2)"][0]))
+        fgeo.write("-1 -1 %.1f %.1f\n"%(coords["ANTAPEX(2)"][1],coords["ANTAPEX(2)"][0]))
         fgeo.close()
 
         qvel=0
@@ -533,8 +550,8 @@ cd $PBS_O_WORKDIR
 
         odir=i
         flog.write("%d %d %s\n"%(run,i,grtid))
-        #break
 
+    print "Total for run %d = %d"%(run,j)
     for f in fs:f.close()
     flog.close()
 
@@ -2299,7 +2316,7 @@ def distributionFireballs(qload=0):
         projs=[]
         for i in xrange(len(lats)):
             #if i<390:continue
-            cmd="./whereisapex.exe ET %.9e %.6e %.6e > /dev/null"%(ets[i],lats[i],lons[i])
+            cmd="./wherewrtapex.exe ET %.9e %.6e %.6e > /dev/null"%(ets[i],lats[i],lons[i])
             out=System(cmd)
             latapex=float(out.split("\n")[6])
             lonapex=float(out.split("\n")[7])
@@ -2437,21 +2454,21 @@ def distributionFireballs(qload=0):
 def apexAngleChelyabinskTunguska():
 
     #Tunguska
-    out=System("./whereisapex.exe '06/30/1908 00:14:00 UTC' 60.917 101.95")
+    out=System("./wherewrtapex.exe '06/30/1908 00:14:00 UTC' 60.917 101.95")
     cecl=float(out.split("\n")[2])
     capx=float(out.split("\n")[3])
     qapex=np.arccos(capx)*RAD
     print "Direction with respect to apex Tunguska event:",qapex
 
     #Chelyabinsk
-    out=System("./whereisapex.exe '02/15/2013 03:02:34' 54.4 63.5")
+    out=System("./wherewrtapex.exe '02/15/2013 03:02:34' 54.4 63.5")
     cecl=float(out.split("\n")[2])
     capx=float(out.split("\n")[3])
     qapex=np.arccos(capx)*RAD
     print "Direction with respect to apex Chelyabinsk event:",qapex
 
     #1963 impact
-    out=System("./whereisapex.exe '08/03/1963 16:45:00 UTC' -51.0 +24.0")
+    out=System("./wherewrtapex.exe '08/03/1963 16:45:00 UTC' -51.0 +24.0")
     cecl=float(out.split("\n")[2])
     capx=float(out.split("\n")[3])
     qapex=np.arccos(capx)*RAD
@@ -2812,7 +2829,7 @@ def visualizeProcess(el):
         #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         #2-Apex direction
         #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-        cmd="./whereisapex.exe '%s' %f %f 90.0 0.0 20.0 > /dev/null"%(date,lat,lon)
+        cmd="./wherewrtapex.exe '%s' %f %f 90.0 0.0 20.0 > /dev/null"%(date,lat,lon)
         print "Executing:",cmd
         out=out2dict(System(cmd))
         print "Geographic Lat. apex = ",90-float(out["LATAPEX"])
