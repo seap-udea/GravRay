@@ -699,13 +699,12 @@ def velocityMoments():
     # print "Coefficients:",s
 
     # SPLINE FUNCTION
-    from scipy.interpolate import interp1d as interp
-    from scipy.integrate import quad as integrate
-
-    """
-    # TEST MOMENTS
     vs=np.linspace(vmin,vmax,100)
     ps=np.array([fspline(v,x,s) for v in vs])
+    """
+    # TEST MOMENTS
+    from scipy.interpolate import interp1d as interp
+    from scipy.integrate import quad as integrate
     pinterp=interp(vs,ps,kind='slinear')
 
     func=lambda x:pinterp(x)
@@ -721,7 +720,7 @@ def velocityMoments():
 
     fig=plt.figure()
     ax=fig.gca()
-    ax.plot(vs,pinterp(vs))
+    ax.plot(vs,ps)
     fig.savefig(FIGDIR+"vreconstructed.png")
 
 def velocityDistributionFromMoments(el,verbose=0):
