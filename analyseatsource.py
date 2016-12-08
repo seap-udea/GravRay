@@ -121,7 +121,9 @@ wmax=sigma*wFunction(0,dmax)
 
 #Flux function parameters
 #Obtained with paper1-figures, apexVelocityDistribution()
-fparam=(0.9721768,6.84870896,2.40674371)
+#fparam=(0.9721768,6.84870896,2.40674371)
+fparam=(1.0,7,7)
+Hmax=20
 
 #############################################################
 #COMPUTE DENSITY
@@ -156,7 +158,7 @@ for n in xrange(Nphys):
     distform=zappalaDistance(a,e,np.sin(i*DEG),Omega,omega)
     result=np.array(mysqlSelect("%s, Perihelion_dist, e, i, sini, a, Node, Peri"%distform,
                                 "NEOS",
-                                "where H<20 and %s<%e order by %s desc"%(distform,(2*dmax)**2,distform),"array"))
+                                "where H<%f and %s<%e order by %s desc"%(Hmax,distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
 

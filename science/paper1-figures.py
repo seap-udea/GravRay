@@ -434,10 +434,9 @@ def probabilityFireballs():
     #########################################
     #PROPERTIES
     #########################################
-    # rundir="scratch/runs/run1/" # No flux correction
-    # rundir="scratch/runs/run2/" # Flux correction
-    # rundir="scratch/runs/run3/" # Flux correction & all NEAS
-    rundir="scratch/runs/run4/" # Flux correction & all NEAS & velocity distribution
+    rundir="scratch/runs/run1/" # Flux correction & unbiased distribution
+    if not path.isdir(rundir):
+        system("mkdir -p %s"%rundir)
 
     dirfile="util/data/directions-r2.00e+01.data"
     velfile="velocities.dat"
@@ -467,7 +466,6 @@ def probabilityFireballs():
     nfire=len(lats)
 
     print "%d fireballs to analyse"%nfire
-
     nruns=64
     ngroup=nfire/nruns
 
@@ -475,7 +473,7 @@ def probabilityFireballs():
     for j in xrange(nruns):
         k=j+1
         fs+=[open(rundir+"run-%d.sh"%k,"w")]
-        logfile="log/fireball-%d.log"%j
+        logfile="log/fireball-%d.log"%k
         fs[j].write("""#PBS -S /bin/bash
 #PBS -j oe
 #PBS -o %s
