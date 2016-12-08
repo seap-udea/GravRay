@@ -590,11 +590,123 @@ def fireballProbabilityHistogram():
     fig.savefig("%s/probabilities.png"%rundir)
     """
 
+def fspline(x,xs,s):
+    if x==xs[0] or x==xs[-1]:return 0
+    i=np.arange(len(xs))[(x-xs)>=0][-1]
+    f=s[4*i]+s[4*i+1]*(x-xs[i])+s[4*i+2]*(x-xs[i])**2+s[4*i+3]*(x-xs[i])**3
+    return f
+
 def velocityMoments():
     
     grtid="E317B2"
     fname='data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid
     data=np.loadtxt(fname)
+    dataprob=np.loadtxt(fname+".prob")
+    pprob=dataprob[:,7]
+
+    # GET ONLY THE ACCEPTED RAYS
+    qdata=data[:,9];sinidata=np.sin(data[:,11]*DEG);edata=data[:,10];adata=qdata/(1-edata)
+    cond=(edata<1)*(adata<40)*(sinidata>0)
+    qdata=qdata[cond]
+    vimps=data[cond,2]
+    vmin=vimps.min()
+    vmax=vimps.max()
+
+    # GET IMPACT VELOCITIES
+    ptot=0
+    vmean=0
+    vmean2=0
+    vmean3=0
+    for i in xrange(len(vimps)):
+        q=qdata[i]
+        vimp=vimps[i]
+        prob=pprob[i]
+        vmean+=vimp*prob
+        vmean2+=vimp**2*prob
+        vmean3+=vimp**3*prob
+        ptot+=prob
+
+    mu=[1.0,vmean/ptot,vmean2/ptot,vmean3/ptot]
+    print "Velocity moments:",mu
+
+    # LINEAR SYSTEM
+    n=4 # Number of points to reconstruct spline
+    print "Size of linear system:",4*n
+    N=4*n-1 #Last element of matrix
+
+    L=n-3 # Number of required moments
+    print "Number of required moments:",L
+
+    x=np.linspace(vmin,vmax,n+1) # Sampling points
+    print "Sampling points:",x
+
+    M=np.zeros((4*n,4*n))
+    b=np.zeros((4*n,1))
+
+    e=0
+    # Eq. (28)
+    M[e,0]=1;#e+=1
+    print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,1]=1;#e+=1
+    print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,2]=1;#e+=1
+    print "M[%d,:]"%e,M[e,:];e+=1;
+
+    # Eq. (30)
+    M[e,N-3:]=[1,x[n]-x[n-1],(x[n]-x[n-1])**2,(x[n]-x[n-1])**3];#e+=1
+    print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,N-3:]=[0,1,2*(x[n]-x[n-1]),3*(x[n]-x[n-1])**2];#e+=1
+    print "M[%d,:]"%e,M[e,:];e+=1;
+    M[e,N-3:]=[0,0,2,6*(x[n]-x[n-1])];#e+=1
+    print "M[%d,:]"%e,M[e,:];e+=1;
+    
+    # Eq. (31)
+    for i in xrange(n-1):
+        M[e,4*i:4*i+5]=[1,(x[i+1]-x[i]),(x[i+1]-x[i])**2,(x[i+1]-x[i])**3,-1];#e+=1
+        print "M[%d,:]"%e,M[e,:];e+=1;
+
+    # Eq. (32)
+    for i in xrange(n-1):
+        M[e,4*i+1:4*i+1+3]=[1,2*(x[i+1]-x[i]),3*(x[i+1]-x[i])**2];
+        M[e,4*(i+1)+1:4*(i+1)+1+1]=[-1]
+        #e+=1
+        print "M[%d,:]"%e,M[e,:];e+=1;
+
+    # Eq. (33)
+    for i in xrange(n-1):
+        M[e,4*i+2:4*i+2+2]=[2*(x[i+1]-x[i]),6*(x[i+1]-x[i])]
+        M[e,4*(i+1)+2:4*(i+1)+2+1]=[-1]
+        #e+=1
+        print "M[%d,:]"%e,M[e,:];e+=1;
+        
+    # MOMENTS
+    for k in xrange(L):
+        m=0
+        for i in xrange(n):
+            I1=(x[i+1]**(k+1)-x[i]**(k+1))/(k+1)
+            I2=(x[i+1]**(k+2)-x[i]**(k+2))/(k+2)
+            I3=(x[i+1]**(k+3)-x[i]**(k+3))/(k+3)
+            I4=(x[i+1]**(k+4)-x[i]**(k+4))/(k+4)
+            print i,I1,I2,I3,I4
+            M[e,m]=I1;m+=1
+            M[e,m]=(I2-x[i]*I1);m+=1
+            M[e,m]=(I3-2*x[i]*I2+x[i]**2*I1);m+=1
+            M[e,m]=(I4-3*x[i]*I3+3*x[i]**2*I2-x[i]**3*I1);m+=1
+        b[e]=mu[k]
+        print "M[%d,:]"%e,M[e,:];e+=1;
+        #e+=1
+
+    # SOLVE
+    s=np.linalg.solve(M,b)
+
+    # SPLINE FUNCTION
+    vs=np.linspace(vmin,vmax,100)
+    ps=[fspline(v,x,s) for v in vs]
+
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(vs,ps)
+    ax.savefig(FIGDIR+"vreconstructed.png")
 
 def velocityDistributionFromMoments(el,verbose=0):
 
