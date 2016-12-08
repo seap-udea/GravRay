@@ -706,7 +706,7 @@ def velocityMoments():
     fig=plt.figure()
     ax=fig.gca()
     ax.plot(vs,ps)
-    ax.savefig(FIGDIR+"vreconstructed.png")
+    fig.savefig(FIGDIR+"vreconstructed.png")
 
 def velocityDistributionFromMoments(el,verbose=0):
 
