@@ -684,7 +684,7 @@ def velocityMoments():
             I2=(x[i+1]**(k+2)-x[i]**(k+2))/(k+2)
             I3=(x[i+1]**(k+3)-x[i]**(k+3))/(k+3)
             I4=(x[i+1]**(k+4)-x[i]**(k+4))/(k+4)
-            print i,I1,I2,I3,I4
+            # print i,I1,I2,I3,I4
             M[e,m]=I1;m+=1
             M[e,m]=(I2-x[i]*I1);m+=1
             M[e,m]=(I3-2*x[i]*I2+x[i]**2*I1);m+=1
