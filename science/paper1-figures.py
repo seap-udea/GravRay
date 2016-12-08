@@ -608,7 +608,7 @@ def velocityMoments():
     qdata=data[:,9];sinidata=np.sin(data[:,11]*DEG);edata=data[:,10];adata=qdata/(1-edata)
     cond=(edata<1)*(adata<40)*(sinidata>0)
     qdata=qdata[cond]
-    vimps=data[cond,2]
+    vimps=data[cond,2]/100.0
     vmin=vimps.min()
     vmax=vimps.max()
 
@@ -626,7 +626,7 @@ def velocityMoments():
     mu=np.zeros((L,1))
     for i in xrange(len(vimps)):
         q=qdata[i]
-        vimp=vimps[i]/100.0
+        vimp=vimps[i]
         prob=pprob[i]
         for k in xrange(L):
             mu[k]+=vimp**k*prob
