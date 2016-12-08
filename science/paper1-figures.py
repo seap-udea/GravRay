@@ -22,6 +22,43 @@ FIGDIR="science/paper1-figures/"
 VESC=11.1
 
 #############################################################
+#USEFUL FUNCTIONS
+#############################################################
+def Ncum(E):
+    """
+    Number of events per year with energy E (kton) or larger
+    """
+    #Brown et al. (2013)
+    a=3.31
+    b=-0.68
+    N=a*E**b
+    return N
+
+def pExponential(t,lamb):
+    """
+    Probability density that time between two random events happen be
+    t given that the rate of events be lamb
+    """
+    p=lamb*np.exp(-lamb*t)
+    return p
+
+def cumpExponential(T,lamb):
+    """
+    Probability that the time between two events be less than t given a
+    rate of events lamb
+    """
+    P=1-np.exp(-lamb*T)
+    return P
+
+def numpExponential(N,T,lamb):
+    """
+    Probability that N events (with rate lamb) happen in time T
+    """
+    from scipy.misc import factorial
+    P=(lamb*T)**N*np.exp(-lamb*T)/factorial(N)
+    return P
+
+#############################################################
 #READ DATA
 #############################################################
 qload=0
@@ -1014,6 +1051,62 @@ def fluxFunction():
     ax.legend()
     fig.savefig(FIGDIR+"fluxFunction.png")
 
+def distanceTunguskaChelyabisnk():
+    #Tunguska coordinates
+    pT=s2d(101,57)*DEG,s2d(60,55)*DEG
+
+    #Chelyabinsk
+    pC=55.150*DEG,64.410*DEG
+
+    #Angular distance
+    qdist=arcDistance(pT,pC)
+    print "Angular distance: %.2f deg (%.5f rad)"%(qdist*RAD,qdist)
+
+    #Linear distance
+    dist=REARTH*qdist
+    print "Linear distance: %.2f km"%dist
+
+    #Solid angle
+    sangle=2*PI*(1-np.cos(qdist))
+    print "Solid angle: %.5f pi"%(sangle/PI)
+
+    #Fraction of the sphere
+    fsphere=sangle/(4*PI)
+    print "Fraction of the sphere: %.6f"%fsphere
+
+    lamb2013=Ncum(0.1)
+    Dt=1/lamb2013
+    print "Rate larger than 1 m (Brown+2013):",lamb2013
+    print "Average time between impactes:",Dt
+
+    #Rate of impacts
+    lamb2013=Ncum(500)
+    Dt=1/lamb2013
+    print "Rate larger than Chelyabinsk (Brown+2013):",lamb2013
+    print "Average time between impactes:",Dt
+    
+    #Rate according Harris (2012)
+    lamb2012=7.3e-3
+    print "Rate larger than Chelyabinsk (Harris+2013):",lamb2012
+
+    #Probability that time between impacts be less than 20 years
+    P=cumpExponential(20.0,lamb2012)
+    print "Probability < 20 years (Harris+2012):",P
+    P=cumpExponential(20.0,lamb2013)
+    print "Probability < 20 years (Brown+2013):",P
+
+    #Probability that time between impacts be 20 years
+    p=pExponential(20.0,lamb2012)
+    print "Probability = 20 years:",p
+
+    #Probability that 1 event happen in 20 years
+    p1=numpExponential(1,20,lamb2012)
+    print "Probability than 1 event happen in 20 years (Harris+2012):",p1
+
+    #Probability that 1 to 30 events happen in time T
+    Ns=np.arange(30)
+    print Ns
+
 exit(0)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1117,99 +1210,10 @@ elif qload==3:
 #############################################################
 #FUNCTIONS
 #############################################################
-def Ncum(E):
-    """
-    Number of events per year with energy E (kton) or larger
-    """
-    #Brown et al. (2013)
-    a=3.31
-    b=-0.68
-    N=a*E**b
-    return N
-
-def pExponential(t,lamb):
-    """
-    Probability density that time between two random events happen be
-    t given that the rate of events be lamb
-    """
-    p=lamb*np.exp(-lamb*t)
-    return p
-
-def cumpExponential(T,lamb):
-    """
-    Probability that the time between two events be less than t given a
-    rate of events lamb
-    """
-    P=1-np.exp(-lamb*T)
-    return P
-    
-
-def numpExponential(N,T,lamb):
-    """
-    Probability that N events (with rate lamb) happen in time T
-    """
-    from scipy.misc import factorial
-    P=(lamb*T)**N*np.exp(-lamb*T)/factorial(N)
-    return P
 
 #############################################################
 #ROUTINES
 #############################################################
-def distanceTunguskaChelyabisnk():
-    #Tunguska coordinates
-    pT=s2d(101,57)*DEG,s2d(60,55)*DEG
-
-    #Chelyabinsk
-    pC=55.150*DEG,64.410*DEG
-
-    #Angular distance
-    qdist=arcDistance(pT,pC)
-    print "Angular distance: %.2f deg (%.5f rad)"%(qdist*RAD,qdist)
-
-    #Linear distance
-    dist=REARTH*qdist
-    print "Linear distance: %.2f km"%dist
-
-    #Solid angle
-    sangle=2*PI*(1-np.cos(qdist))
-    print "Solid angle: %.5f pi"%(sangle/PI)
-
-    #Fraction of the sphere
-    fsphere=sangle/(4*PI)
-    print "Fraction of the sphere: %.6f"%fsphere
-
-    lamb2013=Ncum(0.1)
-    Dt=1/lamb2013
-    print "Rate larger than 1 m (Brown+2013):",lamb2013
-    print "Average time between impactes:",Dt
-
-    #Rate of impacts
-    lamb2013=Ncum(500)
-    Dt=1/lamb2013
-    print "Rate larger than Chelyabinsk (Brown+2013):",lamb2013
-    print "Average time between impactes:",Dt
-    
-    #Rate according Harris (2012)
-    lamb2012=7.3e-3
-    print "Rate larger than Chelyabinsk (Harris+2013):",lamb2012
-
-    #Probability that time between impacts be less than 20 years
-    P=cumpExponential(20.0,lamb2012)
-    print "Probability < 20 years (Harris+2012):",P
-    P=cumpExponential(20.0,lamb2013)
-    print "Probability < 20 years (Brown+2013):",P
-
-    #Probability that time between impacts be 20 years
-    p=pExponential(20.0,lamb2012)
-    print "Probability = 20 years:",p
-
-    #Probability that 1 event happen in 20 years
-    p1=numpExponential(1,20,lamb2012)
-    print "Probability than 1 event happen in 20 years (Harris+2012):",p1
-
-    #Probability that 1 to 30 events happen in time T
-    Ns=np.arange(30)
-    print Ns
 
 def plotGeographicPositions():
     data=np.loadtxt("directions-r5.00e+00.dat")
