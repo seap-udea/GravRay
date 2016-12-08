@@ -466,14 +466,23 @@ def fireballsProbabilityScripts():
     nfire=len(lats)
 
     print "%d fireballs to analyse"%nfire
-    nruns=128
+    nruns=100
 
     ngroup=nfire/(1.0*nruns)
+    
+    #print "By default:",ngroup
+
     nruns=int(nfire/(int(ngroup)+0.5))
+
+    print "Modified number of runs:",nruns
+    
+    ngroup=nfire/(1.0*nruns)
 
     ngrouplow=int(np.floor(nfire/(1.0*nruns)))
     ngroupup=int(np.ceil(nfire/(1.0*nruns)))
     ngroup=ngrouplow
+
+    #print "New group:",ngrouplow,ngroupup
 
     fs=[]
     for j in xrange(nruns):
@@ -494,12 +503,12 @@ cd $PBS_O_WORKDIR
     flog=open(rundir+"runs.log","w")
     for i in xrange(nfire):
         j+=1
-        if (j%ngroup)==0 and run<nruns:
-            print "Total for run %d = %d"%(run,j)
+        if (j%ngroup)==0 and run<=nruns:
+            #print "Total for run %d = %d (%d)"%(run,j,i)
             run+=1
             if (run%2)==0:ngroup=ngroupup
             else:ngroup=ngrouplow
-            j=1
+            j=0
 
         #print "Fireball %d run %d..."%(i,run)
 
@@ -551,7 +560,7 @@ cd $PBS_O_WORKDIR
         odir=i
         flog.write("%d %d %s\n"%(run,i,grtid))
 
-    print "Total for run %d = %d"%(run,j)
+    # print "Total for run %d = %d"%(run,j)
     for f in fs:f.close()
     flog.close()
 
@@ -574,8 +583,13 @@ def fireballProbabilityHistogram():
             if not '-' in line:continue
             grtid=line.split()[2]
             try:
-                p=System("cat data/grt-%s/probability.prob"%grtid)
-                prob=float(p.split()[2])
+                out=System("cat data/grt-%s/probability.prob"%grtid)
+                lines=out.split("\n")
+                prob=float(lines[0].split()[2])
+                pmin=float(lines[1].split()[2])
+                pmax=float(lines[2].split()[2])
+                #print grtid,pmin,prob,pmax,(pmax-pmin)
+                prob=prob/pmax
             except:continue
             fp.write("%e\n"%prob)
         f.close()
@@ -583,15 +597,12 @@ def fireballProbabilityHistogram():
 
     # READ PROBABILITIES
     ps=np.loadtxt(ffile)
-    pmax=ps.max()
-    ps=ps/pmax
 
     # MAKE A HISTOGRAM
-    
-    h,p=np.histogram(ps)
+    h,p=np.histogram(ps,10)
 
-    print p
-    print h
+    for i in xrange(len(p)-1):
+        print "p = ",(p[i]+p[i+1])/2,", h = ",h[i]
 
     print "Probability percentiles:",np.percentile(ps,[10,50,90])
 
