@@ -612,30 +612,27 @@ def velocityMoments():
     vmin=vimps.min()
     vmax=vimps.max()
 
-    # GET IMPACT VELOCITIES
-    ptot=0
-    vmean=0
-    vmean2=0
-    vmean3=0
-    for i in xrange(len(vimps)):
-        q=qdata[i]
-        vimp=vimps[i]
-        prob=pprob[i]
-        vmean+=vimp*prob
-        vmean2+=vimp**2*prob
-        vmean3+=vimp**3*prob
-        ptot+=prob
-
-    mu=[1.0,vmean/ptot,vmean2/ptot,vmean3/ptot]
-    print "Velocity moments:",mu
-
     # LINEAR SYSTEM
-    n=4 # Number of points to reconstruct spline
+    n=8 # Number of points to reconstruct spline
     print "Size of linear system:",4*n
     N=4*n-1 #Last element of matrix
 
     L=n-3 # Number of required moments
     print "Number of required moments:",L
+
+    # GET IMPACT VELOCITIES
+    ptot=0
+    mu=np.zeros((L,1))
+    for i in xrange(len(vimps)):
+        q=qdata[i]
+        vimp=vimps[i]
+        prob=pprob[i]
+        for k in xrange(L):
+            mu[k]+=vimp**k*prob
+        ptot+=prob
+
+    mu/=ptot
+    print "Velocity moments:",mu
 
     x=np.linspace(vmin,vmax,n+1) # Sampling points
     print "Sampling points:",x
