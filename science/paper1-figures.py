@@ -857,9 +857,10 @@ def velocityDistributionFromMoments(el,verbose=0):
             velinfinis+=[vinf*vorb]
             velimps+=[vimp*vorb]
 
+        velimps=np.array(velimps)
+
         print "Velocity moments:",velimps.mean(),(velimps()**2).mean,(velimps()**3).mean,(velimps()**4).mean
 
-        velimps=np.array(velimps)
         velinfsrcs=np.array(velinfsrcs)
         velinfinis=np.array(velinfinis)
 
