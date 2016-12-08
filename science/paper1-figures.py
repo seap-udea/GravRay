@@ -596,8 +596,18 @@ def fspline(x,xs,s):
     f=s[4*i]+s[4*i+1]*(x-xs[i])+s[4*i+2]*(x-xs[i])**2+s[4*i+3]*(x-xs[i])**3
     return f
 
+def velocityFromMoments():
+    
+    """
+    Compute the velocity distribution moments and from there reconstruct the distribution.
 
-def velocityMoments():
+    Use cubic splines: 
+
+    John, V., et al. "Techniques for the reconstruction of a
+    distribution from a finite number of its moments." Chemical
+    Engineering Science 62.11 (2007): 2890-2904.
+
+    """
     
     grtid="E317B2"
     fname='data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid
@@ -746,7 +756,7 @@ def velocityMoments():
     ax.set_xticklabels(xtls)
     fig.savefig(FIGDIR+"vreconstructed.png")
 
-def velocityDistributionFromMoments(el,verbose=0):
+def velocityDistributionEmpirical(el,verbose=0):
 
     from scipy.optimize import curve_fit
 
