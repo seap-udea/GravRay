@@ -153,6 +153,21 @@ for i in xrange(nprocs):
     else:nperp=nperplow
 
 #############################################################
+#REFERENCE SITE
+#############################################################
+# DETERMINE LOCATION OF APEX AND ANTAPEX FOR FIREBALL DATE
+out=System("./whereisapex.exe '%s' > /dev/null"%date)
+coords=out2dict(out)
+
+if degloc=="deg":FAC=1
+else:FAC=DEG
+
+fgeo=open("%s/locations-0.dat"%(outdir),"w")
+fgeo.write("-1 -1 %.5f %.5f\n"%(coords["APEX(2)"][1]*FAC,coords["APEX(2)"][0]*FAC))
+fgeo.write("-1 -1 %.5f %.5f\n"%(coords["ANTAPEX(2)"][1]*FAC,coords["ANTAPEX(2)"][0]*FAC))
+fgeo.close()
+
+#############################################################
 #Create PBS SCRIPT
 #############################################################
 options="\"%s\" %s %s/locations-${PBS_ARRAYID}.dat %s %s/directions.dat %d %s/velocities.dat \"%s\" %e ${PBS_ARRAYID} 1"%(\
@@ -167,7 +182,7 @@ f=open("makeagravray.sh","w")
 f.write("""#PBS -S /bin/bash
 #PBS -j oe
 #PBS -o log/%s.log
-#PBS -t 1-%d
+#PBS -t 0-%d
 cd $PBS_O_WORKDIR
 echo "Running on host " $(hostname)
 python makeagravray.py %s

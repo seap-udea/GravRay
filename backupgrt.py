@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from gravray import *
-from os import system
+from os import system,path
 
 #############################################################
 #USAGE
@@ -38,7 +38,9 @@ print "Packing directories %s at depth %d..."%(outdirs,depth)
 for outdir in argv[2:]:
     print "\tPacking %s..."%outdir
     if depth==1:
-        system("tar rf scratch/results.tar %s/{probability.prob,initials.dat,observers-matrices.dat}"%(outdir))
+        if not path.isfile("%s/probability.prob"%outdir):
+            system("cat %s/probability???.prob > %s/probability.prob"%(outdir,outdir))
+        system("tar rf scratch/results.tar %s/{probability*.prob,probability.prob,initials.dat,observers-matrices.dat}"%(outdir))
     else:
         system("tar rf scratch/results.tar %s/"%(outdir))
 

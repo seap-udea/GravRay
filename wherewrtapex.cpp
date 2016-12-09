@@ -43,7 +43,7 @@ int main(int argc,char* argv[])
     }
     lat=atof(argv[iarg++]);
     lon=atof(argv[iarg++]);
-    if(argc>4){
+    if(argc>5){
       h=atof(argv[iarg++]);
       Az=atof(argv[iarg++]);
       vimp=atof(argv[iarg++]);
