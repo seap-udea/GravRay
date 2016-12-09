@@ -27,6 +27,9 @@ except:pass
 geofile=System("ls %s/probability.prob"%edir)
 de=np.loadtxt(geofile)
 
+#REFERENCE PROBABILITY
+pref=de[2,2]
+
 #############################################################
 #READ OBSERVER MATRICES
 #############################################################
@@ -51,7 +54,7 @@ for i in xrange(latsize):
 #############################################################
 lats=de[:,0]
 lons=de[:,1]
-Ptots=de[:,2]
+Ptots=de[:,2]/pref
 npoints=len(Ptots)
 
 Pmin=Ptots.min()
