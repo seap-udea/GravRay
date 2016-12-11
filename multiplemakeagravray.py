@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from gravray import *
 from os import path,system
+from time import sleep
 
 #############################################################
 #USAGE
@@ -86,3 +87,62 @@ for date in dates:
     print "\tCommand: ",cmd
     system(cmd)
     i+=1
+
+print
+
+#NUMBER OF PROCESSES PER JOB
+num=int(System("grep 'PBS -t' %s/makeagravray-1.sh |awk -F'-' '{print $3}'"%rundir))+1
+print "Number of jobs per process: %d"%num
+timeIt(stream=stderr)
+
+#############################################################
+#SUBMIT RUNS
+#############################################################
+print 
+
+print "Running jobs sucessively..."
+i=1
+sleeptime=20
+bunmd5=System("md5sum %s |awk '{print $1}'"%datesfile)
+bunfile="data/bundle-%s.tar"%bunmd5
+print "\tBundle file '%s'..."%bunfile
+
+if path.isfile(bunfile):system("rm bunfile")
+for date in dates:
+    grtid='grt-'+System("grep 'PBS -o' %s/makeagravray-%d.sh |awk '{print $3}' |awk -F'log/' '{print $2}' |awk -F'.' '{print $1}'"%(rundir,i))
+    print "Jobs for date %d '%s' grtid = '%s'..."%(i,date,grtid)
+    out=System("qsub %s/makeagravray-%d.sh"%(rundir,i))
+    jobid=out.split("[")[0]
+    print "\tRunning job %s..."%jobid
+    exect=0
+    while True:
+        cmd="grep '%s\[[0-9]*\]' /var/spool/torque/server_logs/* |grep 'cput=' |wc -l"%jobid
+        ncompleted=int(System(cmd))
+        print "\t\tJobs ncompleted after %d secs: %d"%(exect,ncompleted)
+        if ncompleted==num:
+            #cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
+            print "\t\tMapping probabilities..."
+            cmd="python mapatsource.py data/%s"%(grtid)
+            system(cmd)
+            system("cp data/%s/probability-map-contour.png data/%s/probability-map-contour-%04d.png"%(grtid,grtid,i))
+            print "\t\tPacking results..."
+            System("rm data/%s/rays-*.data"%(grtid))
+            system("tar rf %s -C data %s"%(bunfile,grtid))
+            timeIt(stream=stderr)
+            break
+        else:
+            #ESTIMATING REMAINING TIME AND ADJUSTING SLEEPTIME
+            if ncompleted>0:sleept=sleeptime/(1+ncompleted/2.)
+            else:sleept=sleeptime
+            print "\t\tWaiting %d secs..."%sleeptime
+            exect+=sleept
+            sleep(sleept)
+    print "\tJob terminated"
+    i+=1
+
+#############################################################
+#COMPRESS RESULTS
+#############################################################
+system("gzip %s"%bunfile)
+print "Multiple run completed."
+timeIt(stream=stderr)

@@ -1,4 +1,5 @@
 from gravray import *
+from os import path
 
 #############################################################
 #INPUTS
@@ -16,16 +17,24 @@ except:pass
 
 qspecial=0
 try:
-    qspecial=1
     qlat=float(argv[iarg]);iarg+=1
     qlon=float(argv[iarg]);iarg+=1
+    qspecial=1
 except:pass    
 
 #############################################################
 #LOAD PROBABILITIES
 #############################################################
-geofile=System("ls %s/probability.prob"%edir)
-de=np.loadtxt(geofile)
+geofile="%s/probability.prob"%edir
+if path.isfile(geofile):de=np.loadtxt(geofile)
+else:
+    out=System("ls -m %s/probability???.prob"%edir)
+    de=None
+    for geofile in out.split(","):
+        geofile=geofile.replace("\n","")
+        dep=np.loadtxt(geofile)
+        if de is None:de=dep
+        else:de=np.vstack((de,dep))
 
 #REFERENCE PROBABILITY
 pref=de[2,2]
@@ -228,8 +237,7 @@ cax=plt.axes([0.05,0.1,0.9,0.05])
 cbar=plt.colorbar(c,drawedges=False,cax=cax,orientation='horizontal',
                   format='%.2f')
 cbar.ax.tick_params(labelsize=8)
-#cbar.ax.axvline(Pspecial,lw=3,color='k')
-cbar.ax.plot((Pspecial-Pmin)/(Pmax-Pmin),0.5,'k*',ms=10)
+if qspecial:cbar.ax.plot((Pspecial-Pmin)/(Pmax-Pmin),0.5,'k*',ms=10)
 cbar.ax.set_title("Normalized probability",fontsize=14,position=(0.5,-1.5))
 
 #fig.tight_layout()

@@ -92,8 +92,8 @@ out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
 t=float(out.split("\n")[4])
 
 #MAKE STRING
-dirmd5=System("md5sum %s |awk '{if verbose:print $1}'"%dirfile)
-velmd5=System("md5sum %s |awk '{if verbose:print $1}'"%velfile)
+dirmd5=System("md5sum %s |awk '{print $1}'"%dirfile)
+velmd5=System("md5sum %s |awk '{print $1}'"%velfile)
 makestr="qvel=%d & name=%s & dirmd5=%s & velmd5=%s"%(qvel,name,dirmd5,velmd5)
 
 md5str=MD5STR(makestr,len=6)
