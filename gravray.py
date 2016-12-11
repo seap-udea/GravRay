@@ -38,6 +38,7 @@ DIST=lambda p1,p2:norm(p1-p2)
 #CONSTANTS
 #############################################################
 #TIME UNITS
+SEC=1.0
 MIN=60.0
 HOUR=60.0*MIN
 DAY=24*HOUR
