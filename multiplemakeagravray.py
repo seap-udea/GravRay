@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 from gravray import *
-from os import path
+from os import path,system
 
 #############################################################
 #USAGE
 #############################################################
 usage="""Make multiple Parallel GRT analysis of a whole geographic region.
 
-   python multipleparallelgravray.py <nprocs> <dates_file> <deg|rad> <locations_file> <deg|rad> <directions_file> <velocities_file>
+   python multipleparallelgravray.py <nprocs> <dates_file> <deg|rad> <locations_file> <deg|rad> <directions_file> <velocities_file> [<height> <rundir>]
 
 Where:
 
@@ -29,6 +29,7 @@ Where:
    <altitude>: altitude where the rays start in meters (default:
                80,000 m)
 
+   <rundir>: Directory with the launch scripts will be created.
 """
 
 #############################################################
@@ -53,9 +54,12 @@ except:
     exit(1)
 
 #ALTITUDE
-try:
-    h=float(argv[iarg]);iarg+=1
+try:h=float(argv[iarg]);iarg+=1
 except:h=8e4
+
+#DIRECTORY
+try:rundir=argv[iarg];iarg+=1
+except:rundir="."
 
 #############################################################
 #PREPARE
@@ -73,3 +77,12 @@ for date in f:
 #############################################################
 #CREATE RUNS
 #############################################################
+i=1
+for date in dates:
+    makefile="%s/makeagravray-%d.sh"%(rundir,i)
+    name='Run %s'%date
+    print "Creating parallel gravray %d in %s..."%(i,makefile)
+    cmd="python parallelgravray.py %d '%s'  %s %s   %s %s   %s %s   '%s'   %f   %s   0"%(nprocs,date,degloc,locfile,degdir,dirfile,qvel,velfile,name,h,makefile)
+    print "\tCommand: ",cmd
+    system(cmd)
+    i+=1

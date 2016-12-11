@@ -80,7 +80,7 @@ except:
     print usage
     exit(1)
 
-#ALTITUDE
+#RUN ID
 try:
     runid="%03d"%int(argv[iarg]);iarg+=1
 except:runid=""

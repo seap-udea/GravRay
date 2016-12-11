@@ -68,13 +68,16 @@ elif typespan=='grid':
     dets=np.arange(0,span+delta,delta)
     times=et+dets
 elif typespan=='linspace':
-    unit=1
     span,num=(float(f) for f in spanpars.split(","))
     span*=unit
     dets=np.linspace(0,span,num+1)
     times=et+dets
 
 #############################################################
-#TIMES
+#DATES
 #############################################################
-for 
+f=open(datesfile,"w")
+for time in times:
+    date=sp.timout(time,"MM/DD/YYYY HR:MN:SC UTC",100)
+    f.write(date+"\n")
+f.close()
