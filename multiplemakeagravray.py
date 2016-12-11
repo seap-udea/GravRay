@@ -132,8 +132,10 @@ for date in dates:
             break
         else:
             #ESTIMATING REMAINING TIME AND ADJUSTING SLEEPTIME
-            if ncompleted>0:sleept=sleeptime/(1+ncompleted/2.)
+            if ncompleted>0:sleept=int(sleeptime/(1+ncompleted/2))
             else:sleept=sleeptime
+            if sleept<1:sleept=1
+
             print "\t\tWaiting %d secs..."%sleeptime
             exect+=sleept
             sleep(sleept)
