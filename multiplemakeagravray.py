@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from gravray import *
 from os import path,system
+from sys import stderr,stdout
 from time import sleep
 
 #############################################################
@@ -81,8 +82,11 @@ for date in f:
 i=1
 for date in dates:
     makefile="%s/makeagravray-%d.sh"%(rundir,i)
-    name='Run %s'%date
     print "Creating parallel gravray %d in %s..."%(i,makefile)
+    if path.isfile(makefile):
+        print "\t","Already created..."
+        continue
+    name='Run %s'%date
     cmd="python parallelgravray.py %d '%s'  %s %s   %s %s   %s %s   '%s'   %f   %s   0"%(nprocs,date,degloc,locfile,degdir,dirfile,qvel,velfile,name,h,makefile)
     print "\tCommand: ",cmd
     system(cmd)
@@ -104,13 +108,19 @@ print "Running jobs sucessively..."
 i=1
 sleeptime=20
 bunmd5=System("md5sum %s |awk '{print $1}'"%datesfile)
-bunfile="data/bundle-%s.tar"%bunmd5
+bunfile="data/bundle-%s.tar"%bunmd5[:6]
 print "\tBundle file '%s'..."%bunfile
 
-if path.isfile(bunfile):system("rm bunfile")
+print 
 for date in dates:
     grtid='grt-'+System("grep 'PBS -o' %s/makeagravray-%d.sh |awk '{print $3}' |awk -F'log/' '{print $2}' |awk -F'.' '{print $1}'"%(rundir,i))
     print "Jobs for date %d '%s' grtid = '%s'..."%(i,date,grtid)
+
+    #Check if job has been completed
+    if path.isfile("data/%s/probability-map-contour.png"):
+        print "\t"*2+"Job alread computed..."
+        continue
+
     out=System("qsub %s/makeagravray-%d.sh"%(rundir,i))
     jobid=out.split("[")[0]
     print "\tRunning job %s..."%jobid
@@ -118,8 +128,9 @@ for date in dates:
     while True:
         cmd="grep '%s\[[0-9]*\]' /var/spool/torque/server_logs/* |grep 'cput=' |wc -l"%jobid
         ncompleted=int(System(cmd))
-        print "\t\tJobs ncompleted after %d secs: %d"%(exect,ncompleted)
+        print>>stderr,"\t\tJobs ncompleted after %d secs: %d"%(exect,ncompleted)
         if ncompleted==num:
+
             #cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
             print "\t\tMapping probabilities..."
             cmd="python mapatsource.py data/%s"%(grtid)
@@ -131,14 +142,18 @@ for date in dates:
             timeIt(stream=stderr)
             break
         else:
-            #ESTIMATING REMAINING TIME AND ADJUSTING SLEEPTIME
-            if ncompleted>0:sleept=int(sleeptime/(1+ncompleted/2))
-            else:sleept=sleeptime
-            if sleept<1:sleept=1
 
-            print "\t\tWaiting %d secs..."%sleeptime
+            #ESTIMATING REMAINING TIME AND ADJUSTING SLEEPTIME
+            if ncompleted>0:
+                sleept=int(sleeptime/(1+ncompleted/2))
+                if sleept<5:sleept=5
+                print "\t"*3,"Adjusting time from %d to %d..."%(sleeptime,sleept)
+            else:sleept=sleeptime
+
+            print>>stderr,"\t\tWaiting %d secs..."%sleept
             exect+=sleept
             sleep(sleept)
+
     print "\tJob terminated"
     i+=1
 
