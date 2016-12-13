@@ -117,8 +117,9 @@ for date in dates:
     print "Jobs for date %d '%s' grtid = '%s'..."%(i,date,grtid)
 
     #Check if job has been completed
-    if path.isfile("data/%s/probability-map-contour.png"):
+    if path.isfile("data/%s/probability-map-contour.png"%grtid):
         print "\t"*2+"Job alread computed..."
+        i+=1
         continue
 
     out=System("qsub %s/makeagravray-%d.sh"%(rundir,i))
@@ -128,7 +129,7 @@ for date in dates:
     while True:
         cmd="grep '%s\[[0-9]*\]' /var/spool/torque/server_logs/* |grep 'cput=' |wc -l"%jobid
         ncompleted=int(System(cmd))
-        print>>stderr,"\t\tJobs ncompleted after %d secs: %d"%(exect,ncompleted)
+        print "\t\tJobs completed after %d secs: %d"%(exect,ncompleted)
         if ncompleted==num:
 
             #cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
@@ -150,11 +151,12 @@ for date in dates:
                 print "\t"*3,"Adjusting time from %d to %d..."%(sleeptime,sleept)
             else:sleept=sleeptime
 
-            print>>stderr,"\t\tWaiting %d secs..."%sleept
+            print "\t\tWaiting %d secs..."%sleept
             exect+=sleept
             sleep(sleept)
 
-    print "\tJob terminated"
+    print "\tJob terminated with execution time %d..."%exect
+    sleeptime=int(exect/3)
     i+=1
 
 #############################################################
