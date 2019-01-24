@@ -39,8 +39,7 @@ int main(int argc,char* argv[])
   observer.lon=lon;
   observer.alt=alt;
   initObserver(t,&observer);
-  fprintf(stdout,"%s\n",vec2str(observer.v));
-  exit(0);
+  //fprintf(stdout,"%s\n",vec2str(observer.v));
   
   ////////////////////////////////////////////////////
   //READ INITIAL CONDITIONS
@@ -121,7 +120,7 @@ int main(int argc,char* argv[])
     //DETERMINE POSITION FOR THIS INITIAL CONDITION
     ////////////////////////////////////////////////////
     observerVelocity(&observer,h,Az,v);
-    fprintf(stdout,"\tObserver position (ECLIPJ2000): %s\n",vec2strn(observer.posabs,6,"%.8e "));
+    fprintf(stdout,"\tObserver position (@%s,ECLIPJ2000): %s\n",BODY_ID,vec2strn(observer.posabs,6,"%.8e "));
     speed=vnorm_c(observer.posabs+3);
     fprintf(stdout,"\tObserver speed: %e\n",speed);
 

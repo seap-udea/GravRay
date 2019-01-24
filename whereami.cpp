@@ -62,19 +62,19 @@ int main(int argc,char* argv[])
   //GET OBSERVER POSITION IN TIME
   ////////////////////////////////////////////////////
   SpiceDouble earthSSBJ2000[6];
-  SpiceDouble M_ITRF93_J2000[3][3];
-  SpiceDouble observerITRF93[6],observerJ2000[6],observerSSBJ2000[6];
-  pxform_c("ITRF93",ECJ2000,tref,M_ITRF93_J2000);
+  SpiceDouble M_OBSFRAME_J2000[3][3];
+  SpiceDouble observerOBSFRAME[6],observerJ2000[6],observerSSBJ2000[6];
+  pxform_c(OBSFRAME,ECJ2000,tref,M_OBSFRAME_J2000);
   /*
   printf("%e,%e,%e\n%e,%e,%e\n%e,%e,%e\n",
-	 M_ITRF93_J2000[0][0],M_ITRF93_J2000[0][0],M_ITRF93_J2000[0][0],
-	 M_ITRF93_J2000[1][0],M_ITRF93_J2000[1][0],M_ITRF93_J2000[1][0],
-	 M_ITRF93_J2000[2][0],M_ITRF93_J2000[2][0],M_ITRF93_J2000[2][0]);
+	 M_OBSFRAME_J2000[0][0],M_OBSFRAME_J2000[0][0],M_OBSFRAME_J2000[0][0],
+	 M_OBSFRAME_J2000[1][0],M_OBSFRAME_J2000[1][0],M_OBSFRAME_J2000[1][0],
+	 M_OBSFRAME_J2000[2][0],M_OBSFRAME_J2000[2][0],M_OBSFRAME_J2000[2][0]);
   */
 
-  //OBSERVER POSITION W.R.T. EARTH CENTER IN ITRF93
-  georec_c(D2R(lon),D2R(lat),alt/1000.0,REARTH,FEARTH,observerITRF93);
-  fprintf(stdout,"Position observer w.r.t. ITRF93: %s\n",vec2str(observerITRF93,"%.17e"));
+  //OBSERVER POSITION W.R.T. EARTH CENTER IN OBSFRAME
+  georec_c(D2R(lon),D2R(lat),alt/1000.0,REARTH,FEARTH,observerOBSFRAME);
+  fprintf(stdout,"Position observer w.r.t. OBSFRAME: %s\n",vec2str(observerOBSFRAME,"%.17e"));
 
   ////////////////////////////////////////////////////
   //GET TOPOCENTRIC TRANSFORM MATRIX
@@ -87,16 +87,16 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
 
   //ROTATIONAL VELOCITY
-  SpiceDouble rho,vcirc,vrot[3],vrotitrf93[3];
-  rho=sqrt(observerITRF93[0]*observerITRF93[0]+observerITRF93[1]*observerITRF93[1]);
+  SpiceDouble rho,vcirc,vrot[3],vrotobsframe[3];
+  rho=sqrt(observerOBSFRAME[0]*observerOBSFRAME[0]+observerOBSFRAME[1]*observerOBSFRAME[1]);
   vcirc=2*M_PI*rho/GSL_CONST_MKSA_DAY;
   //THE MINUS SIGN INDICATED 
   vpack_c(0.0,-vcirc,0.0,vrot);
-  mxv_c(hi,vrot,vrotitrf93);
-  fprintf(stdout,"\tVelocity of rotation w.r.t. ITRF93: %s\n",vec2str(vrotitrf93,"%.17e"));
+  mxv_c(hi,vrot,vrotobsframe);
+  fprintf(stdout,"\tVelocity of rotation w.r.t. OBSFRAME: %s\n",vec2str(vrotobsframe,"%.17e"));
   
   //VELOCITY OF OBSERVER IN SPACE W.R.T. TO LOCAL REFERENCE
-  SpiceDouble vloc[3],vmotitrf93[3];
+  SpiceDouble vloc[3],vmotobsframe[3];
   SpiceDouble cA=cos(D2R(Az)),sA=sin(D2R(Az)),ch=cos(D2R(h)),sh=sin(D2R(h));
   vpack_c(v*ch*cA,-v*ch*sA,v*sh,vloc);
   fprintf(stdout,"\tVelocity observer w.r.t. LOCAL (outwards): %s\n",vec2str(vloc,"%.17e"));
@@ -106,22 +106,22 @@ int main(int argc,char* argv[])
     fprintf(stdout,"\tVelocity observer w.r.t. LOCAL (inwards): %s\n",vec2str(vloc,"%.17e"));
   */
 
-  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO ITRF93
-  mxv_c(hi,vloc,vmotitrf93);
-  fprintf(stdout,"\tVelocity of motion w.r.t. ITRF93: %s\n",vec2str(vmotitrf93,"%.17e"));
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO OBSFRAME
+  mxv_c(hi,vloc,vmotobsframe);
+  fprintf(stdout,"\tVelocity of motion w.r.t. OBSFRAME: %s\n",vec2str(vmotobsframe,"%.17e"));
 
-  //TOTAL VELOCITY WITH RESPECT ITRF93
-  vadd_c(vrotitrf93,vmotitrf93,observerITRF93+3);
-  fprintf(stdout,"\tVelocity total w.r.t. ITRF93: %s\n",vec2str(observerITRF93+3,"%.17e"));
+  //TOTAL VELOCITY WITH RESPECT OBSFRAME
+  vadd_c(vrotobsframe,vmotobsframe,observerOBSFRAME+3);
+  fprintf(stdout,"\tVelocity total w.r.t. OBSFRAME: %s\n",vec2str(observerOBSFRAME+3,"%.17e"));
 
   //OBSERVER POSITION AND VELOCITY W.R.T. EARTH CENTER IN J2000 RF
-  mxv_c(M_ITRF93_J2000,observerITRF93,observerJ2000);
+  mxv_c(M_OBSFRAME_J2000,observerOBSFRAME,observerJ2000);
   fprintf(stdout,"Position observer w.r.t. J2000: %s\n",vec2str(observerJ2000,"%.17e"));
-  mxv_c(M_ITRF93_J2000,observerITRF93+3,observerJ2000+3);
+  mxv_c(M_OBSFRAME_J2000,observerOBSFRAME+3,observerJ2000+3);
   fprintf(stdout,"\tVelocity observer w.r.t. J2000: %s\n",vec2str(observerJ2000+3,"%.17e"));
 
   //EARTH POSITION W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
-  spkezr_c(EARTH_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",earthSSBJ2000,&ltmp);
+  spkezr_c(BODY_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",earthSSBJ2000,&ltmp);
   fprintf(stdout,"Position earth w.r.t. SSB J2000: %s\n",vec2str(earthSSBJ2000,"%.17e"));
   fprintf(stdout,"\tVelocity earth w.r.t. SSB J2000: %s\n",vec2str(earthSSBJ2000+3,"%.17e"));
 
@@ -135,9 +135,9 @@ int main(int argc,char* argv[])
   //PLAIN INFORMATION
   ////////////////////////////////////////////////////
   fprintf(stdout,"--PLAIN--\n");
-  fprintf(stderr,"TDB,JD,DT,ITRF93(6),ECJ2000(6)\n");
+  fprintf(stderr,"TDB,JD,DT,OBSFRAME(6),ECJ2000(6)\n");
   fprintf(stderr,"%.9e\n%.6lf\n%.2lf\n",t,tjd,dt);
-  fprintf(stderr,"%s\n",vec2strn(observerITRF93,6,"%+.17e "));
+  fprintf(stderr,"%s\n",vec2strn(observerOBSFRAME,6,"%+.17e "));
   fprintf(stderr,"%s\n",vec2strn(observerSSBJ2000,6,"%+.17e "));
   return 0;
 }

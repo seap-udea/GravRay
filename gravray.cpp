@@ -35,13 +35,14 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-/*
-#define EARTH_ID "EARTH"
-#define FRAME_ID "ITRF93"
-//*/
 //*
-#define EARTH_ID "MOON"
-#define FRAME_ID "MOON_PA"
+#define BODY_ID "EARTH"
+#define OBSFRAME "ITRF93" //HIGH PRECISION
+//#define FRAME_ID "IAU_EARTH" //LOW PRECISION
+//*/
+/*
+#define BODY_ID "MOON"
+#define OBSFRAME "IAU_MOON"
 //*/
 
 #define ATTEMPTS 12 /*SEE NUMBER_OF_STEPS*/
@@ -53,7 +54,7 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define J2000 "J2000"
 
 /*
-  Range of Ephemeris Times where data to calculate precise ITRF93
+  Range of Ephemeris Times where data to calculate precise OBSFRAME
   frame directions is availanle
  */
 
@@ -170,7 +171,7 @@ struct ObserverStruct{
   SpiceDouble t;
   SpiceDouble lat,lon,alt;
 
-  //Conversion matrix from ITRF93 to ECLIPJ2000 at time t
+  //Conversion matrix from OBSFRAME to ECLIPJ2000 at time t
   SpiceDouble MEJ[3][3];
 
   //Conversion matrix from ECLIPJ2000 to EPOCHEQUINOX at time t
@@ -180,10 +181,10 @@ struct ObserverStruct{
   SpiceDouble hm[3][3];
   SpiceDouble hi[3][3];
 
-  //Position with respect to ITRF93 (Earth) J2000
+  //Position with respect to OBSFRAME (Earth) J2000
   SpiceDouble posearth[6];
 
-  //Position with respect to ITRF93 (Earth) ECLIPJ2000
+  //Position with respect to OBSFRAME (Earth) ECLIPJ2000
   SpiceDouble posj2000[6];
 
   //Position with respect to SSB in ECLIPJ2000
@@ -192,7 +193,7 @@ struct ObserverStruct{
   //Position with respect to SSB in ECLIPEPOCH
   SpiceDouble posepoch[6];
 
-  //Rotaion velocity of a still observer with respect to ITRF93
+  //Rotaion velocity of a still observer with respect to OBSFRAME
   SpiceDouble v[3];
 
   //Direction of velocity in the direction (A,a) with respect to ECLIPJ2000
@@ -207,9 +208,9 @@ struct ObserverStruct{
 //////////////////////////////////////////
 enum COMPONENTS {CX,CY,CZ,CVX,CVY,CVZ};
 static int NUMBER_OF_STEPS[]={2,4,6,8,12,16,24,32,48,64,96,128};
-double REARTH;
-double RPEARTH;
-double FEARTH;
+double RBODY;
+double RPBODY;
+double FBODY;
 gsl_rng* RAND;
 double GGLOBAL;
 double UL,UM,UT,UV;
@@ -226,10 +227,10 @@ int initSpice(void)
   furnsh_c("kernels.txt");
 
   //EARTH RADII
-  bodvrd_c(EARTH_ID,"RADII",3,&n,radii);
-  REARTH=radii[0];
-  RPEARTH=radii[0];
-  FEARTH=(radii[0]-radii[2])/radii[0];
+  bodvrd_c(BODY_ID,"RADII",3,&n,radii);
+  RBODY=radii[0];
+  RPBODY=radii[0];
+  FBODY=(radii[0]-radii[2])/radii[0];
 
   //PLANETARY RADII
   for(i=0;i<10;i++){
@@ -318,27 +319,27 @@ int bodyEphemerisApparent(ConstSpiceChar *body,
   SpiceDouble bodyJ2000[6],bodySSBJ2000[6],ltbody;
   SpiceDouble bodyTOPOJ2000[3],bodyTOPOEpoch[3];
   SpiceDouble Dbody,RAbody,DECbody,RAbodyJ2000,DECbodyJ2000;
-  SpiceDouble observerITRF93[3],observerJ2000[3],observerSSBJ2000[3];
+  SpiceDouble observerOBSFRAME[3],observerJ2000[3],observerSSBJ2000[3];
   SpiceDouble M_J2000_Epoch[3][3]={{1,0,0},{0,1,0},{0,0,1}};
-  SpiceDouble M_ITRF93_J2000[3][3];
+  SpiceDouble M_OBSFRAME_J2000[3][3];
   SpiceDouble d,lt,ltmp,ltold,lttol=1E-2;
   int i,ie=0,ncn=10;
   double cspeed=clight_c();
 
   //ROTATION MATRIX AT THE TIME OF EPHEMERIS
   pxform_c("J2000","EARTHTRUEEPOCH",t,M_J2000_Epoch);
-  pxform_c("ITRF93","J2000",t,M_ITRF93_J2000);
+  pxform_c(OBSFRAME,"J2000",t,M_OBSFRAME_J2000);
 
   //OBSERVER POSITION J2000 RELATIVE TO EARTH CENTER
-  georec_c(D2R(lon),D2R(lat),alt/1000.0,REARTH,FEARTH,observerITRF93);
-  mxv_c(M_ITRF93_J2000,observerITRF93,observerJ2000);
+  georec_c(D2R(lon),D2R(lat),alt/1000.0,RBODY,FBODY,observerOBSFRAME);
+  mxv_c(M_OBSFRAME_J2000,observerOBSFRAME,observerJ2000);
 
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //ASTROMETRIC POSITION
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   i=0;
   lt=0.0;ltold=1.0;
-  spkezr_c(EARTH_ID,t,"J2000","NONE",SSB,
+  spkezr_c(BODY_ID,t,"J2000","NONE",SSB,
 	   earthSSBJ2000,&ltmp);
   vadd_c(earthSSBJ2000,observerJ2000,observerSSBJ2000);
   while((fabs(lt-ltold)/lt)>=lttol && i<ncn){
@@ -355,7 +356,7 @@ int bodyEphemerisApparent(ConstSpiceChar *body,
   //CORRECTED POSITION
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //OBSERVER POSITION J2000
-  spkezr_c(EARTH_ID,t,"J2000","NONE","EARTH BARYCENTER",
+  spkezr_c(BODY_ID,t,"J2000","NONE","EARTH BARYCENTER",
 	   earthSSBJ2000,&lt);
   vadd_c(earthSSBJ2000,observerJ2000,observerSSBJ2000);
 
@@ -408,22 +409,22 @@ void hormat(SpiceDouble lat,SpiceDouble lon,SpiceDouble t,SpiceDouble h2m[3][3],
   SpiceDouble geopos[3],normal[3],normalJ2000[3],normalEpoch[3];
   SpiceDouble ux[]={1,0,0},uy[]={0,1,0},uz[]={0,0,1},uzJ2000[3],uzEpoch[3];
   SpiceDouble M_J2000_Epoch[3][3]={{1,0,0},{0,1,0},{0,0,1}};
-  SpiceDouble M_ITRF93_J2000[3][3];
+  SpiceDouble M_OBSFRAME_J2000[3][3];
 
   //TRANSFORM MATRICES
   pxform_c("J2000","EARTHTRUEEPOCH",t,M_J2000_Epoch);
-  pxform_c("ITRF93","J2000",t,M_ITRF93_J2000);
+  pxform_c(OBSFRAME,"J2000",t,M_OBSFRAME_J2000);
   
-  //NORMAL ITRF93
-  georec_c(D2R(lon),D2R(lat),0.0,REARTH,FEARTH,geopos);
-  surfnm_c(REARTH,REARTH,RPEARTH,geopos,normal);
+  //NORMAL OBSFRAME
+  georec_c(D2R(lon),D2R(lat),0.0,RBODY,FBODY,geopos);
+  surfnm_c(RBODY,RBODY,RPBODY,geopos,normal);
 
   //NORMAL EPOCH
-  mxv_c(M_ITRF93_J2000,normal,normalJ2000);
+  mxv_c(M_OBSFRAME_J2000,normal,normalJ2000);
   mxv_c(M_J2000_Epoch,normalJ2000,normalEpoch);
 
   //Z EPOCH
-  mxv_c(M_ITRF93_J2000,uz,uzJ2000);
+  mxv_c(M_OBSFRAME_J2000,uz,uzJ2000);
   mxv_c(M_J2000_Epoch,uzJ2000,uzEpoch);
 
   //TRANSFORM MATRICES
@@ -450,9 +451,9 @@ void horgeo(SpiceDouble lat,SpiceDouble lon,SpiceDouble h2m[3][3],SpiceDouble h2
   SpiceDouble geopos[3],normal[3];
   SpiceDouble ux[]={1,0,0},uy[]={0,1,0},uz[]={0,0,1};
 
-  //NORMAL ITRF93
-  georec_c(D2R(lon),D2R(lat),0.0,REARTH,FEARTH,geopos);
-  surfnm_c(REARTH,REARTH,RPEARTH,geopos,normal);
+  //NORMAL OBSFRAME
+  georec_c(D2R(lon),D2R(lat),0.0,RBODY,FBODY,geopos);
+  surfnm_c(RBODY,RBODY,RPBODY,geopos,normal);
 
   //TRANSFORM MATRICES
   ucrss_c(normal,uz,uy);
@@ -731,22 +732,21 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   //printf("t = %e, tref = %e\n",t,tref);
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
-  pxform_c(FRAME_ID,ECJ2000,tref,observer->MEJ);
-  exit(0);
+  pxform_c(OBSFRAME,ECJ2000,tref,observer->MEJ);
   /*
   printf("%e,%e,%e\n%e,%e,%e\n%e,%e,%e\n",
 	 observer->MEJ[0][1],observer->MEJ[0][2],observer->MEJ[0][3],
 	 observer->MEJ[1][1],observer->MEJ[1][2],observer->MEJ[1][3],
 	 observer->MEJ[2][1],observer->MEJ[2][2],observer->MEJ[2][3]);
   exit(0);
-  */
+  //*/
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
   pxform_c("ECLIPJ2000","EARTHTRUEEPOCH",tref,observer->MEE);
 
   //LOCATE OBSERVER 
   georec_c(D2R(observer->lon),D2R(observer->lat),observer->alt/1000.0,
-	   REARTH,FEARTH,observer->posearth);
+	   RBODY,FBODY,observer->posearth);
 
   //DEBUGGING
   //printf("Observer = %s\n",vec2str(observer->posearth));
@@ -762,7 +762,7 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   mxv_c(observer->hi,vrot,observer->v);
 
   //POSITION OF THE EARTH
-  spkezr_c(EARTH_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",
+  spkezr_c(BODY_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",
 	   observer->earth,&lt);
 
   //DEBUGGING
@@ -800,11 +800,11 @@ int observerVelocity(struct ObserverStruct *observer,
   //IMPACT VELOCITY IS THE INVERSE
   vscl_c(-1,vloc,vloc);
 
-  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO ITRF93
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO OBSFRAME
   SpiceDouble vmot[3];
   mxv_c(observer->hi,vloc,vmot);
 
-  //TOTAL VELOCITY WITH RESPECT ITRF93
+  //TOTAL VELOCITY WITH RESPECT OBSFRAME
   vadd_c(observer->v,vmot,observer->posearth+3);
 
   //VELOCITY W.R.T. EARTH CENTER IN ECLIPJ2000 RF
@@ -830,7 +830,7 @@ int observerVelocity(struct ObserverStruct *observer,
   //IMPACT DIRECTION IS THE INVERSE
   vscl_c(-1,uv,uv);
 
-  //DIRECTION IN SPACE W.R.T. TO ITRF93
+  //DIRECTION IN SPACE W.R.T. TO OBSFRAME
   mxv_c(observer->hi,uv,vmot);
 
   //DIRECTION IN SPACE W.R.T. ECLIPJ2000
