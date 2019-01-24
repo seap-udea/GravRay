@@ -1,9 +1,4 @@
 #1:x	2:y	3:long	4:lat
 #Chelyabinsk, Russia: lat. 54.4, lon. 63.5
 -1	-1	+63.5	+54.4
-#Antananarivo, Madagascar: lat. -18.9, long. 47.5
--1	-1	+47.5	-18.9
-#Honolulu, Hawaii: lat. 21.8, lon. -157.0
--1	-1	-157.0	+21.8
-#McMurdo, Antartica: lat. -77.85, lon. +166.40
--1	-1	+166.4	-77.85
+

@@ -203,8 +203,12 @@ for i in xrange(npoints):
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
     if not path.isfile("%s/%s"%(outdir,outfile)) or qrepeat:
+        """
         cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s > /dev/null"%(t,lat,lon,h,inifile,
                                                                            qvel,outdir,outfile)
+        """
+        cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,
+                                                               qvel,outdir,outfile)
         print "Executing: %s"%cmd
         system(cmd)
 
