@@ -73,18 +73,27 @@ System("make")
 #############################################################
 f=open(datesfile)
 dates=[]
-for date in f:
-    dates+=[date.replace("\n","")]
-
+qlats=[]
+qlons=[]
+for line in f:
+    line=line.replace("\n","")
+    parts=line.split(";")
+    dates+=[parts[0]]
+    if len(parts)>1:
+        qlats+=[float(parts[1])]
+        qlons+=[float(parts[2])]
+        
 #############################################################
 #CREATE RUNS
 #############################################################
 i=1
-for date in dates:
+for j in xrange(len(dates)):
+    date=dates[j]
     makefile="%s/makeagravray-%d.sh"%(rundir,i)
     print "Creating parallel gravray %d in %s..."%(i,makefile)
     if path.isfile(makefile):
         print "\t","Already created..."
+        i+=1
         continue
     name='Run %s'%date
     cmd="python parallelgravray.py %d '%s'  %s %s   %s %s   %s %s   '%s'   %f   %s   0"%(nprocs,date,degloc,locfile,degdir,dirfile,qvel,velfile,name,h,makefile)
@@ -112,13 +121,21 @@ bunfile="data/bundle-%s.tar"%bunmd5[:6]
 print "\tBundle file '%s'..."%bunfile
 
 print 
-for date in dates:
+for j in xrange(len(dates)):
+
+    # Dates
+    date=dates[j]
+    if len(qlats)>0:
+        coords="%.5f %.5f"%(qlats[j],qlons[j])
+    else:coords=""
+
     grtid='grt-'+System("grep 'PBS -o' %s/makeagravray-%d.sh |awk '{print $3}' |awk -F'log/' '{print $2}' |awk -F'.' '{print $1}'"%(rundir,i))
     print "Jobs for date %d '%s' grtid = '%s'..."%(i,date,grtid)
 
     #Check if job has been completed
-    if path.isfile("data/%s/probability-map-contour.png"):
+    if path.isfile("data/%s/probability-map-contour.png"%grtid):
         print "\t"*2+"Job alread computed..."
+        i+=1
         continue
 
     out=System("qsub %s/makeagravray-%d.sh"%(rundir,i))
@@ -128,12 +145,12 @@ for date in dates:
     while True:
         cmd="grep '%s\[[0-9]*\]' /var/spool/torque/server_logs/* |grep 'cput=' |wc -l"%jobid
         ncompleted=int(System(cmd))
-        print>>stderr,"\t\tJobs ncompleted after %d secs: %d"%(exect,ncompleted)
+        print "\t\tJobs completed after %d secs: %d"%(exect,ncompleted)
         if ncompleted==num:
 
             #cmd="python mapatsource.py data/grt-%s-%s %d %f %f"%(date,grtid,qmatrix,qlat,qlon)
             print "\t\tMapping probabilities..."
-            cmd="python mapatsource.py data/%s"%(grtid)
+            cmd="python mapatsource.py data/%s %s"%(grtid,coords)
             system(cmd)
             system("cp data/%s/probability-map-contour.png data/%s/probability-map-contour-%04d.png"%(grtid,grtid,i))
             print "\t\tPacking results..."
@@ -150,11 +167,12 @@ for date in dates:
                 print "\t"*3,"Adjusting time from %d to %d..."%(sleeptime,sleept)
             else:sleept=sleeptime
 
-            print>>stderr,"\t\tWaiting %d secs..."%sleept
+            print "\t\tWaiting %d secs..."%sleept
             exect+=sleept
             sleep(sleept)
 
-    print "\tJob terminated"
+    print "\tJob terminated with execution time %d..."%exect
+    sleeptime=int(exect/3)
     i+=1
 
 #############################################################

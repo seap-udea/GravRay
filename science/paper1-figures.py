@@ -463,6 +463,32 @@ def mapProbability():
     system("cp data/grt-%s-%s/probability-map-contour.png %s/probability-map-contour-%s.png"%(date,grtid,FIGDIR,date))
     #"""
 
+def fireballDates():
+    """
+    Prepare runs to calculate the probability of Fireball in NASA database
+    """
+    data=np.loadtxt("util/data/fireballs.data")
+    lats=data[:,2]
+    lons=data[:,3]
+    datetime=data[:,0]
+
+    f=open("dates-fireball.dat","w")
+    for i in xrange(len(datetime)):
+        qlat=lats[i]
+        qlon=lons[i]
+        if qlat==123456789:continue
+        date="%.0f"%datetime[i]
+        Y=date[:4];x=4
+        M=date[x:x+2];x+=2
+        D=date[x:x+2];x+=2
+        h=date[x:x+2];x+=2
+        m=date[x:x+2];x+=2
+        s=date[x:x+2];x+=2
+        datestr="%s/%s/%s %s:%s:%s UTC"%(M,D,Y,h,m,s)
+        f.write("%s;%.5f;%.5f\n"%(datestr,qlat,qlon))
+        #if i>0:break
+    f.close()
+
 def fireballsProbabilityScripts():
     """
     Prepare runs to calculate the probability of Fireball in NASA database
