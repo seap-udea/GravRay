@@ -131,6 +131,8 @@ UNITRAD=UNITS[degdir]
 
 #DETERMINE NUMBER OF QAPEX
 datos=np.loadtxt(velfile)
+try:datos[:,0]
+except:datos=np.array([datos])
 napex=datos.shape[1]-1
 
 #############################################################
@@ -145,18 +147,29 @@ if not path.isfile("%s/observers-matrices.dat"%outdir):
 #############################################################
 inifile="%s/initials%s.dat"%(outdir,runid)
 f=open(inifile,"w")
+f.write("#0:h\t1:A\t2:v\t3:qapex\n")
 vels=np.loadtxt(velfile)
+try:vels[:,0]
+except:vels=np.array([vels])
+
 datadir=np.loadtxt(dirfile)
-bs=datadir[:,3]
+try:
+    bs=datadir[:,3]
+    dirs=datadir[:,2:]
+except:
+    bs=datadir[3]
+    dirs=np.array([datadir[2:]])
+    
 ndirs=datadir[bs>0].shape[0]
 
 n=0
 Azs=[]
 Els=[]
 nvel=len(vels[:,0])
-for direction in datadir[:,2:]:
-    l=np.mod(direction[0]*RAD,360)
-    b=direction[1]*RAD
+
+for direction in dirs:
+    l=np.mod(direction[0]*UNITRAD,360)
+    b=direction[1]*UNITRAD
     if b<0:continue
     Azs+=[l]
     Els+=[b]
@@ -190,7 +203,6 @@ print "Analysing %d locations..."%npoints
 ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
 f=open(outdir+"/probability%s.prob"%runid,"w")
-
 for i in xrange(npoints):
 
     lat=lats[i]
@@ -225,6 +237,8 @@ for i in xrange(npoints):
     #CALCULATE TOTAL PROBABILITY
     #==================================================
     data=np.loadtxt("%s/%s.prob"%(outdir,outfile))
+    try:data[:,0]
+    except:data=np.array([data])
     p=data[:,7]
     Ptot=p.sum()/(1.0*Ninitial)
     print>>stderr,"Total probability:",Ptot

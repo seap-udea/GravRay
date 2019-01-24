@@ -56,10 +56,15 @@ print "*"*80,"\nAnalyzing data in '%s'\n"%elements,"*"*80
 #GET DATA FROM FILE
 #############################################################
 initials=np.loadtxt(inifile)
+try:initials[:,0]
+except:initials=np.array([initials])
 Ninitial=len(initials)
 
 data=np.loadtxt(elements)
-Norbits=data.shape[0]
+try:data[:,0]
+except:data=np.array([data])
+Norbits=len(data)
+
 Ncoll=Ninitial-Norbits
 
 print "Basic properties:"
@@ -75,15 +80,13 @@ ees=data[:,10]
 ies=data[:,11]
 qxs=data[:,15]
 aes=qes/(1-ees)
-
-#NEW-INCLUDING NODE AND PERIHELION
 Omegas=data[:,12]
 omegas=data[:,13]
 
+#Counting
 Nhyp=len(ees[ees>=1])
 Nret=len(ies[ies>=180])
 cond=(ees<1)*(ies<180)*(aes<40)
-
 qes=qes[cond]
 ees=ees[cond]
 ies=ies[cond]
@@ -134,6 +137,7 @@ Ptot=0
 
 timeIt()
 fp=open(elements+".prob","w")
+fp.write("#0:q\t1:e\t2:i\t3:ntarg\t4:qt\t5:et\t6:it\t7:Pn\t8:Pu\t9:qx\t10:at\t11:Ot\t12:ot\n")
 for n in xrange(Nphys):
  
     q=qes[n]
