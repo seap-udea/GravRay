@@ -35,8 +35,14 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-//#define EARTH_ID "EARTH"
+/*
+#define EARTH_ID "EARTH"
+#define FRAME_ID "ITRF93"
+//*/
+//*
 #define EARTH_ID "MOON"
+#define FRAME_ID "MOON_PA"
+//*/
 
 #define ATTEMPTS 12 /*SEE NUMBER_OF_STEPS*/
 #define SSB "SOLAR SYSTEM BARYCENTER"
@@ -725,7 +731,8 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   //printf("t = %e, tref = %e\n",t,tref);
 
   //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
-  pxform_c("ITRF93",ECJ2000,tref,observer->MEJ);
+  pxform_c(FRAME_ID,ECJ2000,tref,observer->MEJ);
+  exit(0);
   /*
   printf("%e,%e,%e\n%e,%e,%e\n%e,%e,%e\n",
 	 observer->MEJ[0][1],observer->MEJ[0][2],observer->MEJ[0][3],
