@@ -9,6 +9,7 @@ KERNELS_TO_LOAD = ('$PATH/de430.bsp',
 		   '$PATH/earth_720101_070426.bpc',
 		   '$PATH/earth_latest_high_prec.bpc',
 		   '$PATH/earth_070425_370426_predict.bpc',		   
+                   '$PATH/moon_pa_de421_1900-2050.bpc',
 		   '$PATH/frame.tk',
 		   )
 

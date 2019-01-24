@@ -39,7 +39,9 @@ int main(int argc,char* argv[])
   observer.lon=lon;
   observer.alt=alt;
   initObserver(t,&observer);
-
+  fprintf(stdout,"%s\n",vec2str(observer.v));
+  exit(0);
+  
   ////////////////////////////////////////////////////
   //READ INITIAL CONDITIONS
   ////////////////////////////////////////////////////

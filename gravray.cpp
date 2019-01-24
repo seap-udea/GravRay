@@ -35,7 +35,9 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-#define EARTH_ID "EARTH"
+//#define EARTH_ID "EARTH"
+#define EARTH_ID "MOON"
+
 #define ATTEMPTS 12 /*SEE NUMBER_OF_STEPS*/
 #define SSB "SOLAR SYSTEM BARYCENTER"
 
@@ -817,10 +819,13 @@ int observerVelocity(struct ObserverStruct *observer,
   }else{
     vpack_c(ch*cA,-ch*sA,sh,uv);
   }
+
   //IMPACT DIRECTION IS THE INVERSE
   vscl_c(-1,uv,uv);
+
   //DIRECTION IN SPACE W.R.T. TO ITRF93
   mxv_c(observer->hi,uv,vmot);
+
   //DIRECTION IN SPACE W.R.T. ECLIPJ2000
   mxv_c(observer->MEJ,vmot,observer->uv);
 
