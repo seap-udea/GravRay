@@ -830,7 +830,7 @@ def velocityFromMoments(fname):
         xtls+=['%.1f'%(norm*xt)]
     ax.set_xticklabels(xtls)
 
-    np.savetxt(FIGDIR+"vreconstructed.txt",np.vstack((vs,ps)).transpose())
+    np.savetxt(FIGDIR+"vreconstructed.txt",np.vstack((100*vs,ps)).transpose())
     fig.savefig(FIGDIR+"vreconstructed.png")
     return
 
