@@ -3397,6 +3397,18 @@ def pointMap(el,fname,sname,title=None):
     print "Plot file: ",pfile
     fig.savefig(pfile)
 
+def elevationDistribution(fname):
+    
+    data=np.loadtxt(fname+".phys")
+    dataprob=np.loadtxt(fname+".prob")
+
+    # GET ONLY THE ACCEPTED RAYS
+    hs=data[:,0]
+    pprob=dataprob[:,7]
+    
+    print "Computed rays:",len(pprob)
+    print "Acepted rays:",len(hs)
+    
 #############################################################
 #EXECUTE
 #############################################################
