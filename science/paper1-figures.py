@@ -834,6 +834,188 @@ def velocityFromMoments(fname):
     fig.savefig(FIGDIR+"vreconstructed.png")
     return
 
+    # SPLINE FUNCTION
+    vs=np.linspace(vmin,vmax,4*n)
+    ps=np.array([fspline(v,x,s) for v in vs])
+
+    print "Velocities:",vs
+    print "Probabilities:",ps
+
+    # TEST MOMENTS
+    from scipy.interpolate import interp1d as interp
+    from scipy.integrate import quad as integrate
+    pinterp=interp(vs,ps,kind='slinear')
+
+    print "Reconstructed function moments:"
+    for k in xrange(L):
+        func=lambda x:x**k*pinterp(x)
+        i,e=integrate(func,vmin,vmax)
+        print "\tMoment %d:"%k,i*norm
+
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(vs,ps,'ko-')
+    xts=ax.get_xticks()
+    xtls=[]
+    for xt in xts:
+        xtls+=['%.1f'%(norm*xt)]
+    ax.set_xticklabels(xtls)
+
+    np.savetxt(FIGDIR+"vreconstructed.txt",np.vstack((100*vs,ps)).transpose())
+    fig.savefig(FIGDIR+"vreconstructed.png")
+    return
+
+def elevationFromMoments(fname):
+    
+    """
+    Compute the velocity distribution moments and from there reconstruct the distribution.
+
+    Use cubic splines: 
+
+    John, V., et al. "Techniques for the reconstruction of a
+    distribution from a finite number of its moments." Chemical
+    Engineering Science 62.11 (2007): 2890-2904.
+
+    """
+    
+    #grtid="E317B2"
+    #fname='data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid
+    data=np.loadtxt(fname+".phys")
+    dataprob=np.loadtxt(fname+".prob")
+    
+    # GET ONLY THE ACCEPTED RAYS
+    hs=data[:,0]
+    pprob=dataprob[:,7]
+    
+    print "Computed rays:",len(pprob)
+    print "Acepted rays:",len(hs)
+
+    # NORMALIZATION
+    norm=90.0
+    hs/=norm
+
+    # LINEAR SYSTEM
+    n=4 # Number of points to reconstruct spline
+
+    print "Size of linear system:",4*n
+    N=4*n-1 #Last element of matrix
+
+    L=n-3+2 # Number of required moments
+    print "Number of required moments:",L
+    
+    # GET IMPACT VELOCITIES
+    ptot=0
+    mu=np.zeros((L,1))
+    hsel=[]
+    for i in xrange(len(hs)):
+        h=hs[i]
+        if h>1:continue
+        hsel+=[h]
+        prob=pprob[i]
+        for k in xrange(L):
+            mu[k]+=h**k*prob
+        ptot+=prob
+    hs=np.array(hsel)
+    hmin=hs.min()
+    hmax=hs.max()
+
+    mu/=ptot
+
+    print "Total probability:",ptot
+    print "Elevation moments:",mu*norm
+    print "Elevation range:",hmin*norm,hmax*norm
+
+    #x=np.linspace(hmin,hmax,n+1,endpoint=True) # Sampling points
+    #"""
+    dh=1.0/norm
+    h1=hmin
+    h2=hmin+dh
+    h3=hmin+2*dh
+    h4=hmax-10*dh
+    x=np.array([h1,h2])
+    x=np.concatenate((x,np.linspace(h3,h4,n-2)))
+    x=np.concatenate((x,[hmax]))
+    #"""
+    #print "Sampling points:",x
+    
+    M=np.zeros((4*n,4*n))
+    b=np.zeros((4*n,1))
+
+    e=0
+    # Eq. (28)
+    M[e,0]=1;e+=1 #
+    M[e,2]=1;e+=1 # Positive steep at x = 0
+    M[e,3]=1;e+=1 #
+
+    # Eq. (30)
+    M[e,N-3:]=[1,(x[n]-x[n-1]),(x[n]-x[n-1])**2,(x[n]-x[n-1])**3];e+=1 #
+    
+    # Eq. (31)
+    for i in xrange(n-1):
+        M[e,4*i:4*i+5]=[1,(x[i+1]-x[i]),(x[i+1]-x[i])**2,(x[i+1]-x[i])**3,-1];e+=1 #
+
+    # Eq. (32)
+    for i in xrange(n-1):
+        M[e,4*i+1:4*i+1+3]=[1,2*(x[i+1]-x[i]),3*(x[i+1]-x[i])**2];
+        M[e,4*(i+1)+1:4*(i+1)+1+1]=[-1]
+        e+=1 
+
+    # Eq. (33)
+    for i in xrange(n-1):
+        M[e,4*i+2:4*i+2+2]=[2*(x[i+1]-x[i]),6*(x[i+1]-x[i])]
+        M[e,4*(i+1)+2:4*(i+1)+2+1]=[-1]
+        e+=1 
+        
+    # MOMENTS
+    for k in xrange(L):
+        m=0
+        for i in xrange(n):
+            I1=(x[i+1]**(k+1)-x[i]**(k+1))/(k+1)
+            I2=(x[i+1]**(k+2)-x[i]**(k+2))/(k+2)
+            I3=(x[i+1]**(k+3)-x[i]**(k+3))/(k+3)
+            I4=(x[i+1]**(k+4)-x[i]**(k+4))/(k+4)
+            # print i,I1,I2,I3,I4
+            M[e,m]=I1;m+=1
+            M[e,m]=(I2-x[i]*I1);m+=1
+            M[e,m]=(I3-2*x[i]*I2+x[i]**2*I1);m+=1
+            M[e,m]=(I4-3*x[i]*I3+3*x[i]**2*I2-x[i]**3*I1);m+=1
+        b[e]=mu[k]
+        e+=1 
+
+    # SOLVE
+    s=np.linalg.solve(M,b)
+    #print "Coefficients:",s
+
+    # SPLINE FUNCTION
+    hss=np.linspace(hmin,hmax,4*n)
+    ps=np.array([fspline(h,x,s) for h in hss])
+
+    #print "Elevations:",hss
+    #print "Probabilities:",ps
+
+    # TEST MOMENTS
+    from scipy.interpolate import interp1d as interp
+    from scipy.integrate import quad as integrate
+    pinterp=interp(hss,ps,kind='slinear')
+
+    print "Reconstructed function moments:"
+    for k in xrange(L):
+        func=lambda x:x**k*pinterp(x)
+        i,e=integrate(func,hmin,hmax)
+        print "\tMoment %d:"%k,i*norm
+
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(hss,ps,'ko-')
+    xts=ax.get_xticks()
+    xtls=[]
+    for xt in xts:
+        xtls+=['%.1f'%(norm*xt)]
+    ax.set_xticklabels(xtls)
+
+    np.savetxt(FIGDIR+"hreconstructed.txt",np.vstack((100*hss,ps)).transpose())
+    fig.savefig(FIGDIR+"hreconstructed.png")
+
 def velocityDistributionEmpirical(el,verbose=0):
 
     from scipy.optimize import curve_fit
