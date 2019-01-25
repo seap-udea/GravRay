@@ -35,14 +35,16 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-//*
+/*
 #define BODY_ID "EARTH"
 #define OBSFRAME "ITRF93" //HIGH PRECISION
+#define BODY_SIDERALDAY GSL_CONST_MKSA_DAY
 //#define FRAME_ID "IAU_EARTH" //LOW PRECISION
 //*/
-/*
+//*
 #define BODY_ID "MOON"
 #define OBSFRAME "IAU_MOON"
+#define BODY_SIDERALDAY (27.321661*GSL_CONST_MKSA_DAY) //SOURCE WIKIPEDIA
 //*/
 
 #define ATTEMPTS 12 /*SEE NUMBER_OF_STEPS*/
@@ -76,6 +78,7 @@ http://naif.jpl.nasa.gov/pub/naif/
 #define DAY GSL_CONST_MKSA_DAY
 #define AU GSL_CONST_MKSA_ASTRONOMICAL_UNIT
 #define VESC_EARTH 11.217 //km/s
+
 //////////////////////////////////////////
 //BEHAVIOR
 //////////////////////////////////////////
@@ -181,10 +184,10 @@ struct ObserverStruct{
   SpiceDouble hm[3][3];
   SpiceDouble hi[3][3];
 
-  //Position with respect to OBSFRAME (Earth) J2000
-  SpiceDouble posearth[6];
+  //Position with respect to OBSFRAME (Body) J2000
+  SpiceDouble posbody[6];
 
-  //Position with respect to OBSFRAME (Earth) ECLIPJ2000
+  //Position with respect to OBSFRAME (Body) ECLIPJ2000
   SpiceDouble posj2000[6];
 
   //Position with respect to SSB in ECLIPJ2000
@@ -199,8 +202,8 @@ struct ObserverStruct{
   //Direction of velocity in the direction (A,a) with respect to ECLIPJ2000
   SpiceDouble uv[3];
 
-  //Earth position at observer epoch
-  SpiceDouble earth[6];
+  //Body position at observer epoch
+  SpiceDouble body[6];
 };
 
 //////////////////////////////////////////
@@ -211,6 +214,9 @@ static int NUMBER_OF_STEPS[]={2,4,6,8,12,16,24,32,48,64,96,128};
 double RBODY;
 double RPBODY;
 double FBODY;
+double REARTH;
+double RPEARTH;
+double FEARTH;
 gsl_rng* RAND;
 double GGLOBAL;
 double UL,UM,UT,UV;
@@ -227,6 +233,12 @@ int initSpice(void)
   furnsh_c("kernels.txt");
 
   //EARTH RADII
+  bodvrd_c("EARTH","RADII",3,&n,radii);
+  REARTH=radii[0];
+  RPEARTH=radii[0];
+  FEARTH=(radii[0]-radii[2])/radii[0];
+
+  //BODY RADII
   bodvrd_c(BODY_ID,"RADII",3,&n,radii);
   RBODY=radii[0];
   RPBODY=radii[0];
@@ -328,7 +340,7 @@ int bodyEphemerisApparent(ConstSpiceChar *body,
 
   //ROTATION MATRIX AT THE TIME OF EPHEMERIS
   pxform_c("J2000","EARTHTRUEEPOCH",t,M_J2000_Epoch);
-  pxform_c(OBSFRAME,"J2000",t,M_OBSFRAME_J2000);
+  pxform_c("ITRF93","J2000",t,M_OBSFRAME_J2000);
 
   //OBSERVER POSITION J2000 RELATIVE TO EARTH CENTER
   georec_c(D2R(lon),D2R(lat),alt/1000.0,RBODY,FBODY,observerOBSFRAME);
@@ -339,7 +351,7 @@ int bodyEphemerisApparent(ConstSpiceChar *body,
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   i=0;
   lt=0.0;ltold=1.0;
-  spkezr_c(BODY_ID,t,"J2000","NONE",SSB,
+  spkezr_c("EARTH",t,"J2000","NONE",SSB,
 	   earthSSBJ2000,&ltmp);
   vadd_c(earthSSBJ2000,observerJ2000,observerSSBJ2000);
   while((fabs(lt-ltold)/lt)>=lttol && i<ncn){
@@ -356,7 +368,7 @@ int bodyEphemerisApparent(ConstSpiceChar *body,
   //CORRECTED POSITION
   //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   //OBSERVER POSITION J2000
-  spkezr_c(BODY_ID,t,"J2000","NONE","EARTH BARYCENTER",
+  spkezr_c("EARTH",t,"J2000","NONE","EARTH BARYCENTER",
 	   earthSSBJ2000,&lt);
   vadd_c(earthSSBJ2000,observerJ2000,observerSSBJ2000);
 
@@ -413,11 +425,11 @@ void hormat(SpiceDouble lat,SpiceDouble lon,SpiceDouble t,SpiceDouble h2m[3][3],
 
   //TRANSFORM MATRICES
   pxform_c("J2000","EARTHTRUEEPOCH",t,M_J2000_Epoch);
-  pxform_c(OBSFRAME,"J2000",t,M_OBSFRAME_J2000);
+  pxform_c("ITRF93","J2000",t,M_OBSFRAME_J2000);
   
   //NORMAL OBSFRAME
-  georec_c(D2R(lon),D2R(lat),0.0,RBODY,FBODY,geopos);
-  surfnm_c(RBODY,RBODY,RPBODY,geopos,normal);
+  georec_c(D2R(lon),D2R(lat),0.0,REARTH,FEARTH,geopos);
+  surfnm_c(REARTH,REARTH,RPEARTH,geopos,normal);
 
   //NORMAL EPOCH
   mxv_c(M_OBSFRAME_J2000,normal,normalJ2000);
@@ -731,7 +743,7 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   //DEBUGGING
   //printf("t = %e, tref = %e\n",t,tref);
 
-  //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
+  //CONVERSION FROM BODY SYSTEM TO ECLIPTIC SYSTEM AT TIME T
   pxform_c(OBSFRAME,ECJ2000,tref,observer->MEJ);
   /*
   printf("%e,%e,%e\n%e,%e,%e\n%e,%e,%e\n",
@@ -741,36 +753,38 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   exit(0);
   //*/
 
-  //CONVERSION FROM EARTH SYSTEM TO ECLIPTIC SYSTEM AT TIME T
+  //CONVERSION FROM BODY SYSTEM TO ECLIPTIC SYSTEM AT TIME T
+  /*
   pxform_c("ECLIPJ2000","EARTHTRUEEPOCH",tref,observer->MEE);
+  */
 
   //LOCATE OBSERVER 
   georec_c(D2R(observer->lon),D2R(observer->lat),observer->alt/1000.0,
-	   RBODY,FBODY,observer->posearth);
+	   RBODY,FBODY,observer->posbody);
 
   //DEBUGGING
-  //printf("Observer = %s\n",vec2str(observer->posearth));
+  //printf("Observer = %s\n",vec2str(observer->posbody));
 
   //TOPOCENTRIC CONVERSION MATRICES
   horgeo(observer->lat,observer->lon,observer->hm,observer->hi);
 
-  //VELOCITY OF OBSERVER DUE TO EARTH ROTATION
-  rho=sqrt(observer->posearth[0]*observer->posearth[0]+
-	   observer->posearth[1]*observer->posearth[1]);
-  vcirc=2*M_PI*rho/GSL_CONST_MKSA_DAY;
+  //VELOCITY OF OBSERVER DUE TO BODY ROTATION
+  rho=sqrt(observer->posbody[0]*observer->posbody[0]+
+	   observer->posbody[1]*observer->posbody[1]);
+  vcirc=2*M_PI*rho/BODY_SIDERALDAY;
   vpack_c(0.0,-vcirc,0.0,vrot);
   mxv_c(observer->hi,vrot,observer->v);
 
-  //POSITION OF THE EARTH
+  //POSITION OF THE BODY
   spkezr_c(BODY_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",
-	   observer->earth,&lt);
+	   observer->body,&lt);
 
   //DEBUGGING
-  //printf("Earth ECJ2000 = %s\n",vec2str(observer->earth,"%.17e "));
+  //printf("Body ECJ2000 = %s\n",vec2str(observer->body,"%.17e "));
 
   //POSITION WITH RESPECT TO SSB IN ECLIPJ2000
-  mxv_c(observer->MEJ,observer->posearth,observer->posj2000);
-  vadd_c(observer->earth,observer->posj2000,observer->posabs);
+  mxv_c(observer->MEJ,observer->posbody,observer->posj2000);
+  vadd_c(observer->body,observer->posj2000,observer->posabs);
 
   //DEBUGGING
   //printf("Observer ECJ2000 = %s\n",vec2str(observer->posabs,"%.17e "));
@@ -805,19 +819,19 @@ int observerVelocity(struct ObserverStruct *observer,
   mxv_c(observer->hi,vloc,vmot);
 
   //TOTAL VELOCITY WITH RESPECT OBSFRAME
-  vadd_c(observer->v,vmot,observer->posearth+3);
+  vadd_c(observer->v,vmot,observer->posbody+3);
 
-  //VELOCITY W.R.T. EARTH CENTER IN ECLIPJ2000 RF
-  mxv_c(observer->MEJ,observer->posearth+3,observer->posj2000+3);
+  //VELOCITY W.R.T. BODY CENTER IN ECLIPJ2000 RF
+  mxv_c(observer->MEJ,observer->posbody+3,observer->posj2000+3);
 
   //VELOCITY W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
-  vadd_c(observer->earth+3,observer->posj2000+3,observer->posabs+3);
+  vadd_c(observer->body+3,observer->posj2000+3,observer->posabs+3);
 
   /*NEW*/
   //************************************************************
   //COMPUTING DIRECTION OF INCOMING VELOCITY IN ECLIPJ2000
   /*
-    It does not take into account Earth rotation effect on velocity
+    It does not take into account Body rotation effect on velocity
    */
   //************************************************************
   SpiceDouble uv[3],nuv;
@@ -928,6 +942,119 @@ int rayPropagation(struct ObserverStruct *observer,
 
   vsclg_c(180/M_PI,E+2,4,E+2);
   vsclg_c(1E3/UL,E,1,E);
+
+  //STORE THE ELEMENTS
+  copyVec(elements,E,6);
+
+  return 0;
+}
+
+int rayPropagationDeb(struct ObserverStruct *observer,
+		      SpiceDouble deltat,
+		      SpiceDouble elements[6])
+{
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  //INITIAL CONDITIONS FOR PROPAGATION
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  SpiceDouble x=observer->posabs[0];
+  SpiceDouble y=observer->posabs[1];
+  SpiceDouble z=observer->posabs[2];
+  SpiceDouble vx=observer->posabs[3];
+  SpiceDouble vy=observer->posabs[4];
+  SpiceDouble vz=observer->posabs[5];
+
+  deltat*=365.25*GSL_CONST_MKSA_DAY;
+  SpiceDouble tini=observer->t;
+  double direction=deltat/abs(deltat);
+  double params[]={6};
+
+  //UNITS
+  UL=GSL_CONST_MKSA_ASTRONOMICAL_UNIT;
+  UM=MSUN;
+  GGLOBAL=1.0;
+  UT=sqrt(UL*UL*UL/(GCONST*UM));
+  UV=UL/UT;
+
+  //INITIAL CONDITIONS
+  double X0[6],X[6],Xu[6],E[8],a;
+  vpack_c(x*1E3/UL,y*1E3/UL,z*1E3/UL,X0);
+  vpack_c(vx*1E3/UV,vy*1E3/UV,vz*1E3/UV,X0+3);
+
+  //DYNAMICAL TIMESCALE
+  a=vnorm_c(X0);
+  double tdyn=2*M_PI*sqrt(a*a*a/(GGLOBAL*MSUN/UM));
+
+  //TIME LIMITS
+  deltat/=UT;
+
+  //GUESS TIME-STEP AS 1/1000 OF THE CHARACTERISTIC DYNAMICAL TIME
+  double h=direction*tdyn/1000.0,h_used,h_next,h_adjust,delt;
+
+  double t_start=tini/UT;
+  double t_step=deltat;
+  double tend=t_start+deltat;
+  double t_stop=tend;
+
+  double t=t_start;
+
+  //INTEGRATION
+  int status;
+
+  t_stop = t_start + t_step;
+
+  h_used = h;
+  int nstall=0;
+  FILE *f=fopen("ray-deb.dat","w");
+  fprintf(f,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
+	  "#1:t",
+	  "2:x","3:y","4:z",
+	  "5:vx","6:vy","7:vz",
+	  "8:r","9:v",
+	  "10:q","11:e","12:i",
+	  "13:W","14:w",
+	  "15:M","16:t0","17:mu");
+  do {
+
+    vscl_c(UL/1E3,X0,Xu);vscl_c(UV/1E3,X0+3,Xu+3);
+    oscelt_c(Xu,t*UT,GKMS*MSUN,E);
+    vsclg_c(180/M_PI,E+2,4,E+2);
+    vsclg_c(1E3/UL,E,1,E);
+    fprintf(f,"%-+26.17e%s%-+26.17e%-+26.17e%s\n",t*UT,vec2strn(Xu,6,"%-+26.17e"),vnorm_c(Xu),vnorm_c(Xu+3),vec2strn(E,8,"%-+26.17e"));
+
+    //ADJUST H UNTIL OBTAINING A PROPER TIMESTEP
+    while(1){
+      status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_used,&h_next,1.0,TOLERANCE,EXTMET,params);
+      if(status) h_used/=4.0;
+      else break;
+    }
+    if(fabs(h_used/t_step)<HTOL) nstall++;
+    else nstall=0;
+    if(nstall>MAXSTALL){
+      fprintf(stderr,"\t\tIntegration has stalled at t = %e days with h/DT = %e\n",
+	      t*UT/DAY,h_used/t_step);
+      throw(1);
+    }
+    t+=h_used;
+    copyVec(X0,X,6);
+    if(direction*(t+h_next-t_stop)>0) h_used=t+h_next-t_stop;
+    else h_used=h_next;
+
+  }while(direction*(t-(t_stop-direction*1.e-10))<0);
+
+  //PREVIOUS PROCEDURE WILL LEAVE YOU STILL APART FROM FINAL TIME, SO ADJUST
+  if(direction*(t-t_stop)>0){
+    h_adjust=(t_stop-t);
+    status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_adjust,&h_next,1.0,TOLERANCE,EXTMET,params);
+    copyVec(X0,X,6);
+    t=t_stop;
+  }
+
+  //CONVERTING TO CLASSICAL ELEMENTS IN KM AND KM/S
+  vscl_c(UL/1E3,X0,Xu);vscl_c(UV/1E3,X0+3,Xu+3);
+  oscelt_c(Xu,t*UT,GKMS*MSUN,E);
+  vsclg_c(180/M_PI,E+2,4,E+2);
+  vsclg_c(1E3/UL,E,1,E);
+  fprintf(f,"%-+26.17e%s%-+26.17e%-+26.17e%s\n",tini+deltat*YEAR,vec2strn(Xu,6,"%-+26.17e"),vnorm_c(Xu),vnorm_c(Xu+3),vec2strn(E,8,"%-+26.17e"));
 
   //STORE THE ELEMENTS
   copyVec(elements,E,6);

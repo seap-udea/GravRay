@@ -61,7 +61,7 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   //GET OBSERVER POSITION IN TIME
   ////////////////////////////////////////////////////
-  SpiceDouble earthSSBJ2000[6];
+  SpiceDouble bodySSBJ2000[6];
   SpiceDouble M_OBSFRAME_J2000[3][3];
   SpiceDouble observerOBSFRAME[6],observerJ2000[6],observerSSBJ2000[6];
   pxform_c(OBSFRAME,ECJ2000,tref,M_OBSFRAME_J2000);
@@ -72,8 +72,8 @@ int main(int argc,char* argv[])
 	 M_OBSFRAME_J2000[2][0],M_OBSFRAME_J2000[2][0],M_OBSFRAME_J2000[2][0]);
   */
 
-  //OBSERVER POSITION W.R.T. EARTH CENTER IN OBSFRAME
-  georec_c(D2R(lon),D2R(lat),alt/1000.0,REARTH,FEARTH,observerOBSFRAME);
+  //OBSERVER POSITION W.R.T. BODY CENTER IN OBSFRAME
+  georec_c(D2R(lon),D2R(lat),alt/1000.0,RBODY,FBODY,observerOBSFRAME);
   fprintf(stdout,"Position observer w.r.t. OBSFRAME: %s\n",vec2str(observerOBSFRAME,"%.17e"));
 
   ////////////////////////////////////////////////////
@@ -114,21 +114,21 @@ int main(int argc,char* argv[])
   vadd_c(vrotobsframe,vmotobsframe,observerOBSFRAME+3);
   fprintf(stdout,"\tVelocity total w.r.t. OBSFRAME: %s\n",vec2str(observerOBSFRAME+3,"%.17e"));
 
-  //OBSERVER POSITION AND VELOCITY W.R.T. EARTH CENTER IN J2000 RF
+  //OBSERVER POSITION AND VELOCITY W.R.T. BODY CENTER IN J2000 RF
   mxv_c(M_OBSFRAME_J2000,observerOBSFRAME,observerJ2000);
   fprintf(stdout,"Position observer w.r.t. J2000: %s\n",vec2str(observerJ2000,"%.17e"));
   mxv_c(M_OBSFRAME_J2000,observerOBSFRAME+3,observerJ2000+3);
   fprintf(stdout,"\tVelocity observer w.r.t. J2000: %s\n",vec2str(observerJ2000+3,"%.17e"));
 
-  //EARTH POSITION W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
-  spkezr_c(BODY_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",earthSSBJ2000,&ltmp);
-  fprintf(stdout,"Position earth w.r.t. SSB J2000: %s\n",vec2str(earthSSBJ2000,"%.17e"));
-  fprintf(stdout,"\tVelocity earth w.r.t. SSB J2000: %s\n",vec2str(earthSSBJ2000+3,"%.17e"));
+  //BODY POSITION W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
+  spkezr_c(BODY_ID,t,ECJ2000,"NONE","SOLAR SYSTEM BARYCENTER",bodySSBJ2000,&ltmp);
+  fprintf(stdout,"Position body w.r.t. SSB J2000: %s\n",vec2str(bodySSBJ2000,"%.17e"));
+  fprintf(stdout,"\tVelocity body w.r.t. SSB J2000: %s\n",vec2str(bodySSBJ2000+3,"%.17e"));
 
   //OBSERVER POSITION W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
-  vadd_c(earthSSBJ2000,observerJ2000,observerSSBJ2000);
+  vadd_c(bodySSBJ2000,observerJ2000,observerSSBJ2000);
   fprintf(stdout,"Position observer w.r.t. SSB J2000: %s\n",vec2str(observerSSBJ2000,"%.17e"));
-  vadd_c(earthSSBJ2000+3,observerJ2000+3,observerSSBJ2000+3);
+  vadd_c(bodySSBJ2000+3,observerJ2000+3,observerSSBJ2000+3);
   fprintf(stdout,"\tVelocity observer w.r.t. SSB J2000: %s\n",vec2str(observerSSBJ2000+3,"%.17e"));
 
   ////////////////////////////////////////////////////

@@ -4,7 +4,7 @@ PATH_VALUES = ( 'util/kernels' )
 PATH_SYMBOLS = ( 'PATH' )
 KERNELS_TO_LOAD = ('$PATH/de430.bsp',
 		   '$PATH/codes_300ast_20100725.bsp',
-		   '$PATH/naif0011.tls',
+		   '$PATH/naif0012.tls',
 		   '$PATH/pck00010.tpc',
 		   '$PATH/earth_720101_070426.bpc',
 		   '$PATH/earth_latest_high_prec.bpc',

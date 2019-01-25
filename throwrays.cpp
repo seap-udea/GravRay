@@ -14,7 +14,7 @@ int main(int argc,char* argv[])
   SpiceChar file[1000],outfile[1000];
   SpiceDouble t,lat,lon,alt;
   int i,qvel;
-  SpiceDouble vproj,qapex,dapex,earth[6],uvearth[3],ltmp;
+  SpiceDouble vproj,qapex,dapex,body[6],uvbody[3],ltmp;
   SpiceDouble vloc[3],vmot[3],uvimpact[3],uvimpactEJ2000[3];
   SpiceDouble cA,sA,ch,sh;
   int nvel,iapex;
@@ -61,10 +61,10 @@ int main(int argc,char* argv[])
 	  "10:q(AU)","11:e","12:i","13:Omega","14:omega","15:M","16:qapex");
 
   ////////////////////////////////////////////////////
-  //VELOCITY OF THE EARTH
+  //VELOCITY OF THE BODY
   ////////////////////////////////////////////////////
-  spkezr_c("EARTH",t,ECJ2000,"NONE",SSB,earth,&ltmp);
-  unorm_c(earth+3,uvearth,&ltmp);
+  spkezr_c(BODY_ID,t,ECJ2000,"NONE",SSB,body,&ltmp);
+  unorm_c(body+3,uvbody,&ltmp);
 
   ////////////////////////////////////////////////////
   //SIMULATION
@@ -100,7 +100,7 @@ int main(int argc,char* argv[])
     mxv_c(observer.MEJ,uvimpact,uvimpactEJ2000);
 
     //COSINE QAPEX
-    vproj=vdot_c(uvimpactEJ2000,uvearth);
+    vproj=vdot_c(uvimpactEJ2000,uvbody);
 
     //QAPEX
     qapex=R2D(acos(vproj));
