@@ -78,31 +78,27 @@ print TAB,"Number of collisions:",Ncoll
 qes=data[:,9]
 ees=data[:,10]
 ies=data[:,11]
-qxs=data[:,15]
 aes=qes/(1-ees)
-Omegas=data[:,12]
-omegas=data[:,13]
 
 #Counting
 Nhyp=len(ees[ees>=1])
 Nret=len(ies[ies>=180])
 cond=(ees<1)*(ies<180)*(aes<40)
-qes=qes[cond]
-ees=ees[cond]
-ies=ies[cond]
-aes=aes[cond]
-qxs=qxs[cond]
-
-#NEW-INCLUDING NODE AND PERIHELION
-Omegas=Omegas[cond]
-omegas=omegas[cond]
+data=data[cond]
+qes=data[:,9]
+ees=data[:,10]
+ies=data[:,11]
+qxs=data[:,15]
+aes=qes/(1-ees)
+Omegas=data[:,12]
+omegas=data[:,13]
 
 Nphys=ees.shape[0]
-
 print "Filter:"
 print TAB,"Number of hyperbolic orbits:",Nhyp
 print TAB,"Number of retrograde orbits:",Nret
 print TAB,"Number of bound, prograde orbits:",Nphys
+np.savetxt(elements+".phys",data)
 
 #############################################################
 #NUMERICAL PARAMTERES
@@ -136,6 +132,7 @@ Hmax=20
 Ptot=0
 
 timeIt()
+
 fp=open(elements+".prob","w")
 fp.write("#0:q\t1:e\t2:i\t3:ntarg\t4:qt\t5:et\t6:it\t7:Pn\t8:Pu\t9:qx\t10:at\t11:Ot\t12:ot\n")
 for n in xrange(Nphys):
@@ -199,7 +196,7 @@ for n in xrange(Nphys):
     fp.write("%+.3e %+.3e %+.3e %6d %.3e %.3e %.3e %+.5e %.5e %.2f %.3e %.3e %.3e\n"%(q,e,i,ntarg,qt,et,it,Pn/normal,Pu/normal,qx,at,Ot,ot))
 
     if verb:raw_input()
-    if n>100e2:break
+    #if n>100e2:break
 
 fp.close()    
 

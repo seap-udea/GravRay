@@ -11,7 +11,7 @@ from scipy import signal as sig
 from scipy.optimize import curve_fit
 from os import system,path
 import csv
-from spiceypy import wrapper as spy
+import spiceypy as spy
 plt.close("all")
 
 #############################################################
@@ -682,7 +682,7 @@ def fspline(x,xs,s):
     f=s[4*i]+s[4*i+1]*(x-xs[i])+s[4*i+2]*(x-xs[i])**2+s[4*i+3]*(x-xs[i])**3
     return f
 
-def velocityFromMoments():
+def velocityFromMoments(fname):
     
     """
     Compute the velocity distribution moments and from there reconstruct the distribution.
@@ -695,37 +695,36 @@ def velocityFromMoments():
 
     """
     
-    grtid="E317B2"
-    fname='data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid
-    data=np.loadtxt(fname)
+    #grtid="E317B2"
+    #fname='data/grt-20130215032034-%s/rays-lat_5.44000e+01__lon_6.35000e+01.data'%grtid
+    data=np.loadtxt(fname+".phys")
     dataprob=np.loadtxt(fname+".prob")
-    pprob=dataprob[:,7]
-
+    
     # GET ONLY THE ACCEPTED RAYS
-    qdata=data[:,9];sinidata=np.sin(data[:,11]*DEG);edata=data[:,10];adata=qdata/(1-edata)
-    cond=(edata<1)*(adata<40)*(sinidata>0)
-    qdata=qdata[cond]
-    vimps=data[cond,2]
-
+    vimps=data[:,2]
+    pprob=dataprob[:,7]
+    
+    print "Computed rays:",len(pprob)
+    print "Acepted rays:",len(vimps)
+    
     # NORMALIZATION
     norm=100.0
     vimps/=norm
 
     # LINEAR SYSTEM
-    n=6 # Number of points to reconstruct spline
+    n=12 # Number of points to reconstruct spline
 
     print "Size of linear system:",4*n
     N=4*n-1 #Last element of matrix
 
     L=n-3+2 # Number of required moments
     print "Number of required moments:",L
-
+    
     # GET IMPACT VELOCITIES
     ptot=0
     mu=np.zeros((L,1))
     vsel=[]
     for i in xrange(len(vimps)):
-        q=qdata[i]
         vimp=vimps[i]
         if vimp>40/norm:continue
         vsel+=[vimp]
@@ -738,20 +737,23 @@ def velocityFromMoments():
     vmax=vimps.max()
 
     mu/=ptot
-    print "Velocity moments:",mu
 
-    # x=np.linspace(vmin,vmax,n+1) # Sampling points
+    print "Total probability:",ptot
+    print "Velocity moments:",mu*norm
+    print "Velocity range:",vmin,vmax
+    
+    #x=np.linspace(vmin,vmax,n+1) # Sampling points
+    #"""
     dv=1.0/norm
     v1=vmin
     v2=vmin+dv
     v3=vmin+2*dv
     v4=vmax-10*dv
-    print vmax,v4
     x=np.array([v1,v2])
     x=np.concatenate((x,np.linspace(v3,v4,n-2)))
     x=np.concatenate((x,[vmax]))
-
-    print "Sampling points:",x
+    #"""
+    #print "Sampling points:",x
 
     M=np.zeros((4*n,4*n))
     b=np.zeros((4*n,1))
@@ -759,40 +761,27 @@ def velocityFromMoments():
     e=0
     # Eq. (28)
     M[e,0]=1;e+=1 #
-    # print "M[%d,:]"%e,M[e,:];e+=1;
-    #M[e,1]=1;e+=1 #
-    # print "M[%d,:]"%e,M[e,:];e+=1;
     M[e,2]=1;e+=1 # Positive steep at x = 0
-    # print "M[%d,:]"%e,M[e,:];e+=1;
     M[e,3]=1;e+=1 #
-    # print "M[%d,:]"%e,M[e,:];e+=1;
 
     # Eq. (30)
     M[e,N-3:]=[1,(x[n]-x[n-1]),(x[n]-x[n-1])**2,(x[n]-x[n-1])**3];e+=1 #
-    # print "M[%d,:]"%e,M[e,:];e+=1;
-    # M[e,N-3:]=[0,1,2*(x[n]-x[n-1]),3*(x[n]-x[n-1])**2];e+=1 #
-    # print "M[%d,:]"%e,M[e,:];e+=1;
-    # M[e,N-3:]=[0,0,2,6*(x[n]-x[n-1])];e+=1 #
-    # print "M[%d,:]"%e,M[e,:];e+=1;
     
     # Eq. (31)
     for i in xrange(n-1):
         M[e,4*i:4*i+5]=[1,(x[i+1]-x[i]),(x[i+1]-x[i])**2,(x[i+1]-x[i])**3,-1];e+=1 #
-        # print "M[%d,:]"%e,M[e,:];e+=1;
 
     # Eq. (32)
     for i in xrange(n-1):
         M[e,4*i+1:4*i+1+3]=[1,2*(x[i+1]-x[i]),3*(x[i+1]-x[i])**2];
         M[e,4*(i+1)+1:4*(i+1)+1+1]=[-1]
-        e+=1 #
-        # print "M[%d,:]"%e,M[e,:];e+=1;
+        e+=1 
 
     # Eq. (33)
     for i in xrange(n-1):
         M[e,4*i+2:4*i+2+2]=[2*(x[i+1]-x[i]),6*(x[i+1]-x[i])]
         M[e,4*(i+1)+2:4*(i+1)+2+1]=[-1]
-        e+=1 #
-        # print "M[%d,:]"%e,M[e,:];e+=1;
+        e+=1 
         
     # MOMENTS
     for k in xrange(L):
@@ -808,19 +797,19 @@ def velocityFromMoments():
             M[e,m]=(I3-2*x[i]*I2+x[i]**2*I1);m+=1
             M[e,m]=(I4-3*x[i]*I3+3*x[i]**2*I2-x[i]**3*I1);m+=1
         b[e]=mu[k]
-        # print "M[%d,:]"%e,M[e,:];e+=1;
-        e+=1 #
+        e+=1 
 
     # SOLVE
     s=np.linalg.solve(M,b)
-    # print "Coefficients:",s
+    #print "Coefficients:",s
 
     # SPLINE FUNCTION
     vs=np.linspace(vmin,vmax,4*n)
-    #vs=x
     ps=np.array([fspline(v,x,s) for v in vs])
 
-    #"""
+    print "Velocities:",vs
+    print "Probabilities:",ps
+
     # TEST MOMENTS
     from scipy.interpolate import interp1d as interp
     from scipy.integrate import quad as integrate
@@ -830,7 +819,7 @@ def velocityFromMoments():
     for k in xrange(L):
         func=lambda x:x**k*pinterp(x)
         i,e=integrate(func,vmin,vmax)
-        print "\tMoment %d:"%k,i
+        print "\tMoment %d:"%k,i*norm
 
     fig=plt.figure()
     ax=fig.gca()
@@ -840,7 +829,10 @@ def velocityFromMoments():
     for xt in xts:
         xtls+=['%.1f'%(norm*xt)]
     ax.set_xticklabels(xtls)
+
+    np.savetxt(FIGDIR+"vreconstructed.txt",np.vstack((vs,ps)).transpose())
     fig.savefig(FIGDIR+"vreconstructed.png")
+    return
 
 def velocityDistributionEmpirical(el,verbose=0):
 
@@ -3229,3 +3221,4 @@ def pointMap(el,fname,sname,title=None):
 #distanceTunguskaChelyabisnk()
 #plotGeographicPositions()
 #experimen2(elements)
+#velocityFromMoments()
