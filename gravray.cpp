@@ -35,13 +35,13 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-/*
+//*
 #define BODY_ID "EARTH"
 #define OBSFRAME "ITRF93" //HIGH PRECISION
 #define BODY_SIDERALDAY GSL_CONST_MKSA_DAY
 //#define FRAME_ID "IAU_EARTH" //LOW PRECISION
 //*/
-//*
+/*
 #define BODY_ID "MOON"
 #define OBSFRAME "IAU_MOON"
 #define BODY_SIDERALDAY (27.321661*GSL_CONST_MKSA_DAY) //SOURCE WIKIPEDIA
@@ -458,7 +458,7 @@ void hormat(SpiceDouble lat,SpiceDouble lon,SpiceDouble t,SpiceDouble h2m[3][3],
   h2m: converts from geocentric to topocentric
   h2i: converts from topocentric to geocentric
  */
-void horgeo(SpiceDouble lat,SpiceDouble lon,SpiceDouble h2m[3][3],SpiceDouble h2i[3][3])
+void horgeo_old(SpiceDouble lat,SpiceDouble lon,SpiceDouble h2m[3][3],SpiceDouble h2i[3][3])
 {
   SpiceDouble geopos[3],normal[3];
   SpiceDouble ux[]={1,0,0},uy[]={0,1,0},uz[]={0,0,1};
@@ -474,6 +474,26 @@ void horgeo(SpiceDouble lat,SpiceDouble lon,SpiceDouble h2m[3][3],SpiceDouble h2
   h2m[1][0]=uy[0];h2m[1][1]=uy[1];h2m[1][2]=uy[2];
   h2m[2][0]=normal[0];h2m[2][1]=normal[1];h2m[2][2]=normal[2];
   invert_c(h2m,h2i);
+}
+void horgeo(SpiceDouble lat,SpiceDouble lon,SpiceDouble h2m[3][3],SpiceDouble h2i[3][3])
+{
+  /*
+    Revised on January 27, 2019
+   */
+  SpiceDouble geopos[3],normal[3];
+  SpiceDouble ux[]={1,0,0},uy[]={0,1,0},uz[]={0,0,1};
+
+  //NORMAL OBSFRAME
+  georec_c(D2R(lon),D2R(lat),0.0,RBODY,FBODY,geopos);
+  surfnm_c(RBODY,RBODY,RPBODY,geopos,normal);
+
+  //TRANSFORM MATRICES
+  ucrss_c(uz,normal,uy);
+  ucrss_c(normal,uy,ux);
+  h2i[0][0]=ux[0];h2i[0][1]=uy[0];h2i[0][2]=normal[0];
+  h2i[1][0]=ux[1];h2i[1][1]=uy[1];h2i[1][2]=normal[1];
+  h2i[2][0]=ux[2];h2i[2][1]=uy[2];h2i[2][2]=normal[2];
+  invert_c(h2i,h2m);
 }
 
 /*

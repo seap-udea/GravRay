@@ -81,7 +81,10 @@ int main(int argc,char* argv[])
   ////////////////////////////////////////////////////
   SpiceDouble hm[3][3],hi[3][3];
   horgeo(lat,lon,hm,hi);
-
+  //Print matrix
+  //fprintf(stdout,"%s\n%s\n%s\n",vec2str(hm[0]),vec2str(hm[1]),vec2str(hm[2]));
+  //fprintf(stdout,"%s\n%s\n%s\n",vec2str(hi[0]),vec2str(hi[1]),vec2str(hi[2]));
+  
   ////////////////////////////////////////////////////
   //VELOCITY OF OBSERVER
   ////////////////////////////////////////////////////

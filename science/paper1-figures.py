@@ -1307,6 +1307,58 @@ def distanceTunguskaChelyabisnk():
     Ns=np.arange(30)
     print Ns
 
+def qDistribution(fname):
+    
+    data=np.loadtxt(fname+".phys")
+    dataprob=np.loadtxt(fname+".prob")
+
+    # GET ONLY THE ACCEPTED RAYS
+    qprop=dict(indice=0,property="elevation",factor=50)
+    #qprop=dict(indice=2,property="vimp",factor=5)
+    #qprop=dict(indice=10,property="azimuth",factor=50)
+
+    xs=data[:,qprop["indice"]]
+    pprob=dataprob[:,7]
+    xun=np.unique(xs)
+    Nun=len(xun)
+    
+    print "Computed rays:",len(pprob)
+    print "Acepted rays:",len(xs)
+    print "Unique values of property:",Nun
+
+    # Range of elevations
+    xmin=xs.min()
+    xmax=xs.max()
+    print "Ranges:",xmin,xmax
+
+    # Create boxes
+    Nb=Nun/qprop["factor"]
+    print "Sampling points:",Nb
+    xb=np.linspace(xmin,1.01*xmax,Nb,endpoint=False)
+    dxb=xb[1]-xb[0]
+    
+    # Compute probabilities
+    P=0
+    hb=np.zeros(Nb)
+    for i,x in enumerate(xs):
+        p=pprob[i]
+        P+=p
+        n=int((x-xmin)/dxb)
+        hb[n]+=p
+
+    hb=np.array(hb)
+    hb/=P
+
+    #Save histogram
+    np.savetxt(FIGDIR+qprop["property"]+"-marginal.dat",np.vstack((xb,hb)).transpose())
+    
+    fig=plt.figure()
+    ax=fig.gca()
+    ax.plot(xb,hb,'ko-')
+    figname=FIGDIR+qprop["property"]+"-marginal.png"
+    print "Saving "+figname+"..."
+    fig.savefig(figname)
+
 exit(0)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3397,18 +3449,6 @@ def pointMap(el,fname,sname,title=None):
     print "Plot file: ",pfile
     fig.savefig(pfile)
 
-def elevationDistribution(fname):
-    
-    data=np.loadtxt(fname+".phys")
-    dataprob=np.loadtxt(fname+".prob")
-
-    # GET ONLY THE ACCEPTED RAYS
-    hs=data[:,0]
-    pprob=dataprob[:,7]
-    
-    print "Computed rays:",len(pprob)
-    print "Acepted rays:",len(hs)
-    
 #############################################################
 #EXECUTE
 #############################################################
@@ -3416,3 +3456,4 @@ def elevationDistribution(fname):
 #plotGeographicPositions()
 #experimen2(elements)
 #velocityFromMoments()
+elevationDistribution("data/grt-20190121044137-7AE3F0/rays-lat_6.62000e+00__lon_1.11200e+01.data")
