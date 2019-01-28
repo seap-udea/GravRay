@@ -35,13 +35,13 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-//*
+/*
 #define BODY_ID "EARTH"
 #define OBSFRAME "ITRF93" //HIGH PRECISION
 #define BODY_SIDERALDAY GSL_CONST_MKSA_DAY
 //#define FRAME_ID "IAU_EARTH" //LOW PRECISION
 //*/
-/*
+//*
 #define BODY_ID "MOON"
 #define OBSFRAME "IAU_MOON"
 #define BODY_SIDERALDAY (27.321661*GSL_CONST_MKSA_DAY) //SOURCE WIKIPEDIA
@@ -807,7 +807,7 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   vadd_c(observer->body,observer->posj2000,observer->posabs);
 
   //DEBUGGING
-  //printf("Observer ECJ2000 = %s\n",vec2str(observer->posabs,"%.17e "));
+  printf("Observer ECJ2000 = %s\n",vec2str(observer->posabs,"%.17e "));
 
   //POSITION WITH RESPECT TO SSB IN ECLIPEPOCH
   //This is not working
@@ -815,7 +815,7 @@ int initObserver(SpiceDouble t,struct ObserverStruct* observer)
   mxv_c(observer->MEE,(observer->posabs)+3,(observer->posepoch)+3);
 }
 
-int observerVelocity(struct ObserverStruct *observer,
+int observerVelocity_old(struct ObserverStruct *observer,
 		     SpiceDouble elev,SpiceDouble Az,SpiceDouble v)
 {
   ////////////////////////////////////////////////////////////// 
@@ -832,11 +832,84 @@ int observerVelocity(struct ObserverStruct *observer,
   }
 
   //IMPACT VELOCITY IS THE INVERSE
+  fprintf(stdout,"\tvloc (impact) = %s\n",vec2str(vloc));
   vscl_c(-1,vloc,vloc);
-
+  //vloc[0]=0.0;vloc[1]=-1.0;vloc[2]=0.0;
+  fprintf(stdout,"\tvloc = %s\n",vec2str(vloc));
+  
   //VELOCITY OF OBSERVER IN SPACE W.R.T. TO OBSFRAME
   SpiceDouble vmot[3];
   mxv_c(observer->hi,vloc,vmot);
+  fprintf(stdout,"\t%s\n\t%s\n\t%s\n",vec2str(observer->hi[0]),vec2str(observer->hi[1]),vec2str(observer->hi[2]));
+  fprintf(stdout,"\tvmot = %s\n",vec2str(vmot));
+
+  //TOTAL VELOCITY WITH RESPECT OBSFRAME
+  vadd_c(observer->v,vmot,observer->posbody+3);
+
+  //VELOCITY W.R.T. BODY CENTER IN ECLIPJ2000 RF
+  mxv_c(observer->MEJ,observer->posbody+3,observer->posj2000+3);
+
+  //VELOCITY W.R.T. SOLAR SYSTEM BARYCENTER IN J2000 RF
+  vadd_c(observer->body+3,observer->posj2000+3,observer->posabs+3);
+
+  /*NEW*/
+  //************************************************************
+  //COMPUTING DIRECTION OF INCOMING VELOCITY IN ECLIPJ2000
+  /*
+    It does not take into account Body rotation effect on velocity
+   */
+  //************************************************************
+  SpiceDouble uv[3],nuv;
+  if(Az==0 && elev==0 && v==0){
+    vpack_c(0,0,0,vloc);
+  }else{
+    vpack_c(ch*cA,-ch*sA,sh,uv);
+  }
+
+  //IMPACT DIRECTION IS THE INVERSE
+  vscl_c(-1,uv,uv);
+
+  //DIRECTION IN SPACE W.R.T. TO OBSFRAME
+  mxv_c(observer->hi,uv,vmot);
+
+  //DIRECTION IN SPACE W.R.T. ECLIPJ2000
+  mxv_c(observer->MEJ,vmot,observer->uv);
+
+  return 0;
+}
+
+int observerVelocity(struct ObserverStruct *observer,
+		     SpiceDouble elev,SpiceDouble Az,SpiceDouble v)
+{
+  /*
+    New observer velocity
+    January 27 / 2019
+  */
+  
+  ////////////////////////////////////////////////////////////// 
+  //DETERMINE THE OBSERVER VELOCITY WITH RESPECT TO SSB
+  ////////////////////////////////////////////////////////////// 
+
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO LOCAL REFERENCE
+  SpiceDouble cA=cos(D2R(Az)),sA=sin(D2R(Az)),ch=cos(D2R(elev)),sh=sin(D2R(elev));
+  SpiceDouble vloc[3];
+  if(Az==0 && elev==0 && v==0){
+    vpack_c(0,0,0,vloc);
+  }else{
+    vpack_c(v*ch*cA,v*ch*sA,v*sh,vloc);
+  }
+
+  //IMPACT VELOCITY IS THE INVERSE
+  //fprintf(stdout,"\tvloc (impact) = %s\n",vec2str(vloc));
+  vscl_c(-1,vloc,vloc);
+  //vloc[0]=0.0;vloc[1]=-1.0;vloc[2]=0.0;
+  //fprintf(stdout,"\tvloc = %s\n",vec2str(vloc));
+  
+  //VELOCITY OF OBSERVER IN SPACE W.R.T. TO OBSFRAME
+  SpiceDouble vmot[3];
+  mxv_c(observer->hi,vloc,vmot);
+  //fprintf(stdout,"\t%s\n\t%s\n\t%s\n",vec2str(observer->hi[0]),vec2str(observer->hi[1]),vec2str(observer->hi[2]));
+  //fprintf(stdout,"\tvmot = %s\n",vec2str(vmot));
 
   //TOTAL VELOCITY WITH RESPECT OBSFRAME
   vadd_c(observer->v,vmot,observer->posbody+3);
