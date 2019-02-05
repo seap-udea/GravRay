@@ -35,13 +35,13 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-/*
+//*
 #define BODY_ID "EARTH"
 #define OBSFRAME "ITRF93" //HIGH PRECISION
 #define BODY_SIDERALDAY GSL_CONST_MKSA_DAY
 //#define FRAME_ID "IAU_EARTH" //LOW PRECISION
 //*/
-//*
+/*
 #define BODY_ID "MOON"
 #define OBSFRAME "IAU_MOON"
 #define BODY_SIDERALDAY (27.321661*GSL_CONST_MKSA_DAY) //SOURCE WIKIPEDIA
