@@ -89,6 +89,9 @@ except:runid=""
 try:qrepeat=int(argv[iarg]);iarg+=1
 except:qrepeat=0
 
+#COMMAND
+cmd=" ".join(argv)
+
 #############################################################
 #PREPARE
 #############################################################
@@ -109,12 +112,12 @@ t=float(out.split("\n")[4])
 #MAKE STRING
 dirmd5=System("md5sum %s |awk '{print $1}'"%dirfile)
 velmd5=System("md5sum %s |awk '{print $1}'"%velfile)
-makestr="qvel=%d & name=%s & dirmd5=%s & velmd5=%s"%(qvel,name,dirmd5,velmd5)
+makestr="cmd = %s & qvel=%d & name=%s & dirmd5=%s & velmd5=%s"%(cmd,qvel,name,dirmd5,velmd5)
 
 md5str=MD5STR(makestr,len=6)
 
 #OUTPUT DIRECTORY
-outdir="data/grt-%s-%s"%(tstring,md5str)
+outdir="data/grt-%s-%s-%s"%(name,tstring,md5str)
 System("mkdir -p %s"%outdir)
 f=open(outdir+"/.config","w")
 f.write("%s\n%s\n%s\n"%(md5str,tstring,makestr))

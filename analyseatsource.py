@@ -123,7 +123,8 @@ wmax=sigma*wFunction(0,dmax)
 #fparam=(0.9721768,6.84870896,2.40674371)
 #fparam=(1.0,7,7)
 #fparam=(1.0,0.1,0.1)
-fparam=(1.0,3,3)
+#fparam=(1.0,3,3)
+fparam=(1.0,1.0,0.5) #Adjusted flux dependency (Figure 6)
 Hmax=20
 
 #############################################################
