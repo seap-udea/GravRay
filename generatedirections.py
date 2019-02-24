@@ -43,10 +43,15 @@ try:
     iarg+=1
 except:qshow=False
 
+try:
+    suf=argv[iarg]
+    iarg+=1
+except:suf="reg"
+
 print "Radius:",radius*RAD
 
 fdata="scratch/directions-r%.2e-unfiletered.dat"%(radius*RAD)
-fdataf="directions-r%.2e.dat"%(radius*RAD)
+fdataf="util/data/directions/directions-r%.2e-%s.data"%(radius*RAD,suf)
 
 ###################################################
 #PARAMETERS
@@ -320,7 +325,7 @@ print "Final points: ",ssgood.shape[0]
 ###################################################
 #LAST CHECK
 ###################################################
-"""
+#"""
 print "Last check..."
 dists=[]
 npoints=ssgood.shape[0]
