@@ -50,7 +50,7 @@ except:suf="reg"
 
 print "Radius:",radius*RAD
 
-fdata="scratch/directions-r%.2e-unfiletered.dat"%(radius*RAD)
+fdata="scratch/directions-r%.2e-unfiletered-%s.dat"%(radius*RAD,suf)
 fdataf="util/data/directions/directions-r%.2e-%s.data"%(radius*RAD,suf)
 
 ###################################################
@@ -325,7 +325,7 @@ print "Final points: ",ssgood.shape[0]
 ###################################################
 #LAST CHECK
 ###################################################
-#"""
+"""
 print "Last check..."
 dists=[]
 npoints=ssgood.shape[0]
@@ -352,12 +352,12 @@ distmaxs=np.array(distmaxs)*RAD
 fig=plt.figure()
 ax=fig.gca()
 ax.hist(distmins)
-fig.savefig("scratch/distmin-distrib-r%.2e.png"%(radius*RAD))
+fig.savefig("scratch/distmin-distrib-r%.2e-%s.png"%(radius*RAD,suf))
 
 fig=plt.figure()
 ax=fig.gca()
 ax.hist(distmaxs)
-fig.savefig("scratch/distmax-distrib-r%.2e.png"%(radius*RAD))
+fig.savefig("scratch/distmax-distrib-r%.2e-%s.png"%(radius*RAD,suf))
 
 ###################################################
 #MAP
@@ -371,7 +371,7 @@ map=drawMap(proj=proj,proj_opts=dict(lon_0=180),
             mers_opts=dict(labels=[0,0,0,1],fontsize=8))
 plotMap(map,np.mod(ssgood[:,0]*RAD,360),ssgood[:,1]*RAD,lw=0,
         marker='o',color='r',ms=2,mec='none')
-plt.savefig("scratch/directions-map-r%.2e.png"%(radius*RAD))
+plt.savefig("scratch/directions-map-r%.2e-%s.png"%(radius*RAD,suf))
 
 ###################################################
 #3D POINTS MAP
@@ -398,5 +398,5 @@ ax3d.plot_wireframe(x, y, z, color="k")
 ax3d.plot(xs,ys,zs,'o')
 ax3d.plot_surface(x,y,z,rstride=1,cstride=1,color='c',alpha=1,linewidth=0)
 
-plt.savefig("scratch/directions-3d-r%.2e.png"%(radius*RAD))
+plt.savefig("scratch/directions-3d-r%.2e-%s.png"%(radius*RAD,suf))
 if qshow:plt.show()
