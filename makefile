@@ -2,7 +2,7 @@
 include compiler.in
 
 BRANCH=$(shell bash .getbranch)
-PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenarioof.exe throwrays.exe whereonearth.exe wherewrtapex.exe 
+PROGRAMS=whattimeisit.exe whereami.exe whereisit.exe whereisthisasteroid.exe whereisinsky.exe wherewillitbe.exe scenarioof.exe throwrays.exe throwlongrays.exe whereonearth.exe wherewrtapex.exe 
 
 all:$(PROGRAMS)
 

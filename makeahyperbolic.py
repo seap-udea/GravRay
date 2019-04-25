@@ -10,7 +10,7 @@ import random
 #############################################################
 usage="""Make a GRT analysis of a whole geographic region.
 
-   python makeagravray.py <date> <deg|rad> <locations_file> <deg|rad> <directions_file> <qvel> <velocities_file> <sname> <altitude> [<runid> <qrepeat>]
+   python makeahyperbolic.py <date> <deg|rad> <locations_file> <deg|rad> <directions_file> <velocities_file> <sname> <altitude> [<runid> <qrepeat>]
 
 Where:
 
@@ -25,8 +25,6 @@ Where:
    <directions_file>: file with the impacting directons (generated
                      using eg. generatedirections.py)
 
-   <qvel>: use apex dependent velocities?
-
    <velocities_file>: file with initial velocities (generated
                       using eg. generatevelocities.py)
 
@@ -37,8 +35,7 @@ Where:
 
    <runid>: Run identifier.
 
-   <qrepeat>: 1 if you want to compute orbits despite a ray file is
-              present.  By deault 0.
+   <deltat>: Backwards integration time.
 
 Output:
 
@@ -70,12 +67,14 @@ try:
     degdir=argv[iarg];iarg+=1
     dirfile=argv[iarg];iarg+=1
 
-    qvel=int(argv[iarg]);iarg+=1
+    qvel=0
     velfile=argv[iarg];iarg+=1
 
     name=argv[iarg];iarg+=1
 
     h=float(argv[iarg]);iarg+=1
+
+    deltat=float(argv[iarg]);iarg+=1
 except:
     print usage
     exit(1)
@@ -139,13 +138,6 @@ except:datos=np.array([datos])
 napex=datos.shape[1]-1
 
 #############################################################
-#GENERATE OBSERVERS MATRICES (ECLIPTIC AND APEX POSITION)
-#############################################################
-if not path.isfile("%s/observers-matrices.dat"%outdir):
-    System("./whereonearth.exe '%s'"%date)
-    System("cp -r scratch/observers-matrices.dat %s/"%outdir)
-
-#############################################################
 #GENERATE INITIAL CONDITIONS
 #############################################################
 inifile="%s/initials%s.dat"%(outdir,runid)
@@ -205,7 +197,6 @@ print "Analysing %d locations..."%npoints
 
 ranstr=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-f=open(outdir+"/probability%s.prob"%runid,"w")
 for i in xrange(npoints):
 
     lat=lats[i]
@@ -218,29 +209,9 @@ for i in xrange(npoints):
     
     outfile="rays-lat_%.5e__lon_%.5e.data"%(lat,lon)
     if not path.isfile("%s/%s"%(outdir,outfile)) or qrepeat:
-        cmd="./throwrays.exe %.9e %.5e %.5e %.4e %s %d %s/%s"%(t,lat,lon,h,inifile,
-                                                               qvel,outdir,outfile)
+        qvel=0
+        cmd="./throwlongrays.exe %d %.9e %.5e %.5e %.4e %s %d %s/%s %e"%(n,t,lat,lon,h,inifile,
+                                                                         qvel,outdir,outfile,deltat)
         print "Executing: %s"%cmd
         system(cmd)
 
-    #==================================================
-    #CALCULATE PROBABILITIES
-    #==================================================
-    print "Calculating probabilities for this site"
-    cmd="python analyseatsource.py %s %s/%s"%(inifile,outdir,outfile)
-    print "Executing:",cmd
-    system(cmd)
-    timeIt(stream=stderr)
-
-    #==================================================
-    #CALCULATE TOTAL PROBABILITY
-    #==================================================
-    data=np.loadtxt("%s/%s.prob"%(outdir,outfile))
-    try:data[:,0]
-    except:data=np.array([data])
-    p=data[:,7]
-    Ptot=p.sum()/(1.0*Ninitial)
-    print>>stderr,"Total probability:",Ptot
-    f.write("%-+15.6f%-+15.6f%-+15.6f\n"%(lat,lon,Ptot))
-    
-f.close()
