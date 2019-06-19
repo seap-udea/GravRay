@@ -108,6 +108,8 @@ tstring="%04d%02d%02d%02d%02d%02d"%(int(dparts[2]),int(dparts[0]),int(dparts[1])
                                     int(tparts[0]),int(tparts[1]),int(tparts[2]))
 out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
 t=float(out.split("\n")[4])
+print(date,t)
+exit(0)
 
 #MAKE STRING
 dirmd5=System("md5sum %s |awk '{print $1}'"%dirfile)

@@ -49,6 +49,12 @@ except:
 print "*"*80,"\nAnalyzing data in '%s'\n"%elements,"*"*80
 
 #############################################################
+#TARGET POPULATION
+#############################################################
+#TARGPOP="NEOS";dmax=0.20;normal=1.0
+TARGPOP="SPORADIC";dmax=0.20;normal=1.0
+
+#############################################################
 #CONSTANTS AND NUMERICAL PARAMETERS
 #############################################################
 
@@ -83,7 +89,8 @@ aes=qes/(1-ees)
 #Counting
 Nhyp=len(ees[ees>=1])
 Nret=len(ies[ies>=180])
-cond=(ees<1)*(ies<180)*(aes<40)
+#cond=(ees<1)*(ies<180)*(aes<40)
+cond=(ees<1)*(ies<180)*(aes<1000)
 data=data[cond]
 qes=data[:,9]
 ees=data[:,10]
@@ -98,7 +105,14 @@ print "Filter:"
 print TAB,"Number of hyperbolic orbits:",Nhyp
 print TAB,"Number of retrograde orbits:",Nret
 print TAB,"Number of bound, prograde orbits:",Nphys
+print TAB,"Number of good orbits:",Norbits-(Nhyp+Nret)
+print TAB,"Range of values:"
+print TAB,"\ta:",aes.min(),"-",aes.max()
+print TAB,"\te:",ees.min(),"-",ees.max()
+print TAB,"\ti:",ies.min(),"-",ies.max()
+print TAB,"\tq:",qes.min(),"-",qes.max()
 np.savetxt(elements+".phys",data)
+print TAB,"Target population:",TARGPOP
 
 #############################################################
 #NUMERICAL PARAMTERES
@@ -110,7 +124,7 @@ adv=0
 #Maximum weighted euclidean distance in configuration space
 #dmax=0.1;normal=1000.0
 #NEW
-dmax=0.20;normal=1.0
+#dmax=0.20;normal=1.0
 
 #Weighting function normalization
 sigma=wNormalization(dmax)
@@ -136,6 +150,7 @@ timeIt()
 
 fp=open(elements+".prob","w")
 fp.write("#0:q\t1:e\t2:i\t3:ntarg\t4:qt\t5:et\t6:it\t7:Pn\t8:Pu\t9:qx\t10:at\t11:Ot\t12:ot\n")
+nempty=0
 for n in xrange(Nphys):
  
     q=qes[n]
@@ -161,7 +176,7 @@ for n in xrange(Nphys):
     #distform=drummondDistance(q,e,i)
     distform=zappalaDistance(a,e,np.sin(i*DEG),Omega,omega)
     result=np.array(mysqlSelect("%s, Perihelion_dist, e, i, sini, a, Node, Peri"%distform,
-                                "NEOS",
+                                TARGPOP,
                                 "where H<%f and %s<%e order by %s desc"%(Hmax,distform,(2*dmax)**2,distform),"array"))
 
     ntarg=result.shape[0]
@@ -186,6 +201,7 @@ for n in xrange(Nphys):
             n+=1
         if verb:print "Density:",density
     else:
+        nempty+=1
         density=0
 
     Pu=density/wmax
@@ -203,5 +219,6 @@ fp.close()
 
 #Normalize total probability
 Ptot=Ptot/(1.0*Ninitial)
+print "Empty sites: ",nempty
 print "Total probability for this site: ",Ptot
 timeIt()
