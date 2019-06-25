@@ -235,6 +235,8 @@ int initSpice(void)
   //EARTH RADII
   bodvrd_c("EARTH","RADII",3,&n,radii);
   REARTH=radii[0];
+
+  //ERROR DISCOVERED 2019/06/23
   RPEARTH=radii[0];
   FEARTH=(radii[0]-radii[2])/radii[0];
 

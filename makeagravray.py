@@ -100,16 +100,30 @@ System("make")
 #############################################################
 #INPUTS ANALYSIS
 #############################################################
-#DATE ANALYSIS
-parts=date.split(" ")
-dparts=parts[0].split("/")
-tparts=parts[1].split(":")
-tstring="%04d%02d%02d%02d%02d%02d"%(int(dparts[2]),int(dparts[0]),int(dparts[1]),
-                                    int(tparts[0]),int(tparts[1]),int(tparts[2]))
-out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
-t=float(out.split("\n")[4])
-print(date,t)
-exit(0)
+#CHECK TYPE OF DATE
+if "ET" in date:
+    #TIME
+    spy.furnsh("util/kernels/naif0012.tls")
+    t=float(date.split("ET")[1])
+    dt=spy.deltet(t,"UTC")
+    date=spy.et2utc(t+dt,"ISOC",0)
+    place,time=date.split("T")
+    dparts=place.split("-")
+    tparts=time.split(":")
+    tstring="%04d%02d%02d%02d%02d%02d"%(int(dparts[0]),int(dparts[1]),int(dparts[2]),
+                                        int(tparts[0]),int(tparts[1]),int(tparts[2]))
+else:
+    #DATE ANALYSIS
+    parts=date.split(" ")
+    dparts=parts[0].split("/")
+    tparts=parts[1].split(":")
+    out=System("./whattimeisit.exe '%s' ET > /dev/null"%date)
+    t=float(out.split("\n")[4])
+
+    tstring="%04d%02d%02d%02d%02d%02d"%(int(dparts[2]),int(dparts[0]),int(dparts[1]),
+                                        int(tparts[0]),int(tparts[1]),int(tparts[2]))
+print(date)
+#exit(0)
 
 #MAKE STRING
 dirmd5=System("md5sum %s |awk '{print $1}'"%dirfile)

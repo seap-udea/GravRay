@@ -148,6 +148,7 @@ int main(int argc,char* argv[])
 	    vec2strn(elements,6,"%-+26.17e"),
 	    qapex);
     ncond++;
+    exit(0);
   }
   fclose(fi);
   fclose(fe);

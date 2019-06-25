@@ -2,6 +2,7 @@
 #EXTERNAL LIBRARIES
 #############################################################
 #REGULAR
+import spiceypy as spy
 from commands import getoutput as System
 from sys import argv,exit
 from time import time
