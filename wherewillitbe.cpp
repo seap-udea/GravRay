@@ -80,6 +80,7 @@ int main(int argc,char* argv[])
 
   char fname[100];
   sprintf(fname,"ray%s.dat",rayid);
+  
   FILE *f=fopen(fname,"w");
   fprintf(f,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
 	  "#1:t",
