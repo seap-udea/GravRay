@@ -1,6 +1,8 @@
 #include <gravray.cpp>
 using namespace std;
 
+#define SVERBOSE 0
+
 int main(int argc,char* argv[])
 {
   ////////////////////////////////////////////////////
@@ -49,13 +51,21 @@ int main(int argc,char* argv[])
   SpiceDouble h,Az,v,speed;
   SpiceDouble elements[6];
   SpiceDouble deltat=-1.0;
-  char line[1000];
+  char line[1000],fcollname[1000];
 
+  sprintf(fcollname,"%s.coll",outfile);
+  FILE* fc=fopen(fcollname,"w");
+  
   FILE* fi=fopen(file,"r");
   fgets(line,1000,fi);
 
   FILE* fe=fopen(outfile,"w");
   fprintf(fe,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
+	  "#1:h","2:Az","3:vimp",
+	  "4:xobs","5:yobs","6:zobs","7:vxobs","8:vyobs","9:vzobs",
+	  "10:q(AU)","11:e","12:i","13:Omega","14:omega","15:M","16:qapex");
+  fprintf(fc,"#Collision conditions\n");
+  fprintf(fc,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
 	  "#1:h","2:Az","3:vimp",
 	  "4:xobs","5:yobs","6:zobs","7:vxobs","8:vyobs","9:vzobs",
 	  "10:q(AU)","11:e","12:i","13:Omega","14:omega","15:M","16:qapex");
@@ -113,16 +123,16 @@ int main(int argc,char* argv[])
       v=vels[0];
     }
 
-    fprintf(stdout,"Condition %d at lat=%.5lf,lon=%.5lf: Integrating for h = %.2lf, A = %.2lf, v = %.2lf (qvel? %d), qapex = %.2f\n",
+    if(SVERBOSE) fprintf(stdout,"Condition %d at lat=%.5lf,lon=%.5lf: Integrating for h = %.2lf, A = %.2lf, v = %.2lf (qvel? %d), qapex = %.2f\n",
 	    ncond,lat,lon,h,Az,v,qvel,qapex);
 
     ////////////////////////////////////////////////////
     //DETERMINE POSITION FOR THIS INITIAL CONDITION
     ////////////////////////////////////////////////////
     observerVelocity(&observer,h,Az,v);
-    fprintf(stdout,"\tObserver position (@%s,ECLIPJ2000): %s\n",BODY_ID,vec2strn(observer.posabs,6,"%.8e "));
+    if(SVERBOSE) fprintf(stdout,"\tObserver position (@%s,ECLIPJ2000): %s\n",BODY_ID,vec2strn(observer.posabs,6,"%.8e "));
     speed=vnorm_c(observer.posabs+3);
-    fprintf(stdout,"\tObserver speed: %e\n",speed);
+    if(SVERBOSE) fprintf(stdout,"\tObserver speed: %e\n",speed);
 
     ////////////////////////////////////////////////////
     //PROPAGATE
@@ -132,6 +142,13 @@ int main(int argc,char* argv[])
     } 
     catch (int e) {
       fprintf(stdout,"\t\tA collision occurred. Skipping point\n");
+      //Save collision initial conditions
+      fprintf(fc,"%-+26.17e%-+26.17e%-+26.17e%s%s%-+26.17e\n",
+	      h,Az,v,
+	      vec2strn(observer.posabs,6,"%-26.17e"),
+	      vec2strn(elements,6,"%-+26.17e"),
+	      qapex);
+      
       ncoll++;
       continue;
     }
@@ -139,7 +156,7 @@ int main(int argc,char* argv[])
     ////////////////////////////////////////////////////
     //SAVE
     ////////////////////////////////////////////////////
-    fprintf(stdout,"\tFinal elements for ray %d: %s\n",
+    if(SVERBOSE) fprintf(stdout,"\tFinal elements for ray %d: %s\n",
 	    ncond,
 	    vec2strn(elements,6,"%lf "));
     fprintf(fe,"%-+26.17e%-+26.17e%-+26.17e%s%s%-+26.17e\n",
@@ -148,7 +165,7 @@ int main(int argc,char* argv[])
 	    vec2strn(elements,6,"%-+26.17e"),
 	    qapex);
     ncond++;
-    exit(0);
+    //exit(0);
   }
   fclose(fi);
   fclose(fe);

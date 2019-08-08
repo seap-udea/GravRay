@@ -35,13 +35,13 @@ http://naif.jpl.nasa.gov/pub/naif/
 //////////////////////////////////////////
 //CSPICE CONSTANTS
 //////////////////////////////////////////
-//*
+/*
 #define BODY_ID "EARTH"
 #define OBSFRAME "ITRF93" //HIGH PRECISION
 #define BODY_SIDERALDAY GSL_CONST_MKSA_DAY
 //#define FRAME_ID "IAU_EARTH" //LOW PRECISION
 //*/
-/*
+//*
 #define BODY_ID "MOON"
 #define OBSFRAME "IAU_MOON"
 #define BODY_SIDERALDAY (27.321661*GSL_CONST_MKSA_DAY) //SOURCE WIKIPEDIA
@@ -719,7 +719,7 @@ int EoM(double t,double y[],double dydt[],void *params)
     Rmag=vnorm_c(R);
     if(Rmag*UL/1e3<=RADII[i]){
       fprintf(stderr,"\t\tObject has collided with %s at t = %e days (Rmag = %e, RADII = %e)\n",
-	     LABELS[i],t*UT/DAY,Rmag,RADII[i]);
+	      LABELS[i],t*UT/DAY,Rmag*UL/1e3,RADII[i]);
       throw(1);
     }else{
       GM=GMASSES[i]*fac;

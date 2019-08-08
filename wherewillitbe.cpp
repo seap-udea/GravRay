@@ -12,9 +12,10 @@ int main(int argc,char* argv[])
   //GET ARGUMENTS
   ////////////////////////////////////////////////////
   SpiceDouble tini,x,y,z,vx,vy,vz,duration;
+  char rayid[100];
   SpiceInt npoints;
 
-  if(argc==10){
+  if(argc==11){
     tini=atof(argv[1]);
     x=atof(argv[2]);
     y=atof(argv[3]);
@@ -24,6 +25,7 @@ int main(int argc,char* argv[])
     vz=atof(argv[7]);
     duration=atof(argv[8])*365.25*GSL_CONST_MKSA_DAY;
     npoints=atoi(argv[9]);
+    strcpy(rayid,argv[10]);
   }else
     argsError(argv[0]);
 
@@ -75,7 +77,10 @@ int main(int argc,char* argv[])
 
   //INTEGRATION
   int i,status;
-  FILE *f=fopen("ray.dat","w");
+
+  char fname[100];
+  sprintf(fname,"ray%s.dat",rayid);
+  FILE *f=fopen(fname,"w");
   fprintf(f,"%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s%-26s\n",
 	  "#1:t",
 	  "2:x","3:y","4:z",

@@ -142,6 +142,7 @@ System("cp %s %s/directions.dat"%(dirfile,outdir))
 System("cp %s %s/velocities.dat"%(velfile,outdir))
 f.close()
 print>>stderr,"Running analysis at %s..."%outdir
+#exit(0)
 
 #UNITS
 UNITS=dict(deg=1,rad=RAD)
