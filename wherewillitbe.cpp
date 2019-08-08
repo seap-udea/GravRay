@@ -114,6 +114,7 @@ int main(int argc,char* argv[])
     if(VERBOSE) getc(stdin);
 
     h_used = h;
+    int nstall=0;
     do {
       while(1){
 	status=Gragg_Bulirsch_Stoer(EoM,X0,X,t,h_used,&h_next,1.0,TOLERANCE,EXTMET,params);
@@ -123,6 +124,13 @@ int main(int argc,char* argv[])
 	}
 	if(status) h_used/=4.0;
 	else break;
+      }
+      if(fabs(h_used/t_step)<HTOL) nstall++;
+      else nstall=0;
+      if(nstall>MAXSTALL){
+	fprintf(stderr,"\t\tIntegration has stalled at t = %e days with h/DT = %e\n",
+		t*UT/DAY,h_used/t_step);
+	throw(1);
       }
       t+=h_used;
       copyVec(X0,X,6);
